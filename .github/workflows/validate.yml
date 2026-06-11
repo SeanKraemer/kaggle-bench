@@ -1,0 +1,21 @@
+name: Validate Artifacts
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - name: Sync dependencies
+        run: uv sync --dev
+      - name: Validate task, testcase, and baseline artifacts
+        run: uv run python eval/scripts/validate_artifacts.py
+      - name: Validate golden-actions schemas
+        run: uv run python data/collector/scripts/validate_golden_actions_schema.py
