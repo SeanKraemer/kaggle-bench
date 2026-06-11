@@ -207,9 +207,7 @@ class ProposedAgentReconciliationTests(unittest.TestCase):
         )
 
         self.assertEqual(prediction["predicted_remove_action_ids"], [])
-        self.assertFalse(
-            any(warning.startswith("auto_added_remove_raw_column_blockers=") for warning in warnings)
-        )
+        self.assertFalse(any(warning.startswith("auto_added_remove_raw_column_blockers=") for warning in warnings))
 
 
 if __name__ == "__main__":

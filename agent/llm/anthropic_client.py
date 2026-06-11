@@ -61,11 +61,7 @@ def build_messages_request(
 
 
 def parse_messages_response(payload: dict) -> dict:
-    text_parts = [
-        block.get("text", "")
-        for block in payload.get("content", [])
-        if block.get("type") == "text"
-    ]
+    text_parts = [block.get("text", "") for block in payload.get("content", []) if block.get("type") == "text"]
     tool_calls = [
         {
             "id": block.get("id"),
@@ -76,9 +72,7 @@ def parse_messages_response(payload: dict) -> dict:
         if block.get("type") == "tool_use"
     ]
     thinking_summaries = [
-        block.get("thinking", "")
-        for block in payload.get("content", [])
-        if block.get("type") == "thinking"
+        block.get("thinking", "") for block in payload.get("content", []) if block.get("type") == "thinking"
     ]
     usage = payload.get("usage", {})
     input_tokens = usage.get("input_tokens")

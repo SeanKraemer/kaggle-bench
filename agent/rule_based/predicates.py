@@ -12,7 +12,6 @@ from agent.rule_based.thresholds import (
     OUTLIER_IQR_FACTOR,
 )
 
-
 NUMERIC_LITERAL_PATTERN = re.compile(r"-?\d+(?:\.\d+)?")
 IDENTIFIER_RATIO_THRESHOLD = 0.95
 
@@ -68,9 +67,7 @@ def is_nonnegative_sparse_numeric(dataset_insights: dict, column: str) -> bool:
 
 def is_narrow_target_range(dataset_insights: dict, predicate: str) -> bool:
     referenced_columns = [
-        column
-        for column in dataset_insights.get("numeric_profile", {}).get("columns", {})
-        if column in predicate
+        column for column in dataset_insights.get("numeric_profile", {}).get("columns", {}) if column in predicate
     ]
     if not referenced_columns:
         return False
@@ -104,9 +101,8 @@ def should_add_join(dataset_insights: dict, action: dict) -> bool:
 
 def should_add_parse_datetime(dataset_insights: dict, action: dict) -> bool:
     columns = action.get("canonical_params", {}).get("columns", [])
-    return (
-        action.get("action_type") == "PARSE_DATETIME"
-        and any(is_datetime_like(dataset_insights, column) for column in columns)
+    return action.get("action_type") == "PARSE_DATETIME" and any(
+        is_datetime_like(dataset_insights, column) for column in columns
     )
 
 
@@ -166,10 +162,7 @@ def should_add_date_feature(dataset_insights: dict, action: dict) -> bool:
         return False
     params = action.get("canonical_params", {})
     candidate_columns = (
-        params.get("date_columns")
-        or params.get("columns")
-        or params.get("reference_date_columns")
-        or []
+        params.get("date_columns") or params.get("columns") or params.get("reference_date_columns") or []
     )
     return bool(candidate_columns) and all(is_datetime_like(dataset_insights, column) for column in candidate_columns)
 
@@ -185,7 +178,10 @@ def should_add_categorical_encoding(dataset_insights: dict, action: dict) -> boo
     if method == "onehot":
         return all(is_low_cardinality(dataset_insights, column) for column in columns)
     if method == "label":
-        return all(is_medium_cardinality(dataset_insights, column) or is_low_cardinality(dataset_insights, column) for column in columns)
+        return all(
+            is_medium_cardinality(dataset_insights, column) or is_low_cardinality(dataset_insights, column)
+            for column in columns
+        )
     if method == "count":
         return all(distinct_count(dataset_insights, column) > LOW_CARDINALITY_THRESHOLD for column in columns)
     return False
@@ -298,10 +294,7 @@ def should_remove_bad_date_feature(dataset_insights: dict, action: dict) -> bool
         return False
     params = action.get("canonical_params", {})
     candidate_columns = (
-        params.get("date_columns")
-        or params.get("columns")
-        or params.get("reference_date_columns")
-        or []
+        params.get("date_columns") or params.get("columns") or params.get("reference_date_columns") or []
     )
     return not candidate_columns or not all(is_datetime_like(dataset_insights, column) for column in candidate_columns)
 
@@ -314,12 +307,17 @@ def should_remove_bad_categorical_encoding(dataset_insights: dict, action: dict)
     method = params.get("method")
     if not columns:
         return True
-    if any(is_identifier_like(dataset_insights, column) or is_datetime_like(dataset_insights, column) for column in columns):
+    if any(
+        is_identifier_like(dataset_insights, column) or is_datetime_like(dataset_insights, column) for column in columns
+    ):
         return True
     if method == "onehot":
         return not all(is_low_cardinality(dataset_insights, column) for column in columns)
     if method == "label":
-        return not all(is_medium_cardinality(dataset_insights, column) or is_low_cardinality(dataset_insights, column) for column in columns)
+        return not all(
+            is_medium_cardinality(dataset_insights, column) or is_low_cardinality(dataset_insights, column)
+            for column in columns
+        )
     if method == "count":
         return not all(distinct_count(dataset_insights, column) > LOW_CARDINALITY_THRESHOLD for column in columns)
     return False

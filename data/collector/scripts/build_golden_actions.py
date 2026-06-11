@@ -206,7 +206,9 @@ def validate_action(action: dict[str, Any]) -> list[str]:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Build deduplicated golden actions JSON from curated action candidates")
+    parser = argparse.ArgumentParser(
+        description="Build deduplicated golden actions JSON from curated action candidates"
+    )
     parser.add_argument("--competition", required=True)
     parser.add_argument("--input", default=None)
     parser.add_argument("--output", default=None)

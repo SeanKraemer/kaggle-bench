@@ -3,7 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from agent.agentic_core.scratchpad import DEFAULT_SCRATCHPAD_MAX_CHARS, JsonScratchpad
+from agent.agentic_core.scratchpad import DEFAULT_SCRATCHPAD_MAX_CHARS as DEFAULT_SCRATCHPAD_MAX_CHARS
+from agent.agentic_core.scratchpad import JsonScratchpad
 from agent.agentic_core.scratchpad_tools import build_scratchpad_tool_specs
 from agent.agentic_core.types import AgenticToolSpec
 from agent.context_builder import MaterializedBenchmarkContext
@@ -11,7 +12,6 @@ from agent.data_access import load_csv_rows, load_table_rows_for_summary
 from agent.profiles.categorical import profile_categorical_columns
 from agent.profiles.datetime import profile_datetime_columns
 from agent.profiles.join import profile_join_key as build_join_profile
-
 
 PROPOSED_TOOL_NAMES = [
     "lookup_actions",
@@ -161,9 +161,7 @@ def build_proposed_tool_specs(
 
     def profile_target_distribution_handler(_: dict[str, Any]) -> dict[str, Any]:
         return {
-            "target_column": materialized.benchmark.bundle.task.get("dataset", {}).get(
-                "target_column"
-            ),
+            "target_column": materialized.benchmark.bundle.task.get("dataset", {}).get("target_column"),
             "profile": materialized.target_profile,
         }
 

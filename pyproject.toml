@@ -10,21 +10,23 @@ dependencies = [
 [dependency-groups]
 dev = [
   "pre-commit>=4.0,<5",
+  "pyright>=1.1.390,<2",
+  "ruff>=0.14,<0.15",
 ]
 
-[tool.mypy]
-python_version = "3.11"
-mypy_path = "src"
-files = [
-  "src",
-  "eval",
-  "data/collector/scripts",
-]
-exclude = [
-  "^data/collector/data/",
-  "^docs/",
+[tool.ruff]
+line-length = 120
+# Human-baseline work files are committed fixtures (notebook-style cell scripts
+# where names are defined across cells); they document actions, not maintained code.
+extend-exclude = [
+  "data/tasks/*/human_baseline",
+  "*.ipynb",
 ]
 
-[[tool.mypy.overrides]]
-module = ["jsonschema"]
-ignore_missing_imports = true
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+# Campaign scripts adjust sys.path before importing repo modules.
+"agent/claude_code/run_claude_code_campaign.py" = ["E402"]

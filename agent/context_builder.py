@@ -9,13 +9,13 @@ from agent.data_access import (
     load_table_rows_for_summary,
     resolve_dataset_paths,
 )
+from agent.profile_cache import build_profile_cache_key, load_profile_cache, write_profile_cache
 from agent.profiles.boolean_like import profile_boolean_like_columns
 from agent.profiles.join import profile_join_key
 from agent.profiles.missingness import profile_missingness
 from agent.profiles.numeric import profile_numeric_columns
 from agent.profiles.schema import profile_table_schema
 from agent.profiles.target import profile_target_distribution
-from agent.profile_cache import build_profile_cache_key, load_profile_cache, write_profile_cache
 from agent.summaries import render_candidate_actions_json, render_context_summary, render_dataset_summary
 from agent.task_bundle import TaskBundle, load_task_bundle
 
@@ -182,7 +182,9 @@ def _resolve_target_profile_rows(
     return current_target_rows
 
 
-def _build_cached_materialized_context(benchmark: BenchmarkContext, cached_payload: dict) -> MaterializedBenchmarkContext:
+def _build_cached_materialized_context(
+    benchmark: BenchmarkContext, cached_payload: dict
+) -> MaterializedBenchmarkContext:
     table_profiles = cached_payload["table_profiles"]
     primary_train_profile = cached_payload["primary_train_profile"]
     join_profile = cached_payload["join_profile"]

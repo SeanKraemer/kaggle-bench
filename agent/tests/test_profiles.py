@@ -4,7 +4,6 @@ import importlib.util
 import unittest
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_PATH = ROOT / "agent" / "profiles" / "schema.py"
 MISSINGNESS_PATH = ROOT / "agent" / "profiles" / "missingness.py"

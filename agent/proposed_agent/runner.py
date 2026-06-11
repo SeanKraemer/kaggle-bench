@@ -195,12 +195,8 @@ def run_proposed_agent(
             agent_name="proposed_agent",
             run_by="agent_runner",
             run_id=run_id,
-            predicted_add_action_ids=controller_result.parsed_prediction.get(
-                "predicted_add_action_ids", []
-            ),
-            predicted_remove_action_ids=controller_result.parsed_prediction.get(
-                "predicted_remove_action_ids", []
-            ),
+            predicted_add_action_ids=controller_result.parsed_prediction.get("predicted_add_action_ids", []),
+            predicted_remove_action_ids=controller_result.parsed_prediction.get("predicted_remove_action_ids", []),
             notes="Proposed specific-tool agent run.",
             time_spent_seconds=elapsed_seconds,
             token_usage=_combined_token_usage(controller_result),
@@ -227,7 +223,7 @@ def _build_extra_artifacts(
     remove_result = controller_result.remove_result
     tool_results = [
         *add_result.tool_results,
-        *((remove_result.tool_results if remove_result is not None else [])),
+        *(remove_result.tool_results if remove_result is not None else []),
     ]
     artifacts = [
         {
@@ -252,7 +248,7 @@ def _build_extra_artifacts(
     if capture_llm_calls:
         api_call_records = [
             *add_result.api_call_records,
-            *((remove_result.api_call_records if remove_result is not None else [])),
+            *(remove_result.api_call_records if remove_result is not None else []),
         ]
         artifacts.append(
             {
@@ -349,9 +345,7 @@ def _build_metadata(
 
 def _combined_token_usage(controller_result: ProposedAgentControllerResult) -> dict[str, int | None]:
     results: list[AgenticRunResult] = [
-        result
-        for result in [controller_result.add_result, controller_result.remove_result]
-        if result is not None
+        result for result in [controller_result.add_result, controller_result.remove_result] if result is not None
     ]
     if not results:
         return {"input_tokens": None, "output_tokens": None, "total_tokens": None}

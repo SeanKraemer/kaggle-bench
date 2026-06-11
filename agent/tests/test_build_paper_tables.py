@@ -4,7 +4,6 @@ import importlib.util
 import unittest
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[2]
 TABLES_PATH = ROOT / "agent" / "build_paper_tables.py"
 
@@ -24,9 +23,33 @@ class PaperTablesTests(unittest.TestCase):
 
         rows = tables.build_overall_table_rows(
             [
-                {"agent_name": "rule_based", "k": 5, "add_f1": 0.7, "remove_recall": 0.8, "task_completion_score": 0.75, "pass_at_k": True, "cost_usd": 0.0},
-                {"agent_name": "rule_based", "k": 5, "add_f1": 0.9, "remove_recall": 0.6, "task_completion_score": 0.75, "pass_at_k": True, "cost_usd": 0.0},
-                {"agent_name": "single_llm", "k": 5, "add_f1": 0.95, "remove_recall": 0.9, "task_completion_score": 0.925, "pass_at_k": True, "cost_usd": 0.01},
+                {
+                    "agent_name": "rule_based",
+                    "k": 5,
+                    "add_f1": 0.7,
+                    "remove_recall": 0.8,
+                    "task_completion_score": 0.75,
+                    "pass_at_k": True,
+                    "cost_usd": 0.0,
+                },
+                {
+                    "agent_name": "rule_based",
+                    "k": 5,
+                    "add_f1": 0.9,
+                    "remove_recall": 0.6,
+                    "task_completion_score": 0.75,
+                    "pass_at_k": True,
+                    "cost_usd": 0.0,
+                },
+                {
+                    "agent_name": "single_llm",
+                    "k": 5,
+                    "add_f1": 0.95,
+                    "remove_recall": 0.9,
+                    "task_completion_score": 0.925,
+                    "pass_at_k": True,
+                    "cost_usd": 0.01,
+                },
             ]
         )
 

@@ -11,7 +11,6 @@ from agent.prediction_validation import (
     parse_prediction_text,
 )
 
-
 _INPUT_COLUMN_PARAM_KEYS = {
     "column",
     "columns",
@@ -236,9 +235,7 @@ def _find_raw_column_blockers(
     visible_actions: list[dict[str, Any]],
 ) -> tuple[list[str], list[dict[str, Any]]]:
     action_by_id = {
-        action["action_id"]: action
-        for action in visible_actions
-        if isinstance(action.get("action_id"), str)
+        action["action_id"]: action for action in visible_actions if isinstance(action.get("action_id"), str)
     }
     column_lexicon = _build_column_lexicon(visible_actions)
     required_columns_by_add_id = {
@@ -247,9 +244,7 @@ def _find_raw_column_blockers(
         if action_id in action_by_id
     }
     required_columns_by_add_id = {
-        action_id: columns
-        for action_id, columns in required_columns_by_add_id.items()
-        if columns
+        action_id: columns for action_id, columns in required_columns_by_add_id.items() if columns
     }
     if not required_columns_by_add_id:
         return [], []
@@ -307,11 +302,7 @@ def _required_raw_columns_for_action(action: dict[str, Any], column_lexicon: set
     if isinstance(expression, str):
         required_columns.update(_columns_mentioned_in_text(expression, column_lexicon))
 
-    return {
-        column
-        for column in required_columns
-        if column and column not in output_columns
-    }
+    return {column for column in required_columns if column and column not in output_columns}
 
 
 def _build_column_lexicon(actions: list[dict[str, Any]]) -> set[str]:
@@ -330,9 +321,7 @@ def _build_column_lexicon(actions: list[dict[str, Any]]) -> set[str]:
 
 
 def _is_input_column_param_key(key: str) -> bool:
-    return key in _INPUT_COLUMN_PARAM_KEYS or (
-        key.endswith("_columns") and key not in _OUTPUT_COLUMN_PARAM_KEYS
-    )
+    return key in _INPUT_COLUMN_PARAM_KEYS or (key.endswith("_columns") and key not in _OUTPUT_COLUMN_PARAM_KEYS)
 
 
 def _is_high_confidence_blocking_drop(action: dict[str, Any]) -> bool:

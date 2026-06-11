@@ -63,7 +63,9 @@ def run_rule_based(
                 f"- Action type: `{record['action_type']}`",
                 f"- Candidate side: `{record['candidate_side']}`",
                 f"- Decision: `{record['decision']}`",
-                f"- triggered rule: `{record['triggered_rule']}`" if record["triggered_rule"] is not None else "- triggered rule: `none`",
+                f"- triggered rule: `{record['triggered_rule']}`"
+                if record["triggered_rule"] is not None
+                else "- triggered rule: `none`",
                 "- Details:",
             ]
         )

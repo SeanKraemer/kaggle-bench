@@ -52,9 +52,7 @@ def render_agentic_trace_markdown(
         prediction = result.parsed_prediction
         lines.append("## Prediction Summary")
         lines.append(f"- Parsed add ids: `{prediction.get('predicted_add_action_ids', [])}`")
-        lines.append(
-            f"- Parsed remove ids: `{prediction.get('predicted_remove_action_ids', [])}`"
-        )
+        lines.append(f"- Parsed remove ids: `{prediction.get('predicted_remove_action_ids', [])}`")
         lines.append("")
 
     if result.validation_warnings:
@@ -87,10 +85,7 @@ def render_agentic_trace_markdown(
             lines.append("Tool results:")
             for tool_result in turn.tool_results:
                 status = "error" if tool_result.is_error else "success"
-                lines.append(
-                    f"- `{tool_result.name}` `{tool_result.tool_call_id}` {status}: "
-                    f"{tool_result.output_text}"
-                )
+                lines.append(f"- `{tool_result.name}` `{tool_result.tool_call_id}` {status}: {tool_result.output_text}")
         lines.append("")
 
     for heading, content in (extra_sections or {}).items():

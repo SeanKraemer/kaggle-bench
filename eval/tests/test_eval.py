@@ -7,7 +7,6 @@ import unittest
 from pathlib import Path
 from typing import Any
 
-
 ROOT = Path(__file__).resolve().parents[2]
 EVAL_PATH = ROOT / "eval" / "eval.py"
 ZILLOW_TESTCASE = ROOT / "data" / "tasks" / "zillow-prize-1" / "testcases" / "tc1_from_scratch.json"
@@ -71,7 +70,10 @@ def temp_task_bundle(
     task_dir = directory / "task"
     testcase_dir = task_dir / "testcases"
     testcase_dir.mkdir(parents=True, exist_ok=True)
-    write_json(task_dir / "candidate_actions.json", {"competition_slug": "temp-task", "generated_at": "2026-03-30", "actions": actions})
+    write_json(
+        task_dir / "candidate_actions.json",
+        {"competition_slug": "temp-task", "generated_at": "2026-03-30", "actions": actions},
+    )
     write_json(
         task_dir / "task.json",
         {

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-
 ALLOWED_AGENT_ACTION_FIELDS = (
     "action_id",
     "action_type",
@@ -11,12 +10,7 @@ ALLOWED_AGENT_ACTION_FIELDS = (
 def build_agent_visible_actions(actions: list[dict]) -> list[dict]:
     visible_actions: list[dict] = []
     for action in actions:
-        visible_actions.append(
-            {
-                field_name: action.get(field_name)
-                for field_name in ALLOWED_AGENT_ACTION_FIELDS
-            }
-        )
+        visible_actions.append({field_name: action.get(field_name) for field_name in ALLOWED_AGENT_ACTION_FIELDS})
     return visible_actions
 
 

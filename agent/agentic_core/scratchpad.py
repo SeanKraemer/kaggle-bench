@@ -4,7 +4,6 @@ import json
 from pathlib import Path
 from typing import Any
 
-
 DEFAULT_SCRATCHPAD_MAX_CHARS = 20_000
 
 
@@ -39,7 +38,5 @@ class JsonScratchpad:
     def _write_payload(self, payload: dict[str, Any]) -> None:
         rendered = json.dumps(payload, indent=2)
         if len(rendered) > self.max_chars:
-            raise ValueError(
-                f"scratchpad size limit exceeded: {len(rendered)} > {self.max_chars}"
-            )
+            raise ValueError(f"scratchpad size limit exceeded: {len(rendered)} > {self.max_chars}")
         self.path.write_text(rendered, encoding="utf-8")

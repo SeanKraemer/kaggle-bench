@@ -5,6 +5,7 @@ from pathlib import Path
 
 from agent.agentic_core.request_controls import build_reasoning_controls
 from agent.context_builder import BenchmarkContext, build_benchmark_context
+from agent.generic_agent.tools import GENERIC_TOOL_NAMES
 from agent.llm.config import (
     DEFAULT_CACHE_ENABLED,
     DEFAULT_CACHE_TTL,
@@ -16,7 +17,6 @@ from agent.llm.config import (
     DEFAULT_THINKING_TYPE,
 )
 from agent.prompts.generic_agent import build_generic_agent_prompt_parts, build_generic_output_format
-from agent.generic_agent.tools import GENERIC_TOOL_NAMES
 
 
 def build_generic_dataset_summary() -> str:

@@ -3,10 +3,10 @@ from __future__ import annotations
 import csv
 import io
 import random
+import zipfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
-import zipfile
 
 
 def _normalize_join_columns(columns: str | list[str] | None) -> list[str]:
@@ -114,10 +114,7 @@ def build_table_load_plan(
     full_load_max_bytes: int = DEFAULT_FULL_LOAD_MAX_BYTES,
     sample_row_count: int = DEFAULT_SAMPLE_ROW_COUNT,
 ) -> TableLoadPlan:
-    should_sample = (
-        inspection.estimated_cells > full_load_max_cells
-        or inspection.file_size_bytes > full_load_max_bytes
-    )
+    should_sample = inspection.estimated_cells > full_load_max_cells or inspection.file_size_bytes > full_load_max_bytes
     planned_sample_row_count = min(sample_row_count, inspection.row_count)
     if not should_sample or planned_sample_row_count == inspection.row_count:
         return TableLoadPlan(
@@ -223,11 +220,7 @@ def load_joined_training_view(
         raise ValueError("Joined training view requires non-empty join columns.")
 
     train_rows = load_csv_rows(train_path)
-    train_key_set = {
-        join_key
-        for row in train_rows
-        if (join_key := _build_join_key(row, left_columns)) is not None
-    }
+    train_key_set = {join_key for row in train_rows if (join_key := _build_join_key(row, left_columns)) is not None}
 
     filtered_lookup_rows: dict[str | tuple[str, ...], dict[str, str]] = {}
     archive, handle = _open_csv_text(lookup_path)

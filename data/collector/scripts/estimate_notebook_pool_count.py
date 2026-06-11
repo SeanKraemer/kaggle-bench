@@ -223,10 +223,7 @@ def main() -> None:
     parser.add_argument("--output-json", default=None)
     args = parser.parse_args()
 
-    cache_dir = Path(
-        args.kernel_cache_dir
-        or f"data/collector/data/kaggle/{args.competition}/notebooks"
-    )
+    cache_dir = Path(args.kernel_cache_dir or f"data/collector/data/kaggle/{args.competition}/notebooks")
     result = estimate_pool(
         competition=args.competition.strip(),
         min_count=max(1, args.min_count),
@@ -245,6 +242,7 @@ def main() -> None:
         out_path.parent.mkdir(parents=True, exist_ok=True)
         out_path.write_text(payload + "\n", encoding="utf-8")
     print(payload)
+
 
 # Usage example:
 # python3 data/collector/scripts/estimate_notebook_pool_count.py \

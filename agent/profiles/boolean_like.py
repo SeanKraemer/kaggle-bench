@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from agent.profiles._helpers import non_missing_values
 
-
 BOOLEAN_VALUE_SETS = [
     {"true", "false"},
     {"0", "1"},

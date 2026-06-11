@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from agent.prompts.shared import render_shared_prompt, render_shared_prompt_parts
 
-
 GENERIC_AGENT_INSTRUCTION = """Use only the generic tools exposed by this run:
 {tool_allowlist}
 
@@ -17,6 +16,7 @@ Do not use hidden action metadata, gold labels, evaluation results, or invented 
 Use only visible candidate actions and dataset/context evidence.
 Only return add IDs that are missing from the current context, and remove IDs that are present in current context_action_ids.
 Keep the repair compact and return only the required JSON prediction."""
+
 
 def build_generic_output_format() -> str:
     return (

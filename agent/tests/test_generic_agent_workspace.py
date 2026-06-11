@@ -75,9 +75,7 @@ class GenericAgentWorkspaceTests(unittest.TestCase):
             workspace = prepare_generic_workspace(
                 task_goal="Solve task.",
                 testcase={"testcase_id": "tc1"},
-                visible_actions=[
-                    {"action_id": "CA-1", "action_type": "JOIN_LOOKUP", "canonical_params": {}}
-                ],
+                visible_actions=[{"action_id": "CA-1", "action_type": "JOIN_LOOKUP", "canonical_params": {}}],
                 prompt="prompt",
                 dataset_root=dataset_root,
             )

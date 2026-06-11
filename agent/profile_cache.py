@@ -3,7 +3,6 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
-
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -32,14 +31,8 @@ def build_profile_cache_key(benchmark: BenchmarkContext) -> str:
         "task": benchmark.bundle.task,
         "visible_actions": benchmark.visible_actions,
         "dataset_paths": {
-            "train_files": [
-                _fingerprint_path(path)
-                for path in benchmark.dataset_paths.get("train_files", [])
-            ],
-            "lookup_files": [
-                _fingerprint_path(path)
-                for path in benchmark.dataset_paths.get("lookup_files", [])
-            ],
+            "train_files": [_fingerprint_path(path) for path in benchmark.dataset_paths.get("train_files", [])],
+            "lookup_files": [_fingerprint_path(path) for path in benchmark.dataset_paths.get("lookup_files", [])],
         },
     }
     encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")

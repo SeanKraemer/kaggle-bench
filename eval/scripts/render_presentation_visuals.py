@@ -19,27 +19,14 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 AGGREGATE_PATH = REPO_ROOT / "eval" / "aggregate.py"
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "eval" / "results" / "presentation" / "current"
 
 DEFAULT_SUCCESS_OUTPUT = (
-    REPO_ROOT
-    / "data"
-    / "tasks"
-    / "recruit-restaurant-visitor-forecasting"
-    / "outputs"
-    / "tc1_proposed_agent_try1.json"
+    REPO_ROOT / "data" / "tasks" / "recruit-restaurant-visitor-forecasting" / "outputs" / "tc1_proposed_agent_try1.json"
 )
-DEFAULT_STRUGGLE_OUTPUT = (
-    REPO_ROOT
-    / "data"
-    / "tasks"
-    / "lish-moa"
-    / "outputs"
-    / "tc4_proposed_agent_try1.json"
-)
+DEFAULT_STRUGGLE_OUTPUT = REPO_ROOT / "data" / "tasks" / "lish-moa" / "outputs" / "tc4_proposed_agent_try1.json"
 
 TESTCASE_ORDER = [
     "tc1_from_scratch",
@@ -377,7 +364,7 @@ def render_heatmap_svg(
         '<text class="title" x="36" y="48">Task Completion by Scenario</text>',
         (
             f'<text class="subtitle" x="36" y="76">Stage scope: {esc(report["stage_scope"])}; '
-            f'{esc(task_count_label)}; '
+            f"{esc(task_count_label)}; "
             "scenario cells are task completion, right column is binary success rate.</text>"
         ),
     ]
@@ -431,7 +418,7 @@ def render_heatmap_svg(
                 )
                 parts.append(
                     f'<text class="n" fill="{text_fill}" text-anchor="middle" '
-                    f'x="{x + (cell_w - 8) / 2}" y="{y + 58}">n={int(group_count)}</text>'
+                    f'x="{x + (cell_w - 8) / 2}" y="{y + 58}">n={int(group_count or 0)}</text>'
                 )
         if agent == "human" and row == 0 and len(agents) > 1:
             separator_y = y + cell_h - 4
@@ -495,9 +482,13 @@ def render_grouped_bar_svg(
     for tick in range(0, 6):
         value = tick / 5
         y = baseline - value * plot_height
-        parts.append(f'<line x1="{plot_left}" y1="{y:.1f}" x2="{plot_left + plot_width}" y2="{y:.1f}" stroke="#e5e7eb"/>')
+        parts.append(
+            f'<line x1="{plot_left}" y1="{y:.1f}" x2="{plot_left + plot_width}" y2="{y:.1f}" stroke="#e5e7eb"/>'
+        )
         parts.append(f'<text class="axis" text-anchor="end" x="{plot_left - 10}" y="{y + 4:.1f}">{value:.1f}</text>')
-    parts.append(f'<line x1="{plot_left}" y1="{baseline}" x2="{plot_left + plot_width}" y2="{baseline}" stroke="#111827"/>')
+    parts.append(
+        f'<line x1="{plot_left}" y1="{baseline}" x2="{plot_left + plot_width}" y2="{baseline}" stroke="#111827"/>'
+    )
     parts.append(f'<line x1="{plot_left}" y1="{plot_top}" x2="{plot_left}" y2="{baseline}" stroke="#111827"/>')
 
     for group_idx, group in enumerate(groups):
@@ -519,7 +510,9 @@ def render_grouped_bar_svg(
         label_x = group_x + group_w / 2
         label = OVERALL_SUCCESS_LABEL if group == OVERALL_SUCCESS_COLUMN else TESTCASE_LABELS[group]
         for idx, line in enumerate(label.splitlines()):
-            parts.append(f'<text class="label" text-anchor="middle" x="{label_x:.1f}" y="{baseline + 32 + idx * 17}">{esc(line)}</text>')
+            parts.append(
+                f'<text class="label" text-anchor="middle" x="{label_x:.1f}" y="{baseline + 32 + idx * 17}">{esc(line)}</text>'
+            )
 
     legend_x = 120
     legend_y = height - 74
@@ -634,7 +627,9 @@ def output_task_dir(output_path: Path) -> Path:
     raise ValueError(f"could not infer task directory from {output_path}")
 
 
-def evaluate_single_output(aggregate: Any, output_path: Path, stage_scope: str, success_threshold: float) -> dict[str, Any]:
+def evaluate_single_output(
+    aggregate: Any, output_path: Path, stage_scope: str, success_threshold: float
+) -> dict[str, Any]:
     output = load_json(output_path)
     task_dir = output_task_dir(output_path)
     testcase_path = task_dir / "testcases" / f"{output['testcase_id']}.json"
@@ -655,24 +650,14 @@ def build_trace_card(
     lesson: str,
 ) -> dict[str, Any]:
     result = evaluate_single_output(aggregate, output_path, stage_scope, success_threshold)
-    output = load_json(output_path)
     task_dir = output_task_dir(output_path)
     actions = action_map_for_task(task_dir)
     context_count = len(result["context_action_ids"])
     scenario = result["testcase_id"].replace("_", " ")
 
-    matched_add = [
-        short_action(item["predicted_action_id"], actions)
-        for item in result["add"]["matched_units"][:4]
-    ]
-    missed_remove = [
-        short_action(action_id, actions)
-        for action_id in result["remove"]["missed_action_ids"][:4]
-    ]
-    matched_remove = [
-        short_action(action_id, actions)
-        for action_id in result["remove"]["matched_action_ids"][:3]
-    ]
+    matched_add = [short_action(item["predicted_action_id"], actions) for item in result["add"]["matched_units"][:4]]
+    missed_remove = [short_action(action_id, actions) for action_id in result["remove"]["missed_action_ids"][:4]]
+    matched_remove = [short_action(action_id, actions) for action_id in result["remove"]["matched_action_ids"][:3]]
 
     if matched_add:
         decision_lines = ["Correct selected actions:", *[f"- {item}" for item in matched_add]]
@@ -729,7 +714,9 @@ def render_trace_cards_svg(output_path: Path, success_card: dict[str, Any], stru
     ]
 
     for card, accent, left in cards:
-        parts.append(f'<rect x="{left}" y="{top}" width="{card_w}" height="{card_h}" rx="12" fill="#ffffff" stroke="#d1d5db"/>')
+        parts.append(
+            f'<rect x="{left}" y="{top}" width="{card_w}" height="{card_h}" rx="12" fill="#ffffff" stroke="#d1d5db"/>'
+        )
         parts.append(f'<rect x="{left}" y="{top}" width="{card_w}" height="58" rx="12" fill="{accent}"/>')
         parts.append(f'<text class="cardTitle" x="{left + 24}" y="{top + 38}">{esc(card["title"])}</text>')
         y = top + 88
@@ -737,12 +724,12 @@ def render_trace_cards_svg(output_path: Path, success_card: dict[str, Any], stru
         y += 26
         parts.append(
             f'<text class="small" x="{left + 24}" y="{y}">{esc(card["scenario"])}; '
-            f'context actions: {card["context_count"]}</text>'
+            f"context actions: {card['context_count']}</text>"
         )
         y += 36
         parts.append(
             f'<text class="metric" x="{left + 24}" y="{y}">Completion {card["score"]:.2f} | '
-            f'Add F1 {card["add_f1"]:.2f} | Remove recall {card["remove_recall"]:.2f}</text>'
+            f"Add F1 {card['add_f1']:.2f} | Remove recall {card['remove_recall']:.2f}</text>"
         )
         y += 34
         parts.append(f'<text class="section" x="{left + 24}" y="{y}">Input -&gt; tool evidence</text>')
@@ -869,7 +856,7 @@ def write_html_dashboard(output_path: Path, output_dir: Path) -> None:
 <body>
   <h1>KaggleBench Results Visuals</h1>
   <p class="note">Generated from the current local benchmark artifacts.</p>
-  {''.join(sections)}
+  {"".join(sections)}
 </body>
 </html>
 """
@@ -883,7 +870,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--success-threshold", type=float, default=0.5)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--include-human", action="store_true", help=argparse.SUPPRESS)
-    parser.add_argument("--exclude-human", action="store_true", help="Exclude human reference from presentation charts.")
+    parser.add_argument(
+        "--exclude-human", action="store_true", help="Exclude human reference from presentation charts."
+    )
     parser.add_argument("--success-output", type=Path, default=DEFAULT_SUCCESS_OUTPUT)
     parser.add_argument("--struggle-output", type=Path, default=DEFAULT_STRUGGLE_OUTPUT)
     return parser.parse_args()

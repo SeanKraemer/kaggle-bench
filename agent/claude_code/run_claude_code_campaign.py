@@ -25,13 +25,11 @@ import zipfile
 from dataclasses import dataclass
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from agent.claude_code.runner import run_claude_code  # noqa: E402
-
 
 TASK_ORDER = [
     "zillow-prize-1",
@@ -129,9 +127,7 @@ def env_path(name: str) -> Path | None:
 def download_root() -> Path:
     configured = env_path(DOWNLOAD_ROOT_ENV)
     if configured is None:
-        raise RuntimeError(
-            f"{DOWNLOAD_ROOT_ENV} must point to the directory containing the benchmark task datasets."
-        )
+        raise RuntimeError(f"{DOWNLOAD_ROOT_ENV} must point to the directory containing the benchmark task datasets.")
     return configured
 
 
@@ -201,9 +197,7 @@ def extract_single_member_zip(src: Path, dest: Path) -> None:
         member_names = [
             name
             for name in archive.namelist()
-            if not name.endswith("/")
-            and "/__MACOSX/" not in f"/{name}"
-            and not Path(name).name.startswith("._")
+            if not name.endswith("/") and "/__MACOSX/" not in f"/{name}" and not Path(name).name.startswith("._")
         ]
         if len(member_names) != 1:
             raise RuntimeError(f"Expected exactly one CSV-like member inside {src}, found {len(member_names)}")
@@ -263,19 +257,13 @@ def verify_output(task_slug: str, testcase_id: str, run_id: str) -> None:
         ]
     )
     if result.returncode != 0:
-        raise RuntimeError(
-            "eval.py verification failed. "
-            f"stdout={result.stdout!r} stderr={result.stderr!r}"
-        )
+        raise RuntimeError(f"eval.py verification failed. stdout={result.stdout!r} stderr={result.stderr!r}")
 
 
 def validate_artifacts() -> None:
     result = run_command([sys.executable, "eval/scripts/validate_artifacts.py"])
     if result.returncode != 0:
-        raise RuntimeError(
-            "validate_artifacts.py failed. "
-            f"stdout={result.stdout!r} stderr={result.stderr!r}"
-        )
+        raise RuntimeError(f"validate_artifacts.py failed. stdout={result.stdout!r} stderr={result.stderr!r}")
 
 
 def verify_artifact_bundle(task_slug: str, testcase_id: str, run_id: str) -> dict[str, str]:
@@ -406,7 +394,11 @@ def run_single_target(target: RunTarget) -> int:
                 "error_excerpt": None,
             }
         )
-        print(json.dumps(worker_summary(True, target=target, created_paths=created_paths, failure_type=None, error_text=None)))
+        print(
+            json.dumps(
+                worker_summary(True, target=target, created_paths=created_paths, failure_type=None, error_text=None)
+            )
+        )
         return 0
     except Exception:
         pass
@@ -443,7 +435,11 @@ def run_single_target(target: RunTarget) -> int:
                 "error_excerpt": None,
             }
         )
-        print(json.dumps(worker_summary(True, target=target, created_paths=created_paths, failure_type=None, error_text=None)))
+        print(
+            json.dumps(
+                worker_summary(True, target=target, created_paths=created_paths, failure_type=None, error_text=None)
+            )
+        )
         return 0
     except Exception as exc:
         error_text = f"{exc}\n{traceback.format_exc()}"
@@ -460,7 +456,13 @@ def run_single_target(target: RunTarget) -> int:
                 "error_excerpt": excerpt(error_text),
             }
         )
-        print(json.dumps(worker_summary(False, target=target, created_paths=None, failure_type=failure_type, error_text=error_text)))
+        print(
+            json.dumps(
+                worker_summary(
+                    False, target=target, created_paths=None, failure_type=failure_type, error_text=error_text
+                )
+            )
+        )
         return 2 if failure_type == "rate_limit" else 1
 
 
@@ -534,8 +536,7 @@ def run_parallel_campaign() -> int:
         print_step(
             "Retry priority targets: "
             + ", ".join(
-                f"{task_slug}:{testcase_id}:{run_id}"
-                for task_slug, testcase_id, run_id in sorted(failed_target_keys)
+                f"{task_slug}:{testcase_id}:{run_id}" for task_slug, testcase_id, run_id in sorted(failed_target_keys)
             )
         )
 
@@ -543,7 +544,7 @@ def run_parallel_campaign() -> int:
     completed_count = len(done_targets)
 
     for offset in range(0, len(pending_targets), MAX_PARALLEL):
-        batch = pending_targets[offset: offset + MAX_PARALLEL]
+        batch = pending_targets[offset : offset + MAX_PARALLEL]
         print_step(
             "Launching batch: "
             + ", ".join(f"{target.seq}:{target.task_slug}:{target.testcase_id}:{target.run_id}" for target in batch)
@@ -649,8 +650,7 @@ def run_parallel_campaign() -> int:
             failure_summary["completed_count"] = completed_count
             failure_summary["last_success"] = last_success
             failure_summary["created_outputs"] = sorted(
-                str(output_path_for(task_slug, testcase_id, run_id))
-                for task_slug, testcase_id, run_id in done_targets
+                str(output_path_for(task_slug, testcase_id, run_id)) for task_slug, testcase_id, run_id in done_targets
             )
             print(json.dumps(failure_summary, indent=2), flush=True)
             return failure_exit_code or 1
@@ -662,8 +662,7 @@ def run_parallel_campaign() -> int:
         "failure_type": None,
         "error_excerpt": None,
         "created_outputs": sorted(
-            str(output_path_for(task_slug, testcase_id, run_id))
-            for task_slug, testcase_id, run_id in done_targets
+            str(output_path_for(task_slug, testcase_id, run_id)) for task_slug, testcase_id, run_id in done_targets
         ),
         "log_path": str(log_path),
     }
@@ -673,9 +672,7 @@ def run_parallel_campaign() -> int:
 
 def parse_worker_args(argv: list[str]) -> RunTarget:
     if len(argv) != 5 or argv[0] != "--worker":
-        raise SystemExit(
-            "Usage: run_claude_code_campaign.py --worker <task_slug> <testcase_id> <run_id> <seq>"
-        )
+        raise SystemExit("Usage: run_claude_code_campaign.py --worker <task_slug> <testcase_id> <run_id> <seq>")
     return RunTarget(seq=int(argv[4]), task_slug=argv[1], testcase_id=argv[2], run_id=argv[3])
 
 

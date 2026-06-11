@@ -122,7 +122,9 @@ class GenericAgentRunnerTests(unittest.TestCase):
         self.assertIn("generic tools", prompt_text.lower())
         self.assertIn('"entries": []', scratchpad_text)
         self.assertEqual(tool_calls_text, "")
-        self.assertEqual([tool["name"] for tool in captured["tools"]], ["bash", "python", "scratchpad_read", "scratchpad_write"])
+        self.assertEqual(
+            [tool["name"] for tool in captured["tools"]], ["bash", "python", "scratchpad_read", "scratchpad_write"]
+        )
         self.assertNotIn("api_calls_path", result)
 
     def test_run_generic_agent_writes_api_call_artifact_when_enabled(self) -> None:
@@ -148,14 +150,10 @@ class GenericAgentRunnerTests(unittest.TestCase):
 
             output_payload = json.loads(result["output_path"].read_text(encoding="utf-8"))
             api_calls_text = result["api_calls_path"].read_text(encoding="utf-8")
-            api_call_records = [
-                json.loads(line) for line in api_calls_text.splitlines() if line.strip()
-            ]
+            api_call_records = [json.loads(line) for line in api_calls_text.splitlines() if line.strip()]
 
         self.assertIn("api_calls_path", result)
-        self.assertTrue(
-            any(ref["kind"] == "api_calls" for ref in output_payload["artifact_refs"])
-        )
+        self.assertTrue(any(ref["kind"] == "api_calls" for ref in output_payload["artifact_refs"]))
         self.assertEqual(len(api_call_records), 1)
         self.assertEqual(api_call_records[0]["turn_index"], 1)
         self.assertEqual(api_call_records[0]["request"]["model"], "claude-sonnet-4-6")
@@ -259,30 +257,20 @@ class GenericAgentRunnerTests(unittest.TestCase):
                     capture_llm_calls=True,
                 )
 
-            match = re.search(
-                r"Workspace preserved at (.*?)\. Failed provenance", str(raised.exception)
-            )
+            match = re.search(r"Workspace preserved at (.*?)\. Failed provenance", str(raised.exception))
             self.assertIsNotNone(match)
             preserved = Path(match.group(1).strip())
             provenance_dir = task_dir / "outputs" / "provenance"
             failed_metadata = provenance_dir / "tc1_generic_agent_failed_try.failed.meta.json"
             failed_trace = provenance_dir / "tc1_generic_agent_failed_try.failed.trace.md"
             failed_prompt = provenance_dir / "tc1_generic_agent_failed_try.failed.prompt.md"
-            failed_scratchpad = (
-                provenance_dir / "tc1_generic_agent_failed_try.failed.scratchpad.json"
-            )
-            failed_tool_calls = (
-                provenance_dir / "tc1_generic_agent_failed_try.failed.tool_calls.jsonl"
-            )
-            failed_api_calls = (
-                provenance_dir / "tc1_generic_agent_failed_try.failed.api_calls.jsonl"
-            )
+            failed_scratchpad = provenance_dir / "tc1_generic_agent_failed_try.failed.scratchpad.json"
+            failed_tool_calls = provenance_dir / "tc1_generic_agent_failed_try.failed.tool_calls.jsonl"
+            failed_api_calls = provenance_dir / "tc1_generic_agent_failed_try.failed.api_calls.jsonl"
             try:
                 self.assertTrue(preserved.exists())
                 self.assertTrue((preserved / "PROMPT.md").exists())
-                self.assertFalse(
-                    (task_dir / "outputs" / "tc1_generic_agent_failed_try.json").exists()
-                )
+                self.assertFalse((task_dir / "outputs" / "tc1_generic_agent_failed_try.json").exists())
                 self.assertTrue(failed_metadata.exists())
                 self.assertTrue(failed_trace.exists())
                 self.assertTrue(failed_prompt.exists())
@@ -294,9 +282,7 @@ class GenericAgentRunnerTests(unittest.TestCase):
                 self.assertTrue(metadata["workspace_preserved"])
                 self.assertEqual(metadata["workspace_path"], str(preserved))
                 self.assertEqual(metadata["api_call_count"], 1)
-                self.assertTrue(
-                    any(ref["kind"] == "api_calls" for ref in metadata["artifact_refs"])
-                )
+                self.assertTrue(any(ref["kind"] == "api_calls" for ref in metadata["artifact_refs"]))
                 api_records = [
                     json.loads(line)
                     for line in failed_api_calls.read_text(encoding="utf-8").splitlines()

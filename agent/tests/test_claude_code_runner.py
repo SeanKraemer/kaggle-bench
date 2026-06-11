@@ -8,7 +8,6 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-
 ROOT = Path(__file__).resolve().parents[2]
 RUNNER_PATH = ROOT / "agent" / "claude_code" / "runner.py"
 WORKSPACE_PATH = ROOT / "agent" / "claude_code" / "workspace.py"
@@ -232,7 +231,13 @@ class ClaudeCodeRunnerTests(unittest.TestCase):
         self.assertEqual(output_payload["artifact_refs"][2]["kind"], "prompt")
         self.assertEqual(
             captured["candidate_actions_payload"],
-            [{"action_id": "CA-1", "action_type": "JOIN_LOOKUP", "canonical_params": {"how": "left", "right_table_id": "properties_2016"}}],
+            [
+                {
+                    "action_id": "CA-1",
+                    "action_type": "JOIN_LOOKUP",
+                    "canonical_params": {"how": "left", "right_table_id": "properties_2016"},
+                }
+            ],
         )
 
     def test_run_claude_code_persists_failure_provenance_for_invalid_prediction_text(self) -> None:
@@ -561,9 +566,7 @@ class ClaudeCodeRunnerTests(unittest.TestCase):
                                     "outputTokens": 20,
                                 }
                             },
-                            "permission_denials": [
-                                {"tool_name": "Bash", "tool_use_id": "toolu_denied"}
-                            ],
+                            "permission_denials": [{"tool_name": "Bash", "tool_use_id": "toolu_denied"}],
                         }
                     ),
                 ]

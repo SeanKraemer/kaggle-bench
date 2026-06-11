@@ -20,9 +20,9 @@ from agent.llm.config import (
     DEFAULT_REASONING_EFFORT,
     DEFAULT_REASONING_ENABLED,
     DEFAULT_REQUEST_TIMEOUT_SECONDS,
+    DEFAULT_TEMPERATURE,
     DEFAULT_THINKING_DISPLAY,
     DEFAULT_THINKING_TYPE,
-    DEFAULT_TEMPERATURE,
 )
 from agent.single_llm.execution import run_single_llm_execution
 from agent.single_llm.output import write_single_llm_output_bundle

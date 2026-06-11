@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
 WORKSPACE_ROOT = ROOT.parents[1] if ROOT.parent.name == "worktrees" else ROOT
 DEFAULT_API_KEY_PATH = ROOT / "api_key.txt"

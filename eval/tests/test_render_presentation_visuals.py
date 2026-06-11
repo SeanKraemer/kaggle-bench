@@ -7,7 +7,6 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-
 ROOT = Path(__file__).resolve().parents[2]
 PRESENTATION_PATH = ROOT / "eval" / "scripts" / "render_presentation_visuals.py"
 

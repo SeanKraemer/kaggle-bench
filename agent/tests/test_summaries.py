@@ -4,7 +4,6 @@ import importlib.util
 import unittest
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[2]
 SUMMARIES_PATH = ROOT / "agent" / "summaries.py"
 
@@ -24,7 +23,10 @@ class SummaryRenderingTests(unittest.TestCase):
 
         text = summaries.render_dataset_summary(
             task={"goal": "predict logerror", "dataset": {"target_column": "logerror", "primary_key": "parcelid"}},
-            dataset_paths={"train_files": [Path("/tmp/train_2016_v2.csv")], "lookup_files": [Path("/tmp/properties_2016.csv")]},
+            dataset_paths={
+                "train_files": [Path("/tmp/train_2016_v2.csv")],
+                "lookup_files": [Path("/tmp/properties_2016.csv")],
+            },
             table_profiles=[
                 {
                     "table_name": "train_2016_v2.csv",
@@ -110,7 +112,10 @@ class SummaryRenderingTests(unittest.TestCase):
         summaries = load_summaries_module()
 
         text = summaries.render_context_summary(
-            testcase={"testcase_id": "tc3_fault_injected", "input": {"scenario": "fault_injected", "context_action_ids": ["CA-1", "CA-2"]}}
+            testcase={
+                "testcase_id": "tc3_fault_injected",
+                "input": {"scenario": "fault_injected", "context_action_ids": ["CA-1", "CA-2"]},
+            }
         )
 
         self.assertIn("fault_injected", text)
@@ -120,9 +125,7 @@ class SummaryRenderingTests(unittest.TestCase):
     def test_render_candidate_actions_json_serializes_rows(self) -> None:
         summaries = load_summaries_module()
 
-        text = summaries.render_candidate_actions_json(
-            [{"action_id": "CA-1", "action_type": "JOIN_LOOKUP"}]
-        )
+        text = summaries.render_candidate_actions_json([{"action_id": "CA-1", "action_type": "JOIN_LOOKUP"}])
 
         self.assertIn('"action_id": "CA-1"', text)
 
@@ -131,7 +134,10 @@ class SummaryRenderingTests(unittest.TestCase):
 
         text = summaries.render_single_llm_dataset_summary(
             task={"goal": "predict logerror", "dataset": {"target_column": "logerror", "primary_key": "parcelid"}},
-            dataset_paths={"train_files": [Path("/tmp/train_2016_v2.csv")], "lookup_files": [Path("/tmp/properties_2016.csv")]},
+            dataset_paths={
+                "train_files": [Path("/tmp/train_2016_v2.csv")],
+                "lookup_files": [Path("/tmp/properties_2016.csv")],
+            },
             visible_actions=[
                 {
                     "action_id": "CA-1",

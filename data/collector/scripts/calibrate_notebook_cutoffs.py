@@ -112,7 +112,11 @@ def write_report(
             passes = sum(1 for count in counts if count >= threshold)
             rate = (passes / total) if total else 0.0
             lines.append(f"| {cutoff} | {threshold} | {passes} | {total} | {rate:.3f} |")
-            if threshold == target_min and recommendation["recommended_votes_rank_cutoff"] is None and rate >= target_pass_rate:
+            if (
+                threshold == target_min
+                and recommendation["recommended_votes_rank_cutoff"] is None
+                and rate >= target_pass_rate
+            ):
                 recommendation["recommended_votes_rank_cutoff"] = cutoff
 
     lines.extend(

@@ -40,7 +40,9 @@ def variance(values: list[float]) -> float:
 
 
 def load_output_metadata(input_path: Path, output_artifact: dict[str, Any]) -> dict[str, Any] | None:
-    metadata_ref = next((ref for ref in output_artifact.get("artifact_refs", []) if ref.get("kind") == "metadata"), None)
+    metadata_ref = next(
+        (ref for ref in output_artifact.get("artifact_refs", []) if ref.get("kind") == "metadata"), None
+    )
     if metadata_ref is None:
         return None
 
@@ -112,8 +114,7 @@ def analyze_selected_action_set(
     return {
         "is_valid": not conflict_pairs and not cycle_action_ids,
         "conflict_pairs": [
-            {"left_action_id": left, "right_action_id": right}
-            for left, right in sorted(conflict_pairs)
+            {"left_action_id": left, "right_action_id": right} for left, right in sorted(conflict_pairs)
         ],
         "cycle_action_ids": cycle_action_ids,
     }
@@ -284,7 +285,9 @@ def build_invalid_add_details(
     return details
 
 
-def compute_side_metrics(expected_count: int, true_positive_count: int, false_positive_count: int) -> dict[str, float | int]:
+def compute_side_metrics(
+    expected_count: int, true_positive_count: int, false_positive_count: int
+) -> dict[str, float | int]:
     false_negative_count = expected_count - true_positive_count
     predicted_count = true_positive_count + false_positive_count
 
@@ -322,7 +325,9 @@ def evaluate_add_side(
     stage_scope: str,
     final_state_analysis: dict[str, Any],
 ) -> dict[str, Any]:
-    expected_units, predicted_action_to_unit_key = derive_expected_add_units(action_by_id, context_action_ids, stage_scope)
+    expected_units, predicted_action_to_unit_key = derive_expected_add_units(
+        action_by_id, context_action_ids, stage_scope
+    )
     expected_unit_keys = set(expected_units)
 
     active_predicted_add_action_ids, invalid_predictions, stage_filtered_predictions = classify_predictions(
@@ -387,11 +392,7 @@ def evaluate_add_side(
 
     metrics = compute_side_metrics(len(expected_units), true_positive_count, false_positive_count)
     missed_units = sort_units(
-        [
-            unit
-            for unit_key_value, unit in expected_units.items()
-            if unit_key_value not in satisfied_unit_keys
-        ]
+        [unit for unit_key_value, unit in expected_units.items() if unit_key_value not in satisfied_unit_keys]
     )
 
     return {
@@ -475,7 +476,9 @@ def evaluate_remove_side(
     }
 
 
-def build_summary(add_result: dict[str, Any], remove_result: dict[str, Any], success_threshold: float) -> dict[str, Any]:
+def build_summary(
+    add_result: dict[str, Any], remove_result: dict[str, Any], success_threshold: float
+) -> dict[str, Any]:
     task_completion_score = 0.5 * add_result["add_f1"] + 0.5 * remove_result["remove_recall"]
     strict_task_completion_score = 0.5 * add_result["add_f1"] + 0.5 * remove_result["remove_f1"]
     return {
@@ -504,7 +507,9 @@ def evaluate(
         raise SystemExit("testcase_id mismatch between testcase and input")
 
     raw_context_action_ids = testcase["input"]["context_action_ids"]
-    unknown_context_action_ids = sorted(action_id for action_id in raw_context_action_ids if action_id not in action_by_id)
+    unknown_context_action_ids = sorted(
+        action_id for action_id in raw_context_action_ids if action_id not in action_by_id
+    )
     if unknown_context_action_ids:
         raise SystemExit(f"unknown context_action_ids in testcase: {', '.join(unknown_context_action_ids)}")
     context_action_ids = set(raw_context_action_ids)
@@ -523,7 +528,9 @@ def evaluate(
         action_by_id=action_by_id,
         stage_scope=stage_scope,
     )
-    final_state_action_ids = (context_action_ids - set(active_predicted_remove_action_ids)) | set(active_predicted_add_action_ids)
+    final_state_action_ids = (context_action_ids - set(active_predicted_remove_action_ids)) | set(
+        active_predicted_add_action_ids
+    )
     final_state_analysis = analyze_selected_action_set(final_state_action_ids, action_by_id)
 
     add_result = evaluate_add_side(
@@ -589,7 +596,10 @@ def evaluate_many(
         raise SystemExit("at least one input file is required")
 
     first = runs[0]
-    if any(run["competition_slug"] != first["competition_slug"] or run["testcase_id"] != first["testcase_id"] for run in runs):
+    if any(
+        run["competition_slug"] != first["competition_slug"] or run["testcase_id"] != first["testcase_id"]
+        for run in runs
+    ):
         raise SystemExit("all inputs must belong to the same competition_slug and testcase_id")
     if any(run["agent_name"] != first["agent_name"] for run in runs):
         raise SystemExit("pass@k aggregation requires all inputs to come from the same agent_name")
@@ -608,7 +618,9 @@ def evaluate_many(
         "run_success_rate": round_metric(sum(1 for flag in success_flags if flag) / len(runs)),
         "task_completion_score_mean": round_metric(sum(task_completion_scores) / len(task_completion_scores)),
         "task_completion_score_variance": variance(task_completion_scores),
-        "strict_task_completion_score_mean": round_metric(sum(strict_task_completion_scores) / len(strict_task_completion_scores)),
+        "strict_task_completion_score_mean": round_metric(
+            sum(strict_task_completion_scores) / len(strict_task_completion_scores)
+        ),
         "add_f1_mean": round_metric(sum(add_f1_scores) / len(add_f1_scores)),
         "remove_f1_mean": round_metric(sum(remove_f1_scores) / len(remove_f1_scores)),
         "rollback_accuracy_mean": round_metric(sum(remove_recalls) / len(remove_recalls)),

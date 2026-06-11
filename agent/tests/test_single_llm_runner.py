@@ -6,7 +6,6 @@ import tempfile
 import unittest
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[2]
 RUNNER_PATH = ROOT / "agent" / "single_llm" / "runner.py"
 
@@ -108,7 +107,9 @@ class SingleLLMRunnerTests(unittest.TestCase):
     def test_parse_prediction_text_extracts_wrapped_json(self) -> None:
         from agent.single_llm.parsing import parse_prediction_text
 
-        parsed = parse_prediction_text('prefix {"predicted_add_action_ids": ["CA-1"], "predicted_remove_action_ids": []} suffix')
+        parsed = parse_prediction_text(
+            'prefix {"predicted_add_action_ids": ["CA-1"], "predicted_remove_action_ids": []} suffix'
+        )
 
         self.assertEqual(parsed["predicted_add_action_ids"], ["CA-1"])
         self.assertEqual(parsed["predicted_remove_action_ids"], [])
@@ -117,7 +118,7 @@ class SingleLLMRunnerTests(unittest.TestCase):
         from agent.single_llm.parsing import parse_prediction_text
 
         parsed = parse_prediction_text(
-            '\n'.join(
+            "\n".join(
                 [
                     "Here is the prediction:",
                     '{"predicted_add_action_ids": ["CA-1"], "predicted_remove_action_ids": []}',
@@ -134,7 +135,7 @@ class SingleLLMRunnerTests(unittest.TestCase):
         from agent.single_llm.parsing import parse_prediction_text
 
         parsed = parse_prediction_text(
-            '\n'.join(
+            "\n".join(
                 [
                     "Template:",
                     '{"predicted_add_action_ids": [], "predicted_remove_action_ids": []}',
@@ -155,7 +156,7 @@ class SingleLLMRunnerTests(unittest.TestCase):
             "prediction payload must include predicted_add_action_ids and predicted_remove_action_ids",
         ):
             parse_prediction_text(
-                '\n'.join(
+                "\n".join(
                     [
                         "Debug note:",
                         '{"irrelevant": true}',

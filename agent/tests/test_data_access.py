@@ -5,7 +5,6 @@ import sys
 import unittest
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[2]
 DATA_ACCESS_PATH = ROOT / "agent" / "data_access.py"
 

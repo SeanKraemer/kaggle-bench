@@ -10,7 +10,6 @@ from pathlib import Path
 
 import agent.context_builder as shared_context_builder
 
-
 ROOT = Path(__file__).resolve().parents[2]
 MODULE_PATH = ROOT / "agent" / "single_llm" / "request_context.py"
 

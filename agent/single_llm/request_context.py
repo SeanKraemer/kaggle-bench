@@ -15,9 +15,9 @@ from agent.llm.config import (
     DEFAULT_CACHE_TYPE,
     DEFAULT_REASONING_EFFORT,
     DEFAULT_REASONING_ENABLED,
+    DEFAULT_TEMPERATURE,
     DEFAULT_THINKING_DISPLAY,
     DEFAULT_THINKING_TYPE,
-    DEFAULT_TEMPERATURE,
 )
 from agent.prompts.single_llm import build_single_llm_prompt_parts
 from agent.summaries import render_single_llm_dataset_summary

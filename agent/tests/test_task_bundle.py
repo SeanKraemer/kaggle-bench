@@ -4,7 +4,6 @@ import importlib.util
 import unittest
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[2]
 TASK_BUNDLE_PATH = ROOT / "agent" / "task_bundle.py"
 ZILLOW_TASK_DIR = ROOT / "data" / "tasks" / "zillow-prize-1"

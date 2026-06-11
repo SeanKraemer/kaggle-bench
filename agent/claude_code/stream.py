@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 
-
 TOOL_TYPES = {"tool_use", "server_tool_use", "mcp_tool_use"}
 
 
@@ -139,9 +138,7 @@ def collect_assistant_messages(events: list[dict]) -> list[str]:
         if not isinstance(content, list):
             continue
         text_parts = [
-            block.get("text", "")
-            for block in content
-            if isinstance(block, dict) and block.get("type") == "text"
+            block.get("text", "") for block in content if isinstance(block, dict) and block.get("type") == "text"
         ]
         text = "".join(text_parts).strip()
         if text:

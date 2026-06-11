@@ -144,7 +144,9 @@ def combo_strictness(combo: ThresholdCombo) -> tuple[float, ...]:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Calibrate QA gate thresholds from competition-level evaluation metrics")
+    parser = argparse.ArgumentParser(
+        description="Calibrate QA gate thresholds from competition-level evaluation metrics"
+    )
     parser.add_argument("--metrics-csv", default="data/reports/qa_metrics.csv")
     parser.add_argument("--min-fe-notebooks", default="30")
     parser.add_argument("--min-precision", default="0.70,0.75,0.80")
@@ -204,11 +206,7 @@ def main() -> None:
             }
         )
 
-    candidates = [
-        row
-        for row in evaluation_rows
-        if row["pass_count"] >= max(1, args.min_pass_competitions)
-    ]
+    candidates = [row for row in evaluation_rows if row["pass_count"] >= max(1, args.min_pass_competitions)]
     if candidates:
         candidates.sort(
             key=lambda item: (

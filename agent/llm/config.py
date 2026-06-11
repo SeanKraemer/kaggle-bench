@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-
 DEFAULT_MODEL_NAME = "claude-sonnet-4-6"
 DEFAULT_MAX_TOKENS = 8192
 DEFAULT_TEMPERATURE = 0.0

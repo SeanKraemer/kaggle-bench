@@ -255,7 +255,9 @@ def write_overview(
     lines.append("")
     lines.append("## Selection Notes")
     lines.append("")
-    lines.append("- `summary`, `difficulty(1-5)`, `fe_complexity(1-5)`, `domain` columns are left blank for manual curation.")
+    lines.append(
+        "- `summary`, `difficulty(1-5)`, `fe_complexity(1-5)`, `domain` columns are left blank for manual curation."
+    )
     lines.append("- `high_quality_fe_notebooks_count` is initialized to `0` and updated after notebook collection.")
     output_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
@@ -270,9 +272,7 @@ def main() -> None:
     only_closed = parse_bool(args.only_closed)
     refresh_files = parse_bool(args.refresh_files_metadata)
 
-    allowlist = {
-        item.strip().lower() for item in args.category_allowlist.split(",") if item.strip()
-    }
+    allowlist = {item.strip().lower() for item in args.category_allowlist.split(",") if item.strip()}
     now_utc = datetime.now(timezone.utc)
 
     all_competitions = load_competitions(Path(args.input))

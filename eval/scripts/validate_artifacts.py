@@ -447,7 +447,9 @@ def validate_output_payload(
     if isinstance(predicted_add, list) and isinstance(predicted_remove, list):
         overlap = sorted(set(predicted_add) & set(predicted_remove))
         for action_id in overlap:
-            errors.append(f"action `{action_id}` cannot appear in both predicted_add_action_ids and predicted_remove_action_ids")
+            errors.append(
+                f"action `{action_id}` cannot appear in both predicted_add_action_ids and predicted_remove_action_ids"
+            )
 
     return errors
 
@@ -460,7 +462,9 @@ def main() -> int:
     shared_schema_dir = data_dir / "schema"
 
     task_validator = load_validator(shared_schema_dir / "task.schema.json")
-    task_bucket_criteria_validator = load_validator(shared_schema_dir / "task_characteristic_bucket_criteria.schema.json")
+    task_bucket_criteria_validator = load_validator(
+        shared_schema_dir / "task_characteristic_bucket_criteria.schema.json"
+    )
     candidate_validator = load_validator(schema_dir / "candidate_actions.schema.json")
     testcase_validator = load_validator(schema_dir / "testcase.schema.json")
     output_validator = load_validator(schema_dir / "output.schema.json")
@@ -483,7 +487,9 @@ def main() -> int:
         raise SystemExit(f"Schema validation failed: expected object in {task_bucket_criteria_path}")
 
     total_errors = 0
-    task_dirs = sorted(path for path in tasks_dir.iterdir() if path.is_dir() and (path / "candidate_actions.json").exists())
+    task_dirs = sorted(
+        path for path in tasks_dir.iterdir() if path.is_dir() and (path / "candidate_actions.json").exists()
+    )
 
     for task_dir in task_dirs:
         task_path = task_dir / "task.json"

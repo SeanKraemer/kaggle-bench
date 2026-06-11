@@ -8,7 +8,6 @@ from agent.prediction_validation import (
     validate_prediction_payload,
 )
 
-
 __all__ = [
     "parse_prediction_text",
     "normalize_action_id_list",

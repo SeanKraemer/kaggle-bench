@@ -139,7 +139,9 @@ def main() -> None:
         for uncommon_min in uncommon_thresholds:
             if uncommon_min >= common_min:
                 continue
-            preds = [classify_rareness(p.support_ratio, common_min=common_min, uncommon_min=uncommon_min) for p in points]
+            preds = [
+                classify_rareness(p.support_ratio, common_min=common_min, uncommon_min=uncommon_min) for p in points
+            ]
             distribution = Counter(preds)
 
             if labeled_points:
@@ -167,7 +169,9 @@ def main() -> None:
             )
 
     # Prefer the strictest confidence cutoff that still retains at least 70% of actions.
-    eligible_conf_cutoffs = [float(row["threshold_1"]) for row in confidence_rows if float(row["retained_rate"]) >= 0.70]
+    eligible_conf_cutoffs = [
+        float(row["threshold_1"]) for row in confidence_rows if float(row["retained_rate"]) >= 0.70
+    ]
     if eligible_conf_cutoffs:
         recommended_conf = max(eligible_conf_cutoffs)
     else:

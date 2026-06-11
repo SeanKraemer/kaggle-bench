@@ -52,12 +52,8 @@ def render_trace_markdown(title: str, trace_entries: list[dict]) -> str:
             lines.append("### Prediction Summary")
             lines.append(f"- Parsed add ids: `{prediction.get('predicted_add_action_ids', [])}`")
             lines.append(f"- Parsed remove ids: `{prediction.get('predicted_remove_action_ids', [])}`")
-            lines.append(
-                f"- Parsed add count: `{len(prediction.get('predicted_add_action_ids', []))}`"
-            )
-            lines.append(
-                f"- Parsed remove count: `{len(prediction.get('predicted_remove_action_ids', []))}`"
-            )
+            lines.append(f"- Parsed add count: `{len(prediction.get('predicted_add_action_ids', []))}`")
+            lines.append(f"- Parsed remove count: `{len(prediction.get('predicted_remove_action_ids', []))}`")
             lines.append("")
             if prediction.get("notes"):
                 lines.append("### Model Notes")
@@ -66,9 +62,7 @@ def render_trace_markdown(title: str, trace_entries: list[dict]) -> str:
             if prediction.get("action_rationales"):
                 lines.append("### Action Rationales")
                 for rationale in prediction["action_rationales"]:
-                    lines.append(
-                        f"- `{rationale['action_id']}` (`{rationale['decision']}`): {rationale['reason']}"
-                    )
+                    lines.append(f"- `{rationale['action_id']}` (`{rationale['decision']}`): {rationale['reason']}")
                 lines.append("")
         if entry.get("validation_warnings"):
             lines.append("### Validation Warnings")

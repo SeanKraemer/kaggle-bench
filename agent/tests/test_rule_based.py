@@ -4,7 +4,6 @@ import importlib.util
 import unittest
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[2]
 POLICY_PATH = ROOT / "agent" / "rule_based" / "policy.py"
 DECISION_RECORDS_PATH = ROOT / "agent" / "rule_based" / "decision_records.py"
@@ -55,16 +54,56 @@ class RuleBasedPolicyTests(unittest.TestCase):
     def test_predict_actions_adds_conservative_core_steps(self) -> None:
         policy = load_policy_module()
         actions = [
-            {"action_id": "CA-JOIN-GOOD", "action_type": "JOIN_LOOKUP", "canonical_params": {"how": "left", "right_table_id": "lookup_table"}},
-            {"action_id": "CA-JOIN-BAD", "action_type": "JOIN_LOOKUP", "canonical_params": {"how": "outer", "right_table_id": "lookup_table"}},
-            {"action_id": "CA-PARSE", "action_type": "PARSE_DATETIME", "canonical_params": {"columns": ["transactiondate"]}},
-            {"action_id": "CA-MEDIAN", "action_type": "IMPUTE_MISSING", "canonical_params": {"strategy": "median", "columns": ["feature_num"]}},
-            {"action_id": "CA-DROP", "action_type": "DROP_COLUMNS", "canonical_params": {"columns": ["entity_id", "target_value", "event_date"]}},
-            {"action_id": "CA-ONEHOT", "action_type": "ENCODE_CATEGORICAL", "canonical_params": {"method": "onehot", "columns": ["category_code"]}},
-            {"action_id": "CA-DATEPART", "action_type": "DATE_PART_FEATURE", "canonical_params": {"date_columns": ["event_date"], "parts": ["month"], "drop_original": False}},
-            {"action_id": "CA-INDICATOR", "action_type": "CREATE_MISSING_INDICATOR", "canonical_params": {"columns": ["feature_num"], "indicator_suffix": "_missing"}},
-            {"action_id": "CA-HIGHNULL", "action_type": "DROP_HIGH_NULL_COLUMNS", "canonical_params": {"columns": ["mostly_null"], "null_ratio_threshold": 0.9}},
-            {"action_id": "CA-CLIP", "action_type": "CLIP_OUTLIERS", "canonical_params": {"columns": ["heavy_tail"], "method": "iqr", "iqr_k": 1.5}},
+            {
+                "action_id": "CA-JOIN-GOOD",
+                "action_type": "JOIN_LOOKUP",
+                "canonical_params": {"how": "left", "right_table_id": "lookup_table"},
+            },
+            {
+                "action_id": "CA-JOIN-BAD",
+                "action_type": "JOIN_LOOKUP",
+                "canonical_params": {"how": "outer", "right_table_id": "lookup_table"},
+            },
+            {
+                "action_id": "CA-PARSE",
+                "action_type": "PARSE_DATETIME",
+                "canonical_params": {"columns": ["transactiondate"]},
+            },
+            {
+                "action_id": "CA-MEDIAN",
+                "action_type": "IMPUTE_MISSING",
+                "canonical_params": {"strategy": "median", "columns": ["feature_num"]},
+            },
+            {
+                "action_id": "CA-DROP",
+                "action_type": "DROP_COLUMNS",
+                "canonical_params": {"columns": ["entity_id", "target_value", "event_date"]},
+            },
+            {
+                "action_id": "CA-ONEHOT",
+                "action_type": "ENCODE_CATEGORICAL",
+                "canonical_params": {"method": "onehot", "columns": ["category_code"]},
+            },
+            {
+                "action_id": "CA-DATEPART",
+                "action_type": "DATE_PART_FEATURE",
+                "canonical_params": {"date_columns": ["event_date"], "parts": ["month"], "drop_original": False},
+            },
+            {
+                "action_id": "CA-INDICATOR",
+                "action_type": "CREATE_MISSING_INDICATOR",
+                "canonical_params": {"columns": ["feature_num"], "indicator_suffix": "_missing"},
+            },
+            {
+                "action_id": "CA-HIGHNULL",
+                "action_type": "DROP_HIGH_NULL_COLUMNS",
+                "canonical_params": {"columns": ["mostly_null"], "null_ratio_threshold": 0.9},
+            },
+            {
+                "action_id": "CA-CLIP",
+                "action_type": "CLIP_OUTLIERS",
+                "canonical_params": {"columns": ["heavy_tail"], "method": "iqr", "iqr_k": 1.5},
+            },
         ]
 
         predictions = policy.predict_actions(
@@ -75,7 +114,11 @@ class RuleBasedPolicyTests(unittest.TestCase):
                 "schema_profile": {
                     "row_count": 100,
                     "columns": {
-                        "transactiondate": {"inferred_type": "datetime_like", "distinct_count": 90, "distinct_ratio": 0.9},
+                        "transactiondate": {
+                            "inferred_type": "datetime_like",
+                            "distinct_count": 90,
+                            "distinct_ratio": 0.9,
+                        },
                         "event_date": {"inferred_type": "datetime_like", "distinct_count": 90, "distinct_ratio": 0.9},
                         "entity_id": {"inferred_type": "integer_like", "distinct_count": 100, "distinct_ratio": 1.0},
                         "target_value": {"inferred_type": "numeric_like", "distinct_count": 100, "distinct_ratio": 1.0},
@@ -85,7 +128,9 @@ class RuleBasedPolicyTests(unittest.TestCase):
                         "heavy_tail": {"inferred_type": "numeric_like", "distinct_count": 80, "distinct_ratio": 0.8},
                     },
                 },
-                "missingness_profile": {"columns": {"feature_num": {"missing_rate": 0.3}, "mostly_null": {"missing_rate": 0.96}}},
+                "missingness_profile": {
+                    "columns": {"feature_num": {"missing_rate": 0.3}, "mostly_null": {"missing_rate": 0.96}}
+                },
                 "numeric_profile": {
                     "columns": {
                         "feature_num": {"min": 0.0, "max": 10.0, "p25": 1.0, "p75": 3.0, "distinct_count": 10},
@@ -114,9 +159,17 @@ class RuleBasedPolicyTests(unittest.TestCase):
     def test_predict_actions_removes_obviously_bad_context_actions(self) -> None:
         policy = load_policy_module()
         actions = [
-            {"action_id": "CA-BAD-JOIN", "action_type": "JOIN_LOOKUP", "canonical_params": {"how": "outer", "right_table_id": "lookup_table"}},
+            {
+                "action_id": "CA-BAD-JOIN",
+                "action_type": "JOIN_LOOKUP",
+                "canonical_params": {"how": "outer", "right_table_id": "lookup_table"},
+            },
             {"action_id": "CA-BAD-DROP", "action_type": "DROP_COLUMNS", "canonical_params": {"columns": ["entity_id"]}},
-            {"action_id": "CA-BAD-FILTER", "action_type": "FILTER_ROWS", "canonical_params": {"predicate": "(measurement > -0.04) and (measurement < 0.04)"}},
+            {
+                "action_id": "CA-BAD-FILTER",
+                "action_type": "FILTER_ROWS",
+                "canonical_params": {"predicate": "(measurement > -0.04) and (measurement < 0.04)"},
+            },
         ]
 
         predictions = policy.predict_actions(
@@ -131,7 +184,11 @@ class RuleBasedPolicyTests(unittest.TestCase):
                     }
                 },
                 "missingness_profile": {"columns": {}},
-                "numeric_profile": {"columns": {"measurement": {"min": -10.0, "max": 10.0, "p25": -2.0, "p75": 2.0, "distinct_count": 80}}},
+                "numeric_profile": {
+                    "columns": {
+                        "measurement": {"min": -10.0, "max": 10.0, "p25": -2.0, "p75": 2.0, "distinct_count": 80}
+                    }
+                },
                 "boolean_like_profile": {"columns": {}},
                 "target_column": "target_value",
                 "primary_key": "entity_id",
@@ -147,7 +204,11 @@ class RuleBasedPolicyTests(unittest.TestCase):
     def test_predict_actions_removes_incompatible_context_families(self) -> None:
         policy = load_policy_module()
         actions = [
-            {"action_id": "CA-BAD-PARSE", "action_type": "PARSE_DATETIME", "canonical_params": {"columns": ["region_code"]}},
+            {
+                "action_id": "CA-BAD-PARSE",
+                "action_type": "PARSE_DATETIME",
+                "canonical_params": {"columns": ["region_code"]},
+            },
             {
                 "action_id": "CA-BAD-DATEPART",
                 "action_type": "DATE_PART_FEATURE",

@@ -6,7 +6,6 @@ import tempfile
 import unittest
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[2]
 VALIDATOR_PATH = ROOT / "eval" / "scripts" / "validate_artifacts.py"
 
@@ -207,6 +206,7 @@ class ValidatorHelperTests(unittest.TestCase):
         self.assertTrue(any("already in testcase context" in message for message in errors))
         self.assertTrue(any("unknown candidate action `CA-UNKNOWN`" in message for message in errors))
         self.assertTrue(any("action `CA-B` is not in testcase context" in message for message in errors))
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -5,8 +5,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from agent.agentic_core.request_controls import build_reasoning_controls
 from agent.agentic_core.execution import run_agentic_loop
+from agent.agentic_core.request_controls import build_reasoning_controls
 from agent.agentic_core.scratchpad import DEFAULT_SCRATCHPAD_MAX_CHARS, JsonScratchpad
 from agent.agentic_core.scratchpad_tools import build_scratchpad_tool_specs
 from agent.agentic_core.tool_runtime import AgenticToolRuntime
@@ -17,9 +17,7 @@ class AgenticCoreTests(unittest.TestCase):
     def test_unknown_tool_is_reported_as_error_result(self) -> None:
         runtime = AgenticToolRuntime([])
 
-        result = runtime.call(
-            AgenticToolCall(tool_call_id="toolu_missing", name="missing_tool", input={})
-        )
+        result = runtime.call(AgenticToolCall(tool_call_id="toolu_missing", name="missing_tool", input={}))
 
         self.assertTrue(result.is_error)
         self.assertIn("Unknown tool", result.output_text)
@@ -53,9 +51,7 @@ class AgenticCoreTests(unittest.TestCase):
                     input={"entry": {"note": "shared"}},
                 )
             )
-            result = runtime.call(
-                AgenticToolCall(tool_call_id="toolu_read", name="scratchpad_read", input={})
-            )
+            result = runtime.call(AgenticToolCall(tool_call_id="toolu_read", name="scratchpad_read", input={}))
 
         self.assertEqual(result.output["entries"], [{"note": "shared"}])
 

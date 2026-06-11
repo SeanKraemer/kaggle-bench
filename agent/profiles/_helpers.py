@@ -4,7 +4,6 @@ from collections import Counter
 from datetime import datetime
 from typing import Iterable
 
-
 MISSING_VALUES = {"", "na", "n/a", "nan", "null", "none", "unknown"}
 
 
@@ -60,7 +59,4 @@ def quantile(sorted_values: list[float], q: float) -> float:
 
 def top_values(values: Iterable[str], limit: int = 5) -> list[dict[str, int | str]]:
     counts = Counter(values)
-    return [
-        {"value": value, "count": count}
-        for value, count in counts.most_common(limit)
-    ]
+    return [{"value": value, "count": count} for value, count in counts.most_common(limit)]

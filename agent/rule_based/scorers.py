@@ -14,11 +14,7 @@ from agent.rule_based.predicates import (
     is_boolean_like,
     is_datetime_like,
     is_identifier_like,
-    is_medium_cardinality,
-    is_narrow_target_range,
-    is_nonnegative_sparse_numeric,
     is_numeric_like,
-    is_low_cardinality,
     should_add_categorical_encoding,
     should_add_clip_outliers,
     should_add_constant_imputation,
@@ -146,10 +142,7 @@ def evaluate_add_action(dataset_insights: dict, action: dict) -> dict:
 
     if action_type in {"DATE_PART_FEATURE", "CYCLICAL_ENCODE", "TIME_SINCE_REFERENCE"}:
         candidate_columns = (
-            params.get("date_columns")
-            or params.get("columns")
-            or params.get("reference_date_columns")
-            or []
+            params.get("date_columns") or params.get("columns") or params.get("reference_date_columns") or []
         )
         matched = should_add_date_feature(dataset_insights, action)
         return build_decision_record(
@@ -253,10 +246,7 @@ def evaluate_remove_action(dataset_insights: dict, action: dict) -> dict:
 
     if action_type in {"DATE_PART_FEATURE", "CYCLICAL_ENCODE", "TIME_SINCE_REFERENCE"}:
         candidate_columns = (
-            params.get("date_columns")
-            or params.get("columns")
-            or params.get("reference_date_columns")
-            or []
+            params.get("date_columns") or params.get("columns") or params.get("reference_date_columns") or []
         )
         matched = should_remove_bad_date_feature(dataset_insights, action)
         return build_decision_record(

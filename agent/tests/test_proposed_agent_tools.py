@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+import json
 import tempfile
 import unittest
 from pathlib import Path
-import json
 
 from agent.agentic_core.scratchpad import JsonScratchpad
 from agent.agentic_core.tool_runtime import AgenticToolRuntime
@@ -22,9 +22,7 @@ def build_runtime(root: Path) -> AgenticToolRuntime:
     )
     materialized = materialize_benchmark_context(benchmark)
     scratchpad = JsonScratchpad(root / "scratchpad.json")
-    return AgenticToolRuntime(
-        build_proposed_tool_specs(materialized=materialized, scratchpad=scratchpad)
-    )
+    return AgenticToolRuntime(build_proposed_tool_specs(materialized=materialized, scratchpad=scratchpad))
 
 
 class ProposedAgentToolTests(unittest.TestCase):
@@ -86,9 +84,7 @@ class ProposedAgentToolTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             runtime = build_runtime(Path(tmp))
 
-            tables = runtime.call(
-                AgenticToolCall("toolu_tables", "inspect_dataset_tables", {})
-            ).output
+            tables = runtime.call(AgenticToolCall("toolu_tables", "inspect_dataset_tables", {})).output
             columns = runtime.call(
                 AgenticToolCall(
                     "toolu_columns",
@@ -103,12 +99,8 @@ class ProposedAgentToolTests(unittest.TestCase):
                     {"table_name": "train.csv", "columns": ["id", "cat"], "limit": 1},
                 )
             ).output
-            target = runtime.call(
-                AgenticToolCall("toolu_target", "profile_target_distribution", {})
-            ).output
-            join = runtime.call(
-                AgenticToolCall("toolu_join", "profile_join_key", {"action_id": "CA-1"})
-            ).output
+            target = runtime.call(AgenticToolCall("toolu_target", "profile_target_distribution", {})).output
+            join = runtime.call(AgenticToolCall("toolu_join", "profile_join_key", {"action_id": "CA-1"})).output
 
         self.assertEqual(len(tables["tables"]), 2)
         self.assertIn("feature_num", columns["tables"][0]["columns"])

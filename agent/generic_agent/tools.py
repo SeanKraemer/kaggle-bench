@@ -6,10 +6,10 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from agent.agentic_core.scratchpad import DEFAULT_SCRATCHPAD_MAX_CHARS, JsonScratchpad
+from agent.agentic_core.scratchpad import DEFAULT_SCRATCHPAD_MAX_CHARS as DEFAULT_SCRATCHPAD_MAX_CHARS
+from agent.agentic_core.scratchpad import JsonScratchpad
 from agent.agentic_core.scratchpad_tools import build_scratchpad_tool_specs
 from agent.agentic_core.types import AgenticToolSpec
-
 
 GENERIC_TOOL_NAMES = ["bash", "python", "scratchpad_read", "scratchpad_write"]
 DEFAULT_TOOL_TIMEOUT_SECONDS = 30

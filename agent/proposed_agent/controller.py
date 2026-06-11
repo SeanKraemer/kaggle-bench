@@ -51,13 +51,9 @@ def run_proposed_agent_controller(
     cache_write_1h_cost_per_million: float,
     capture_llm_calls: bool = False,
 ) -> ProposedAgentControllerResult:
-    active_action_ids = set(
-        context.benchmark.bundle.testcase.get("input", {}).get("context_action_ids", [])
-    )
+    active_action_ids = set(context.benchmark.bundle.testcase.get("input", {}).get("context_action_ids", []))
     add_prompt = build_add_phase_prompt_text(context.prompt)
-    add_message_blocks = build_add_phase_message_content_blocks(
-        context.prompt_parts["dynamic_prompt"]
-    )
+    add_message_blocks = build_add_phase_message_content_blocks(context.prompt_parts["dynamic_prompt"])
 
     add_result = run_agentic_loop(
         method_name="proposed_agent",

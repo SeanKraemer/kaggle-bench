@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from agent.prompts.shared import render_shared_prompt, render_shared_prompt_parts
 
-
 SINGLE_LLM_INSTRUCTION = (
     "Produce add/remove predictions in one pass without tool use. "
     "Do not ask follow-up questions. Use only the provided benchmark instance "

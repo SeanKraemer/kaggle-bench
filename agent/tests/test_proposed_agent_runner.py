@@ -266,17 +266,13 @@ class ProposedAgentRunnerTests(unittest.TestCase):
                 )
 
             output_path = task_dir / "outputs" / "tc1_proposed_agent_failed.json"
-            failed_metadata = (
-                task_dir / "outputs" / "provenance" / "tc1_proposed_agent_failed.failed.meta.json"
-            )
+            failed_metadata = task_dir / "outputs" / "provenance" / "tc1_proposed_agent_failed.failed.meta.json"
             metadata_payload = json.loads(failed_metadata.read_text(encoding="utf-8"))
 
         self.assertFalse(output_path.exists())
         self.assertEqual(metadata_payload["status"], "failed")
         self.assertEqual(metadata_payload["phase_statuses"]["add"], "failed")
-        self.assertTrue(
-            any(ref["kind"] == "api_calls" for ref in metadata_payload["artifact_refs"])
-        )
+        self.assertTrue(any(ref["kind"] == "api_calls" for ref in metadata_payload["artifact_refs"]))
 
 
 if __name__ == "__main__":

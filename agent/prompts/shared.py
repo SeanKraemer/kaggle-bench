@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-
 COMMON_TASK_GUIDANCE = """You are solving a benchmark instance for preprocessing diagnosis and repair in a tabular ML workflow.
 
 This is a constrained action-selection task, not an open-ended pipeline design task.

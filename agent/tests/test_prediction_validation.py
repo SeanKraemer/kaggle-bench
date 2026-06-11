@@ -4,7 +4,6 @@ import importlib.util
 import unittest
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[2]
 MODULE_PATH = ROOT / "agent" / "prediction_validation.py"
 
@@ -33,7 +32,7 @@ class PredictionValidationTests(unittest.TestCase):
         module = load_module()
 
         parsed = module.parse_prediction_text(
-            '\n'.join(
+            "\n".join(
                 [
                     "Here is the prediction:",
                     '{"predicted_add_action_ids": ["CA-1"], "predicted_remove_action_ids": []}',
@@ -50,7 +49,7 @@ class PredictionValidationTests(unittest.TestCase):
         module = load_module()
 
         parsed = module.parse_prediction_text(
-            '\n'.join(
+            "\n".join(
                 [
                     "Template:",
                     '{"predicted_add_action_ids": [], "predicted_remove_action_ids": []}',
@@ -71,7 +70,7 @@ class PredictionValidationTests(unittest.TestCase):
             "prediction payload must include predicted_add_action_ids and predicted_remove_action_ids",
         ):
             module.parse_prediction_text(
-                '\n'.join(
+                "\n".join(
                     [
                         "Debug note:",
                         '{"irrelevant": true}',

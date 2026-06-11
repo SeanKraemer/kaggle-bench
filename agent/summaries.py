@@ -125,9 +125,7 @@ def _filter_profile_columns(profile: dict, referenced_columns: set[str]) -> dict
     columns = profile.get("columns", {})
     filtered_profile = {key: value for key, value in profile.items() if key != "columns"}
     filtered_profile["columns"] = {
-        column: columns[column]
-        for column in sorted(columns)
-        if column in referenced_columns
+        column: columns[column] for column in sorted(columns) if column in referenced_columns
     }
     return filtered_profile
 

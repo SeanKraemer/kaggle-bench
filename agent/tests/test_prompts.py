@@ -4,7 +4,6 @@ import importlib.util
 import unittest
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[2]
 SHARED_PATH = ROOT / "agent" / "prompts" / "shared.py"
 SINGLE_LLM_PATH = ROOT / "agent" / "prompts" / "single_llm.py"
@@ -75,7 +74,7 @@ class PromptTests(unittest.TestCase):
 
         self.assertIn("one pass", prompt.lower())
         self.assertIn("without tool use", prompt.lower())
-        self.assertIn('CA-1', prompt)
+        self.assertIn("CA-1", prompt)
         self.assertIn("optional action_rationales", prompt)
 
     def test_shared_prompt_can_be_split_into_cacheable_static_and_dynamic_parts(self) -> None:

@@ -6,7 +6,6 @@ import tempfile
 import unittest
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[2]
 OUTPUT_ARTIFACTS_PATH = ROOT / "agent" / "output_artifacts.py"
 
@@ -113,7 +112,7 @@ class OutputArtifactsTests(unittest.TestCase):
                         "kind": "stream",
                         "filename": "tc1_single_llm_try1.stream.jsonl",
                         "description": "Stream text for this run.",
-                        "content": "{\"type\":\"result\"}   ",
+                        "content": '{"type":"result"}   ',
                     },
                 ],
             )
@@ -129,7 +128,7 @@ class OutputArtifactsTests(unittest.TestCase):
         self.assertEqual(output_payload["artifact_refs"][3]["kind"], "stream")
         self.assertTrue(prompt_exists)
         self.assertEqual(prompt_text, "# prompt\n")
-        self.assertEqual(stream_text, "{\"type\":\"result\"}\n")
+        self.assertEqual(stream_text, '{"type":"result"}\n')
 
     def test_write_failed_provenance_bundle_adds_trailing_newlines(self) -> None:
         output_artifacts = load_output_artifacts_module()

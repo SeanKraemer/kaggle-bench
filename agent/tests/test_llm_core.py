@@ -5,7 +5,6 @@ import json
 import unittest
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[2]
 PRICING_PATH = ROOT / "agent" / "llm" / "pricing.py"
 GUARDS_PATH = ROOT / "agent" / "llm" / "guards.py"
@@ -117,7 +116,7 @@ class AnthropicClientTests(unittest.TestCase):
             "id": "msg_123",
             "content": [
                 {"type": "thinking", "thinking": "Let me reason."},
-                {"type": "text", "text": "{\"predicted_add_action_ids\": [], \"predicted_remove_action_ids\": []}"}
+                {"type": "text", "text": '{"predicted_add_action_ids": [], "predicted_remove_action_ids": []}'},
             ],
             "usage": {
                 "input_tokens": 100,

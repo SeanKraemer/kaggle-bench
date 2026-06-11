@@ -10,7 +10,6 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 TASKS_DIR = REPO_ROOT / "data" / "tasks"
 EVAL_PATH = REPO_ROOT / "eval" / "eval.py"
@@ -228,7 +227,9 @@ def build_agent_summary(group_rows: list[dict[str, Any]]) -> list[dict[str, Any]
     return summaries
 
 
-def build_task_summary(task_profiles: dict[str, dict[str, Any]], group_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def build_task_summary(
+    task_profiles: dict[str, dict[str, Any]], group_rows: list[dict[str, Any]]
+) -> list[dict[str, Any]]:
     by_task: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for row in group_rows:
         by_task[row["task_slug"]].append(row)
@@ -692,7 +693,9 @@ def main() -> int:
         "output_path": None if args.output is None else str(args.output),
         "single_run_count": len(single_runs),
         "group_count": len(grouped_rows),
-        "single_runs": sorted(single_runs, key=lambda row: (row["task_slug"], row["testcase_id"], row["agent_name"], row["run_id"])),
+        "single_runs": sorted(
+            single_runs, key=lambda row: (row["task_slug"], row["testcase_id"], row["agent_name"], row["run_id"])
+        ),
         "groups": sorted(grouped_rows, key=lambda row: (row["task_slug"], row["testcase_id"], row["agent_name"])),
         "overall_summary": build_overall_summary(grouped_rows),
         "task_summary": build_task_summary(task_profiles, grouped_rows),

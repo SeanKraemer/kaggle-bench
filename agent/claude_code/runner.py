@@ -1,12 +1,15 @@
 from __future__ import annotations
 
-import json
 import os
 import shutil
 import subprocess
 import time
 from pathlib import Path
 
+from agent.claude_code.command import build_claude_command, build_claude_environment
+from agent.claude_code.stream import normalize_exec_result
+from agent.claude_code.trace import build_trace_text
+from agent.claude_code.workspace import prepare_claude_workspace
 from agent.config import DEFAULT_API_KEY_PATH, DEFAULT_CLAUDE_CODE_AUTH_MODE, DEFAULT_MODEL_NAME
 from agent.context_builder import build_benchmark_context
 from agent.llm.auth import load_api_key
@@ -18,10 +21,6 @@ from agent.output_artifacts import (
 )
 from agent.prediction_validation import parse_and_validate_prediction_text
 from agent.prompts.claude_code import build_claude_code_prompt
-from agent.claude_code.command import build_claude_command, build_claude_environment
-from agent.claude_code.stream import normalize_exec_result
-from agent.claude_code.trace import build_trace_text
-from agent.claude_code.workspace import prepare_claude_workspace
 
 API_KEY_OVERRIDE_ENV_VAR = "CLAUDE_CODE_ALLOW_API_KEY"
 
@@ -147,16 +146,9 @@ def run_claude_code(
 ) -> dict[str, Path]:
     normalized_auth_mode = auth_mode.strip().lower()
     if normalized_auth_mode not in {"subscription", "api_key"}:
-        raise ValueError(
-            f"Unsupported Claude Code auth_mode: {auth_mode}. "
-            "Use 'subscription' or 'api_key'."
-        )
-    if (
-        normalized_auth_mode == "api_key"
-        and (
-            not allow_api_key_override
-            or os.environ.get(API_KEY_OVERRIDE_ENV_VAR) != "1"
-        )
+        raise ValueError(f"Unsupported Claude Code auth_mode: {auth_mode}. Use 'subscription' or 'api_key'.")
+    if normalized_auth_mode == "api_key" and (
+        not allow_api_key_override or os.environ.get(API_KEY_OVERRIDE_ENV_VAR) != "1"
     ):
         raise PermissionError(
             "Claude Code baseline runs must use subscription auth by default. "
@@ -288,7 +280,7 @@ def run_claude_code(
                     "filename": f"{testcase_id.split('_', 1)[0]}_claude_code_{run_id}.stream.jsonl",
                     "description": "Raw Claude Code stream-json event log for this run.",
                     "content": exec_result.get("stdout", ""),
-                }
+                },
             ],
         )
         shutil.rmtree(workdir)

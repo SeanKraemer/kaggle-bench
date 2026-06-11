@@ -101,9 +101,7 @@ class GenericAgentToolTests(unittest.TestCase):
                     input={"entry": {"note": "remember"}},
                 )
             )
-            read_result = runtime.call(
-                AgenticToolCall(tool_call_id="toolu_read", name="scratchpad_read", input={})
-            )
+            read_result = runtime.call(AgenticToolCall(tool_call_id="toolu_read", name="scratchpad_read", input={}))
 
         self.assertEqual(read_result.output["entries"], [{"note": "remember"}])
 

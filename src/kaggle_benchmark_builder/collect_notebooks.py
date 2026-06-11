@@ -96,6 +96,7 @@ def _cache_subdir_for_ref(kernel_ref: str) -> str:
 def _read_kernel_source_from_dir(directory: Path) -> tuple[str, str]:
     if not directory.exists():
         return "", ""
+
     def _file_order_key(path: Path) -> tuple[int, str]:
         suffix = path.suffix.lower()
         if suffix == ".ipynb":
@@ -147,7 +148,12 @@ def _pull_kernel_source_text(kernel_ref: str, cache_root: Path) -> tuple[str, st
 
     kernel_dir.mkdir(parents=True, exist_ok=True)
     try:
-        subprocess.run(["kaggle", "kernels", "pull", kernel_ref, "--path", str(kernel_dir)], check=True, capture_output=True, text=True)
+        subprocess.run(
+            ["kaggle", "kernels", "pull", kernel_ref, "--path", str(kernel_dir)],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
         return _read_kernel_source_from_dir(kernel_dir)
     except subprocess.CalledProcessError:
         return "", ""

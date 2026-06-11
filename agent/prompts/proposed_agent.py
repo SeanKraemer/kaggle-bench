@@ -5,7 +5,6 @@ from typing import Any
 
 from agent.prompts.shared import render_shared_prompt, render_shared_prompt_parts
 
-
 PROPOSED_AGENT_INSTRUCTION = """Use only the benchmark-specific tools exposed by this run.
 
 The available tools are:

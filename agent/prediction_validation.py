@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 
-
 _PREDICTION_REQUIRED_KEYS = frozenset({"predicted_add_action_ids", "predicted_remove_action_ids"})
 
 
@@ -148,8 +147,12 @@ def validate_prediction_payload(
     conflicting_action_ids = sorted(set(predicted_add_action_ids) & set(predicted_remove_action_ids))
     if conflicting_action_ids:
         warnings.append(f"removed_conflicting_action_ids={conflicting_action_ids}")
-        predicted_add_action_ids = [action_id for action_id in predicted_add_action_ids if action_id not in conflicting_action_ids]
-        predicted_remove_action_ids = [action_id for action_id in predicted_remove_action_ids if action_id not in conflicting_action_ids]
+        predicted_add_action_ids = [
+            action_id for action_id in predicted_add_action_ids if action_id not in conflicting_action_ids
+        ]
+        predicted_remove_action_ids = [
+            action_id for action_id in predicted_remove_action_ids if action_id not in conflicting_action_ids
+        ]
 
     if allowed_remove_action_ids is not None:
         out_of_scope_remove_action_ids = [

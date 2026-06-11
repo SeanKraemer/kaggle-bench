@@ -22,11 +22,7 @@ def _append_tool_input(trace_lines: list[str], tool_call: dict) -> None:
                     "```",
                 ]
             )
-        extra_input = {
-            key: value
-            for key, value in tool_input.items()
-            if key not in {"command", "description"}
-        }
+        extra_input = {key: value for key, value in tool_input.items() if key not in {"command", "description"}}
         if extra_input:
             trace_lines.extend(
                 [

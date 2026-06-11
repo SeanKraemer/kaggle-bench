@@ -4,7 +4,6 @@ import importlib.util
 import unittest
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[2]
 CLIENT_PATH = ROOT / "agent" / "llm" / "client.py"
 

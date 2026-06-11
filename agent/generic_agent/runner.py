@@ -19,8 +19,8 @@ from agent.config import DEFAULT_API_KEY_PATH, ROOT
 from agent.generic_agent.request_context import build_generic_agent_request_context
 from agent.generic_agent.tools import (
     DEFAULT_SCRATCHPAD_MAX_CHARS,
-    DEFAULT_TOOL_TIMEOUT_SECONDS,
     DEFAULT_TOOL_OUTPUT_MAX_CHARS,
+    DEFAULT_TOOL_TIMEOUT_SECONDS,
     build_generic_tool_specs,
 )
 from agent.generic_agent.workspace import prepare_generic_workspace
@@ -138,9 +138,7 @@ def run_generic_agent(
         else:
             call_fn = llm_call
 
-        allowed_remove_action_ids = set(
-            context.benchmark.bundle.testcase["input"]["context_action_ids"]
-        )
+        allowed_remove_action_ids = set(context.benchmark.bundle.testcase["input"]["context_action_ids"])
 
         def parse_callback(raw_text: str) -> tuple[dict, list[str]]:
             return parse_text_or_prediction_file(
@@ -254,9 +252,7 @@ def run_generic_agent(
             run_by="agent_runner",
             run_id=run_id,
             predicted_add_action_ids=execution.parsed_prediction.get("predicted_add_action_ids", []),
-            predicted_remove_action_ids=execution.parsed_prediction.get(
-                "predicted_remove_action_ids", []
-            ),
+            predicted_remove_action_ids=execution.parsed_prediction.get("predicted_remove_action_ids", []),
             notes="Generic tool agent run.",
             time_spent_seconds=elapsed_seconds,
             token_usage=execution.token_usage,
