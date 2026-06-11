@@ -51,6 +51,7 @@ class PresentationVisualTests(unittest.TestCase):
                 mock.patch.object(PRESENTATION, "write_csv_outputs"),
                 mock.patch.object(PRESENTATION, "render_heatmap_svg"),
                 mock.patch.object(PRESENTATION, "render_grouped_bar_svg"),
+                mock.patch.object(PRESENTATION, "render_cost_quality_svg"),
             ):
                 PRESENTATION.main()
 
