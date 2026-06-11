@@ -525,6 +525,102 @@ def render_grouped_bar_svg(
     output_path.write_text("\n".join(parts) + "\n", encoding="utf-8")
 
 
+def render_cost_quality_svg(output_path: Path, report: dict[str, Any], include_human: bool) -> None:
+    agent_summaries = build_agent_summary_by_name(report)
+    width = 1100
+    height = 640
+    plot_left = 110
+    plot_top = 120
+    plot_width = 880
+    plot_height = 400
+    baseline = plot_top + plot_height
+    cost_max = 0.36
+
+    # Static label offsets keep the chart deterministic and collision-free.
+    label_offsets = {
+        "rule_based": (14, 4),
+        "single_llm": (14, -8),
+        "generic_agent": (-14, 20),
+        "claude_code": (-14, -10),
+        "proposed_agent": (14, 20),
+    }
+
+    parts = [
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
+        "<style>",
+        ".title{font:700 30px Arial,sans-serif;fill:#111827}",
+        ".subtitle{font:400 15px Arial,sans-serif;fill:#4b5563}",
+        ".axis{font:400 12px Arial,sans-serif;fill:#4b5563}",
+        ".axis-title{font:700 14px Arial,sans-serif;fill:#111827}",
+        ".point-label{font:700 14px Arial,sans-serif}",
+        ".ref-label{font:400 13px Arial,sans-serif;fill:#111827}",
+        "</style>",
+        '<rect width="100%" height="100%" fill="#ffffff"/>',
+        '<text class="title" x="36" y="48">Cost vs. Task Completion</text>',
+        (
+            '<text class="subtitle" x="36" y="76">Mean estimated API cost per run against mean task-completion '
+            f"score ({esc(report['stage_scope'])} scope, all tasks and scenarios).</text>"
+        ),
+    ]
+
+    for tick in range(0, 6):
+        value = tick / 5
+        y = baseline - value * plot_height
+        parts.append(
+            f'<line x1="{plot_left}" y1="{y:.1f}" x2="{plot_left + plot_width}" y2="{y:.1f}" stroke="#e5e7eb"/>'
+        )
+        parts.append(f'<text class="axis" text-anchor="end" x="{plot_left - 10}" y="{y + 4:.1f}">{value:.1f}</text>')
+    for tick in range(0, 8):
+        value = tick * 0.05
+        x = plot_left + (value / cost_max) * plot_width
+        parts.append(f'<text class="axis" text-anchor="middle" x="{x:.1f}" y="{baseline + 24}">${value:.2f}</text>')
+    parts.append(
+        f'<line x1="{plot_left}" y1="{baseline}" x2="{plot_left + plot_width}" y2="{baseline}" stroke="#111827"/>'
+    )
+    parts.append(f'<line x1="{plot_left}" y1="{plot_top}" x2="{plot_left}" y2="{baseline}" stroke="#111827"/>')
+    parts.append(
+        f'<text class="axis-title" text-anchor="middle" x="{plot_left + plot_width / 2:.1f}" '
+        f'y="{baseline + 52}">Mean estimated cost per run (USD)</text>'
+    )
+    parts.append(
+        f'<text class="axis-title" text-anchor="middle" transform="rotate(-90 30 {plot_top + plot_height / 2:.1f})" '
+        f'x="30" y="{plot_top + plot_height / 2:.1f}">Mean task-completion score</text>'
+    )
+
+    human_row = agent_summaries.get("human") if include_human else None
+    if human_row and human_row.get("mean_task_completion_score") is not None:
+        human_score = float(human_row["mean_task_completion_score"])
+        y = baseline - human_score * plot_height
+        parts.append(
+            f'<line x1="{plot_left}" y1="{y:.1f}" x2="{plot_left + plot_width}" y2="{y:.1f}" '
+            f'stroke="{AGENT_COLORS["human"]}" stroke-width="2" stroke-dasharray="7 6"/>'
+        )
+        parts.append(
+            f'<text class="ref-label" x="{plot_left + plot_width - 4}" y="{y - 8:.1f}" text-anchor="end">'
+            f"Human reference ({human_score:.2f})</text>"
+        )
+
+    for agent in AGENT_ORDER:
+        row = agent_summaries.get(agent)
+        if not row or row.get("mean_task_completion_score") is None:
+            continue
+        cost = float(row.get("mean_cost_usd") or 0.0)
+        score = float(row["mean_task_completion_score"])
+        x = plot_left + (cost / cost_max) * plot_width
+        y = baseline - score * plot_height
+        color = AGENT_COLORS[agent]
+        parts.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="9" fill="{color}"/>')
+        dx, dy = label_offsets.get(agent, (14, 4))
+        anchor = "end" if dx < 0 else "start"
+        parts.append(
+            f'<text class="point-label" fill="{color}" text-anchor="{anchor}" '
+            f'x="{x + dx:.1f}" y="{y + dy:.1f}">{esc(AGENT_LABELS[agent])} (${cost:.3f})</text>'
+        )
+
+    parts.append("</svg>")
+    output_path.write_text("\n".join(parts) + "\n", encoding="utf-8")
+
+
 def action_map_for_task(task_dir: Path) -> dict[str, dict[str, Any]]:
     bank = load_json(task_dir / "candidate_actions.json")
     return {action["action_id"]: action for action in bank["actions"]}
@@ -833,6 +929,7 @@ def write_html_dashboard(output_path: Path, output_dir: Path) -> None:
     figures = [
         ("Task Completion Heatmap", output_dir / "task_completion_heatmap.svg"),
         ("Task Completion Grouped Bar", output_dir / "task_completion_grouped_bar.svg"),
+        ("Cost vs. Task Completion", output_dir / "cost_vs_completion.svg"),
         ("Trace Cards", output_dir / "trace_cards.svg"),
     ]
     sections = []
@@ -897,6 +994,7 @@ def main() -> int:
     write_csv_outputs(output_dir, report, testcase_summary)
     render_heatmap_svg(output_dir / "task_completion_heatmap.svg", report, testcase_summary, include_human)
     render_grouped_bar_svg(output_dir / "task_completion_grouped_bar.svg", report, testcase_summary, include_human)
+    render_cost_quality_svg(output_dir / "cost_vs_completion.svg", report, include_human)
 
     success_output = args.success_output.resolve()
     struggle_output = args.struggle_output.resolve()
