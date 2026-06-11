@@ -1,0 +1,16 @@
+{
+  "testcase_id": "tc2_partial_good",
+  "competition_slug": "home-credit-default-risk",
+  "task_ref": "../task.json",
+  "input": {
+    "scenario": "partial_good",
+    "context_action_ids": [
+      "CA-000017",
+      "CA-000082",
+      "CA-000134",
+      "CA-000076",
+      "CA-000004",
+      "CA-000069"
+    ]
+  }
+}

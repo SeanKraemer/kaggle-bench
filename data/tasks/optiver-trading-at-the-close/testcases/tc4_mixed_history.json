@@ -1,0 +1,16 @@
+{
+  "testcase_id": "tc4_mixed_history",
+  "competition_slug": "optiver-trading-at-the-close",
+  "task_ref": "../task.json",
+  "input": {
+    "scenario": "mixed",
+    "context_action_ids": [
+      "CA-000011",
+      "CA-000031",
+      "CA-000051",
+      "CA-000026",
+      "CA-000004",
+      "CA-000035"
+    ]
+  }
+}

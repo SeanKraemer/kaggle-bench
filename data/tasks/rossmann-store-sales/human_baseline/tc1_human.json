@@ -1,0 +1,51 @@
+{
+  "competition_slug": "rossmann-store-sales",
+  "testcase_id": "tc1_from_scratch",
+  "agent_name": "human",
+  "run_by": "Sean Kraemer",
+  "run_id": "human_tc1_sean_kraemer_v4_manual_rebuild",
+  "artifact_refs": [
+    {
+      "kind": "notebook",
+      "path": "work.ipynb",
+      "description": "Evidence-only notebook used to inspect the Rossmann data and freeze a plain-language shortlist before bank alignment."
+    },
+    {
+      "kind": "notes",
+      "path": "manual_selection_worksheet.md",
+      "description": "Authoritative shortlist-to-bank mapping for the Rossmann human baseline."
+    },
+    {
+      "kind": "notes",
+      "path": "notes.md",
+      "description": "Author notes for the Rossmann human baseline."
+    },
+    {
+      "kind": "metadata",
+      "path": "provenance/metadata.json",
+      "description": "Run-level metadata for the Rossmann human baseline."
+    },
+    {
+      "kind": "trace",
+      "path": "provenance/action_trace.json",
+      "description": "Links each selected bank action to notebook evidence or worksheet sections."
+    }
+  ],
+  "predicted_add_action_ids": [
+    "CA-000044",
+    "CA-000036",
+    "CA-000021",
+    "CA-000048",
+    "CA-000006",
+    "CA-000004",
+    "CA-000042"
+  ],
+  "predicted_remove_action_ids": [],
+  "time_spent_seconds": 3000,
+  "token_usage": {
+    "input_tokens": null,
+    "output_tokens": null,
+    "total_tokens": null
+  },
+  "notes": "Manual Rossmann TC1 baseline. The final selection keeps the store join, calendar scaffold, one closure strategy, one simple competition-distance repair, one encoding path, and the train-only leakage drop while stopping before competition-timing derivations."
+}

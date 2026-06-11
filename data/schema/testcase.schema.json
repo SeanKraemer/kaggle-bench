@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "data/schema/testcase.schema.json",
+  "title": "TestcaseArtifact",
+  "description": "Schema for data/tasks/<competition_slug>/testcases/*.json",
+  "type": "object",
+  "required": [
+    "testcase_id",
+    "competition_slug",
+    "task_ref",
+    "input"
+  ],
+  "properties": {
+    "testcase_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "competition_slug": {
+      "type": "string",
+      "minLength": 1
+    },
+    "task_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "input": {
+      "type": "object",
+      "required": [
+        "scenario",
+        "context_action_ids"
+      ],
+      "properties": {
+        "scenario": {
+          "type": "string",
+          "enum": [
+            "from_scratch",
+            "partial_good",
+            "fault_injected",
+            "mixed"
+          ]
+        },
+        "context_action_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

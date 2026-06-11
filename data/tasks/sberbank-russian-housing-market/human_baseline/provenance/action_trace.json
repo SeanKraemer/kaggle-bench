@@ -1,0 +1,205 @@
+{
+  "competition_slug": "sberbank-russian-housing-market",
+  "testcase_id": "tc1_from_scratch",
+  "artifact_type": "eval_human_baseline_action_trace",
+  "related_output": "../tc1_human.json",
+  "traces": [
+    {
+      "predicted_action_id": "CA-000001",
+      "artifact": "../work.ipynb",
+      "section": "Value Cleanup",
+      "mapping_rationale": "Current manual label keeps the explicit impossible-build-year cleanup branch."
+    },
+    {
+      "predicted_action_id": "CA-000002",
+      "artifact": "../work.ipynb",
+      "section": "Value Cleanup",
+      "mapping_rationale": "Current manual label includes the reviewed building-age expression branch."
+    },
+    {
+      "predicted_action_id": "CA-000004",
+      "artifact": "../work.ipynb",
+      "section": "Value Cleanup",
+      "mapping_rationale": "Current manual label includes the reviewed top-floor indicator branch."
+    },
+    {
+      "predicted_action_id": "CA-000014",
+      "artifact": "../work.ipynb",
+      "section": "Value Cleanup",
+      "mapping_rationale": "Current manual label keeps the reviewed winsorized area-block clipping branch."
+    },
+    {
+      "predicted_action_id": "CA-000015",
+      "artifact": "../work.ipynb",
+      "section": "Value Cleanup",
+      "mapping_rationale": "Current manual label keeps the reviewed build-year and num-room clipping branch."
+    },
+    {
+      "predicted_action_id": "CA-000013",
+      "artifact": "../work.ipynb",
+      "section": "Value Cleanup",
+      "mapping_rationale": "Current manual label keeps the explicit invalid-kitchen-area cleanup rule."
+    },
+    {
+      "predicted_action_id": "CA-000019",
+      "artifact": "../work.ipynb",
+      "section": "Value Cleanup",
+      "mapping_rationale": "Current manual label keeps the invalid living-area cleanup rule."
+    },
+    {
+      "predicted_action_id": "CA-000064",
+      "artifact": "../work.ipynb",
+      "section": "Value Cleanup",
+      "mapping_rationale": "Current manual label includes the reviewed mean-imputation branch for state and room count."
+    },
+    {
+      "predicted_action_id": "CA-000033",
+      "artifact": "../work.ipynb",
+      "section": "Pruning and Filtering",
+      "mapping_rationale": "Current manual label includes the train-only constant-column pruning branch."
+    },
+    {
+      "predicted_action_id": "CA-000034",
+      "artifact": "../work.ipynb",
+      "section": "Pruning and Filtering",
+      "mapping_rationale": "Current manual label includes the concat-frame constant-column pruning branch."
+    },
+    {
+      "predicted_action_id": "CA-000035",
+      "artifact": "../work.ipynb",
+      "section": "Pruning and Filtering",
+      "mapping_rationale": "Current manual label includes the reviewed duplicate-row removal branch on housing attributes."
+    },
+    {
+      "predicted_action_id": "CA-000036",
+      "artifact": "../work.ipynb",
+      "section": "Pruning and Filtering",
+      "mapping_rationale": "Current manual label includes the reviewed duplicate-timestamp pruning branch for the macro table."
+    },
+    {
+      "predicted_action_id": "CA-000038",
+      "artifact": "../work.ipynb",
+      "section": "Pruning and Filtering",
+      "mapping_rationale": "Current manual label includes the reviewed high-null-column drop branch."
+    },
+    {
+      "predicted_action_id": "CA-000049",
+      "artifact": "../work.ipynb",
+      "section": "Pruning and Filtering",
+      "mapping_rationale": "Current manual label keeps the notebook-backed row filter on unrealistic price-per-area values."
+    },
+    {
+      "predicted_action_id": "CA-000105",
+      "artifact": "../work.ipynb",
+      "section": "Temporal Backbone",
+      "mapping_rationale": "Current manual label keeps timestamp parsing as the time-processing entry point."
+    },
+    {
+      "predicted_action_id": "CA-000037",
+      "artifact": "../work.ipynb",
+      "section": "Temporal Backbone",
+      "mapping_rationale": "Current manual label keeps the rich date-parts branch over timestamp."
+    },
+    {
+      "predicted_action_id": "CA-000046",
+      "artifact": "../work.ipynb",
+      "section": "Temporal Backbone",
+      "mapping_rationale": "Current manual label includes the reviewed expanding transaction-count branch."
+    },
+    {
+      "predicted_action_id": "CA-000071",
+      "artifact": "../work.ipynb",
+      "section": "Temporal Backbone",
+      "mapping_rationale": "Current manual label includes the reviewed month-key macro join variant."
+    },
+    {
+      "predicted_action_id": "CA-000085",
+      "artifact": "../work.ipynb",
+      "section": "Temporal Backbone",
+      "mapping_rationale": "Current manual label keeps the selected timestamp-based macro left join."
+    },
+    {
+      "predicted_action_id": "CA-000061",
+      "artifact": "../work.ipynb",
+      "section": "Aggregations",
+      "mapping_rationale": "Current manual label keeps the reviewed grouped year-month transaction count branch."
+    },
+    {
+      "predicted_action_id": "CA-000067",
+      "artifact": "../work.ipynb",
+      "section": "Categorical and Imputation",
+      "mapping_rationale": "Current manual label keeps the grouped build-year imputation branch by neighborhood."
+    },
+    {
+      "predicted_action_id": "CA-000082",
+      "artifact": "../work.ipynb",
+      "section": "Categorical and Imputation",
+      "mapping_rationale": "Current manual label includes the reviewed reversed product-type mapping branch."
+    },
+    {
+      "predicted_action_id": "CA-000088",
+      "artifact": "../work.ipynb",
+      "section": "Categorical and Imputation",
+      "mapping_rationale": "Current manual label includes the reviewed ordinal encoding branch for product_type."
+    },
+    {
+      "predicted_action_id": "CA-000100",
+      "artifact": "../work.ipynb",
+      "section": "Categorical and Imputation",
+      "mapping_rationale": "Current manual label keeps the compact numeric mapping branch for product_type."
+    },
+    {
+      "predicted_action_id": "CA-000080",
+      "artifact": "../work.ipynb",
+      "section": "Transforms",
+      "mapping_rationale": "Current manual label includes the reviewed distance-column log-transform branch."
+    },
+    {
+      "predicted_action_id": "CA-000081",
+      "artifact": "../work.ipynb",
+      "section": "Transforms",
+      "mapping_rationale": "Current manual label includes the reviewed area-block log-transform branch."
+    },
+    {
+      "predicted_action_id": "CA-000090",
+      "artifact": "../work.ipynb",
+      "section": "Transforms",
+      "mapping_rationale": "Current manual label keeps the log-transform branch on the regression target."
+    },
+    {
+      "predicted_action_id": "CA-000117",
+      "artifact": "../work.ipynb",
+      "section": "Transforms",
+      "mapping_rationale": "Current manual label includes the reviewed robust-scaling branch for distance features."
+    },
+    {
+      "predicted_action_id": "CA-000110",
+      "artifact": "../work.ipynb",
+      "section": "Ratios",
+      "mapping_rationale": "Current manual label keeps the relative-floor ratio branch."
+    },
+    {
+      "predicted_action_id": "CA-000115",
+      "artifact": "../work.ipynb",
+      "section": "Ratios",
+      "mapping_rationale": "Current manual label keeps the living-area-share ratio branch."
+    },
+    {
+      "predicted_action_id": "CA-000120",
+      "artifact": "../work.ipynb",
+      "section": "Ratios",
+      "mapping_rationale": "Current manual label keeps the room-size ratio branch."
+    }
+  ],
+  "omitted_notebook_steps": [
+    {
+      "section": "Selection Status",
+      "note": "This trace records the current in-progress manual selection, not a finalized exact-match notebook reconstruction."
+    },
+    {
+      "section": "Open Review",
+      "note": "Unselected bank actions remain under review and may still be added to or removed from the working human baseline."
+    }
+  ],
+  "notes": "Working action trace for the in-progress Sberbank human baseline authored by annotator_a."
+}

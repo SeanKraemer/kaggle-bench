@@ -1,0 +1,3550 @@
+{
+  "competition_slug": "home-credit-default-risk",
+  "generated_at": "2026-03-31T12:00:00-05:00",
+  "actions": [
+    {
+      "action_id": "CA-000001",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "constant",
+        "columns": [
+          "AMT_ANNUITY",
+          "AMT_GOODS_PRICE"
+        ],
+        "fill_value": 0
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Injects zeroes into missing monetary fields, creating artificial no-cost loans rather than preserving missingness semantics.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000134"
+      ],
+      "derivation_reasoning": "Synthetic broad zero-fill on key application amount columns.",
+      "challenge_type": "bad_imputation"
+    },
+    {
+      "action_id": "CA-000002",
+      "action_type": "DATE_PART_FEATURE",
+      "canonical_params": {
+        "date_columns": [
+          "DAYS_EMPLOYED"
+        ],
+        "parts": [
+          "year",
+          "quarter"
+        ],
+        "drop_original": false
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Extracts calendar components from parsed employment day offsets, creating brittle pseudo-date features from a relative offset column.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000020"
+      ],
+      "derivation_reasoning": "Synthetic date-part branch on a parsed employment-offset column.",
+      "challenge_type": "misread_datetime",
+      "must_follow_action_ids": [
+        "CA-000020"
+      ]
+    },
+    {
+      "action_id": "CA-000003",
+      "action_type": "FEATURE_SELECTION",
+      "canonical_params": {
+        "method": "mutual_info",
+        "feature_columns": [
+          "EXT_SOURCE_1",
+          "EXT_SOURCE_2",
+          "EXT_SOURCE_3",
+          "AMT_CREDIT",
+          "AMT_ANNUITY"
+        ],
+        "k": 3
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Selects only three features from a small hand-picked block, potentially discarding important complementary credit signals.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000134",
+        "CA-000038"
+      ],
+      "derivation_reasoning": "Synthetic aggressive feature-selection branch on a strong signal subset.",
+      "challenge_type": "feature_selection_branch"
+    },
+    {
+      "action_id": "CA-000004",
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "SK_ID_CURR"
+        ],
+        "target_columns": [
+          "AMT_ANNUITY",
+          "AMT_APPLICATION",
+          "AMT_CREDIT",
+          "CNT_PAYMENT",
+          "DAYS_DECISION"
+        ],
+        "agg_functions": [
+          "min",
+          "max",
+          "mean",
+          "sum",
+          "std"
+        ],
+        "join_back": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Previous applications are collapsed to customer-level summary statistics before joining back to the main table.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "shep312/lightgbm-harder-better-slower",
+        "prashantkikani/home-rf-et-xgb-cb-stack-oof1-lb-0-789",
+        "shep312/lightgbm-with-weighted-averages-dropout-787",
+        "shep312/deep-learning-in-tf-with-upsampling-lb-758",
+        "jsaguiar/lightgbm-with-simple-features"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Canonicalized from richer per-column aggregation dictionaries; mean-only variants were dropped as lower-information duplicates.",
+      "evidence_snippets": [
+        "agg_df = right_df.groupby('SK_ID_CURR').agg(agg_method)",
+        "prev_agg = prev.groupby('SK_ID_CURR').agg({**num_aggregations, **cat_aggregations})"
+      ],
+      "rareness": "common",
+      "confidence": 0.95
+    },
+    {
+      "action_id": "CA-000005",
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "DAYS_EMPLOYED != 365243"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Filters out applicants carrying the employment sentinel instead of repairing the sentinel and keeping those rows in the supervised table.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000082",
+        "CA-000102"
+      ],
+      "derivation_reasoning": "Synthetic row-removal shortcut replacing the intended sentinel-normalization path.",
+      "challenge_type": "harmful_filter"
+    },
+    {
+      "action_id": "CA-000006",
+      "action_type": "DROP_HIGH_NULL_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "NONLIVINGAPARTMENTS_AVG",
+          "NONLIVINGAPARTMENTS_MEDI",
+          "NONLIVINGAPARTMENTS_MODE"
+        ],
+        "null_ratio_threshold": 0.6
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Drops another sparse housing-feature block using a blanket null-ratio threshold, narrowing the feature space aggressively.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000072"
+      ],
+      "derivation_reasoning": "Synthetic sparse-column pruning branch on nonliving-apartment features.",
+      "challenge_type": "sparse_pruning"
+    },
+    {
+      "action_id": "CA-000007",
+      "action_type": "INTERACTION_FEATURE",
+      "canonical_params": {
+        "feature_columns": [
+          "DAYS_EMPLOYED",
+          "DAYS_BIRTH"
+        ],
+        "operator": "add"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Adds age and employment offsets instead of contrasting them, producing a less interpretable interaction than the notebook-local subtract variant.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000036"
+      ],
+      "derivation_reasoning": "Synthetic near-miss interaction operator on the same Home Credit columns.",
+      "challenge_type": "near_miss_feature"
+    },
+    {
+      "action_id": "CA-000008",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "bureau_aggregates",
+        "left_on": [
+          "SK_ID_CURR"
+        ],
+        "right_on": [
+          "SK_ID_CURR"
+        ],
+        "how": "inner"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Inner-joining bureau aggregates drops applicants with no bureau history and changes the row semantics of the supervised application table.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000128"
+      ],
+      "derivation_reasoning": "Synthetic wrong-join-type variant of the bureau aggregate merge.",
+      "challenge_type": "wrong_join_type"
+    },
+    {
+      "action_id": "CA-000009",
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "SK_ID_CURR"
+        ],
+        "target_columns": [
+          "DAYS_CREDIT",
+          "AMT_CREDIT_SUM",
+          "AMT_CREDIT_SUM_DEBT",
+          "AMT_CREDIT_SUM_OVERDUE",
+          "AMT_CREDIT_SUM_LIMIT",
+          "AMT_ANNUITY"
+        ],
+        "agg_functions": [
+          "mean"
+        ],
+        "join_back": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Uses a mean-only bureau aggregate that drops min/max/sum/std signals from a core customer-history block.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000062"
+      ],
+      "derivation_reasoning": "Synthetic narrower bureau aggregate for the same target columns.",
+      "challenge_type": "wrong_grain_aggregation"
+    },
+    {
+      "action_id": "CA-000010",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "onehot",
+        "columns": [
+          "CREDIT_ACTIVE",
+          "CREDIT_CURRENCY",
+          "CREDIT_TYPE"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "hard",
+      "reasoning": "Bureau categoricals are explicitly expanded before auxiliary-table aggregation.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "tilii7/olivier-lightgbm-parameters-by-bayesian-opt"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Restricted to bureau-table categoricals to avoid cross-table ambiguity under the current evaluator contract.",
+      "evidence_snippets": [
+        "buro_credit_active_dum = pd.get_dummies(buro.CREDIT_ACTIVE, prefix='ca_')",
+        "buro_credit_currency_dum = pd.get_dummies(buro.CREDIT_CURRENCY, prefix='cu_')",
+        "buro_credit_type_dum = pd.get_dummies(buro.CREDIT_TYPE, prefix='ty_')"
+      ],
+      "rareness": "rare",
+      "confidence": 0.9
+    },
+    {
+      "action_id": "CA-000011",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "DAYS_EMPLOYED"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Removes a central employment-duration field before sentinel cleanup and employment-versus-age features can be created.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000082",
+        "CA-000030",
+        "CA-000036"
+      ],
+      "derivation_reasoning": "Synthetic destructive drop blocking the main employment cleanup and derived-feature branch.",
+      "challenge_type": "premature_drop"
+    },
+    {
+      "action_id": "CA-000012",
+      "action_type": "LOG_TRANSFORM",
+      "canonical_params": {
+        "columns": [
+          "DAYS_BIRTH",
+          "DAYS_EMPLOYED"
+        ],
+        "offset": 1.0,
+        "handle_nonpositive": "shift"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Applies log transforms to signed day-offset columns, turning relative age and employment offsets into distorted pseudo-scale features.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000082",
+        "CA-000030"
+      ],
+      "derivation_reasoning": "Synthetic log-transform misuse on signed day-offset columns.",
+      "challenge_type": "scale_branch"
+    },
+    {
+      "action_id": "CA-000013",
+      "action_type": "REPLACE_INF",
+      "canonical_params": {
+        "columns": [
+          "EXT_SOURCE_1",
+          "EXT_SOURCE_2",
+          "EXT_SOURCE_3"
+        ],
+        "strategy": "nan"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Applies generic infinity-to-NaN replacement on bounded external score columns even though the raw task is not defined by inf values there.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000038",
+        "CA-000090"
+      ],
+      "derivation_reasoning": "Synthetic boilerplate infinity-sanitization step on bounded score columns.",
+      "challenge_type": "boilerplate_cleanup"
+    },
+    {
+      "action_id": "CA-000014",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "PAYMENT_DIFF = AMT_PAYMENT - AMT_INSTALMENT",
+        "output_columns": [
+          "PAYMENT_DIFF"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Defines payment difference with the opposite sign, so overpayment becomes positive and underpayment becomes negative.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000056"
+      ],
+      "derivation_reasoning": "Synthetic sign-flipped installment payment-gap expression.",
+      "challenge_type": "wrong_expression"
+    },
+    {
+      "action_id": "CA-000015",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "DAYS_EMPLOYED = 0 when DAYS_EMPLOYED == 365243",
+        "output_columns": [
+          "DAYS_EMPLOYED"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Replaces the employment sentinel with zero tenure, which invents current-day employment rather than preserving missing-or-anomalous semantics.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000082"
+      ],
+      "derivation_reasoning": "Synthetic wrong-repair expression for the Home Credit employment sentinel.",
+      "challenge_type": "wrong_expression"
+    },
+    {
+      "action_id": "CA-000016",
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "SK_ID_BUREAU"
+        ],
+        "target_columns": [
+          "DAYS_CREDIT",
+          "AMT_CREDIT_SUM",
+          "AMT_CREDIT_SUM_DEBT",
+          "AMT_CREDIT_SUM_OVERDUE",
+          "AMT_CREDIT_SUM_LIMIT",
+          "AMT_ANNUITY"
+        ],
+        "agg_functions": [
+          "min",
+          "max",
+          "mean",
+          "sum",
+          "std"
+        ],
+        "join_back": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Aggregates bureau records at the loan grain instead of the applicant grain, leaving an extra rollup step unresolved before main-table joins.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000062",
+        "CA-000128"
+      ],
+      "derivation_reasoning": "Synthetic wrong-grain bureau aggregation variant.",
+      "challenge_type": "wrong_grain_aggregation"
+    },
+    {
+      "action_id": "CA-000017",
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "CODE_GENDER != 'XNA'"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Rows with anomalous XNA gender codes are removed before application-table feature construction.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "tunguz/xgb-simple-features",
+        "jsaguiar/lightgbm-with-simple-features"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Direct application-table cleanup before downstream feature construction.",
+      "evidence_snippets": [
+        "df = df[df['CODE_GENDER'] != 'XNA']"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.9
+    },
+    {
+      "action_id": "CA-000018",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "installments_aggregates",
+        "left_on": [
+          "SK_ID_CURR"
+        ],
+        "right_on": [
+          "SK_ID_CURR"
+        ],
+        "how": "outer"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Outer-joining installment aggregates changes the applicant frame and can introduce rows outside the supervised application set.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000043"
+      ],
+      "derivation_reasoning": "Synthetic outer-join variant of the installments aggregate merge.",
+      "challenge_type": "wrong_join_type"
+    },
+    {
+      "action_id": "CA-000019",
+      "action_type": "CAST_DTYPE",
+      "canonical_params": {
+        "columns": [
+          "AMT_CREDIT",
+          "AMT_ANNUITY",
+          "AMT_INCOME_TOTAL"
+        ],
+        "dtype": "int"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Casts key floating monetary fields to integers, discarding cents-level resolution before downstream modeling.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000134"
+      ],
+      "derivation_reasoning": "Synthetic lossy dtype conversion on core Home Credit amount columns.",
+      "challenge_type": "lossy_cast"
+    },
+    {
+      "action_id": "CA-000020",
+      "action_type": "PARSE_DATETIME",
+      "canonical_params": {
+        "columns": [
+          "DAYS_EMPLOYED",
+          "DAYS_REGISTRATION"
+        ],
+        "errors": "coerce"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Parses relative day-offset employment and registration columns as datetimes, creating pseudo-calendar values from offsets.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000082",
+        "CA-000030"
+      ],
+      "derivation_reasoning": "Synthetic datetime-parsing misread of Home Credit offset columns.",
+      "challenge_type": "misread_datetime"
+    },
+    {
+      "action_id": "CA-000021",
+      "action_type": "PARSE_DATETIME",
+      "canonical_params": {
+        "columns": [
+          "DAYS_BIRTH"
+        ],
+        "errors": "coerce"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Parses a relative day-offset age column as if it were a raw datetime field, misreading Home Credit offset semantics.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000030"
+      ],
+      "derivation_reasoning": "Synthetic datetime-parsing misread of a days-offset column.",
+      "challenge_type": "misread_datetime"
+    },
+    {
+      "action_id": "CA-000022",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "count",
+        "columns": [
+          "CREDIT_ACTIVE",
+          "CREDIT_CURRENCY",
+          "CREDIT_TYPE"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Count-encodes bureau categoricals, obscuring small-cardinality status distinctions that the benchmark path preserves more explicitly.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000010"
+      ],
+      "derivation_reasoning": "Synthetic lossy encoding alternative for bureau categories.",
+      "challenge_type": "encoding_near_miss"
+    },
+    {
+      "action_id": "CA-000023",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "label",
+        "columns": [
+          "NAME_CONTRACT_TYPE",
+          "CODE_GENDER",
+          "FLAG_OWN_CAR",
+          "FLAG_OWN_REALTY",
+          "NAME_INCOME_TYPE",
+          "NAME_EDUCATION_TYPE",
+          "NAME_FAMILY_STATUS",
+          "NAME_HOUSING_TYPE",
+          "OCCUPATION_TYPE",
+          "ORGANIZATION_TYPE"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "An alternative application-table strategy is to label-encode the same core nominal categorical fields.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "arezoodahesh/home-credit-default-risk-part02-boosting-models"
+      ],
+      "source_profile": "explanatory_style",
+      "context_notes": "Alternative application categorical encoding strategy for the same column set as CA-000076.",
+      "evidence_snippets": [
+        "categorical = categorical.apply(lambda col_names_cat: le.fit_transform(col_names_cat))"
+      ],
+      "rareness": "rare",
+      "confidence": 0.75,
+      "equivalence_group": "home_credit_application_categorical_encoding_strategy"
+    },
+    {
+      "action_id": "CA-000024",
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "SK_ID_PREV"
+        ],
+        "target_columns": [
+          "DAYS_ENTRY_PAYMENT",
+          "AMT_INSTALMENT",
+          "AMT_PAYMENT"
+        ],
+        "agg_functions": [
+          "min",
+          "max",
+          "mean",
+          "sum",
+          "std"
+        ],
+        "join_back": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Aggregates installment history by prior loan id instead of customer id, leaving another aggregation step unresolved before joining to applications.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000056"
+      ],
+      "derivation_reasoning": "Synthetic wrong-grain installments aggregation.",
+      "challenge_type": "wrong_grain_aggregation"
+    },
+    {
+      "action_id": "CA-000025",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "previous_application",
+        "left_on": [
+          "SK_ID_CURR"
+        ],
+        "right_on": [
+          "SK_ID_CURR"
+        ],
+        "how": "left"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Directly left-joins raw previous applications to the main table, creating row explosion for customers with multiple historical loans.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000004",
+        "CA-000069"
+      ],
+      "derivation_reasoning": "Synthetic raw one-to-many join instead of the applicant-level previous-application aggregate path.",
+      "challenge_type": "row_explosion_join"
+    },
+    {
+      "action_id": "CA-000026",
+      "action_type": "HASH_CROSS",
+      "canonical_params": {
+        "columns": [
+          "ORGANIZATION_TYPE",
+          "OCCUPATION_TYPE"
+        ],
+        "n_buckets": 256,
+        "seed": 42
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Hashes a cross of organization and occupation labels, creating a noisy sparse interaction branch on already sparse categories.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000076",
+        "CA-000023"
+      ],
+      "derivation_reasoning": "Synthetic hashed cross-feature branch on sparse applicant categoricals.",
+      "challenge_type": "interaction_branch"
+    },
+    {
+      "action_id": "CA-000027",
+      "action_type": "EXPANDING_WINDOW_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "AMT_PAYMENT"
+        ],
+        "agg_functions": [
+          "mean",
+          "sum"
+        ],
+        "order_by_columns": [
+          "DAYS_ENTRY_PAYMENT"
+        ],
+        "group_by_columns": [
+          "SK_ID_PREV"
+        ],
+        "min_periods": 1
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Builds cumulative installment payment statistics ordered by payment-entry day, creating a sequential repayment-history branch.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000056",
+        "CA-000085"
+      ],
+      "derivation_reasoning": "Synthetic expanding-window installment feature branch.",
+      "challenge_type": "temporal_branch"
+    },
+    {
+      "action_id": "CA-000028",
+      "action_type": "POWER_TRANSFORM",
+      "canonical_params": {
+        "columns": [
+          "AMT_ANNUITY",
+          "AMT_GOODS_PRICE"
+        ],
+        "method": "boxcox",
+        "standardize": true
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Applies a Box-Cox transform to positive loan amount columns, adding another heavy-handed scaling branch.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000113"
+      ],
+      "derivation_reasoning": "Synthetic power-transform branch on loan amount columns.",
+      "challenge_type": "scale_branch"
+    },
+    {
+      "action_id": "CA-000029",
+      "action_type": "RATIO_FEATURE",
+      "canonical_params": {
+        "left_columns": [
+          "DAYS_BIRTH"
+        ],
+        "right_columns": [
+          "DAYS_EMPLOYED"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Uses the inverse age-to-employment ratio instead of the benchmark\u2019s employment-normalized-by-age signal.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000030"
+      ],
+      "derivation_reasoning": "Synthetic inverse-ratio variant of the age-normalized employment feature.",
+      "challenge_type": "near_miss_feature"
+    },
+    {
+      "action_id": "CA-000030",
+      "action_type": "RATIO_FEATURE",
+      "canonical_params": {
+        "left_columns": [
+          "DAYS_EMPLOYED"
+        ],
+        "right_columns": [
+          "DAYS_BIRTH"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Employment-duration relative to age is repeatedly engineered as a normalized tenure signal.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "mathchi/home-credit-risk-with-detailed-feature-engineering",
+        "jsaguiar/lightgbm-with-simple-features",
+        "jsaguiar/lightgbm-7th-place-solution"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Canonicalized to a ratio feature so notebook-specific output names do not create separate gold actions.",
+      "evidence_snippets": [
+        "df['NEW_DAYS_EMPLOYED_PERC'] = df['DAYS_EMPLOYED'] / df['DAYS_BIRTH']",
+        "df['EMPLOYED_TO_BIRTH_RATIO'] = df['DAYS_EMPLOYED'] / df['DAYS_BIRTH']"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.9
+    },
+    {
+      "action_id": "CA-000031",
+      "action_type": "SAMPLE_ROWS",
+      "canonical_params": {
+        "method": "random",
+        "frac": 0.5,
+        "replace": false
+      },
+      "eval_stage": "validation_protocol",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Randomly keeps only half of the training rows, turning the task into a subsampled training protocol rather than full-data preprocessing.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000017",
+        "CA-000134"
+      ],
+      "derivation_reasoning": "Synthetic random subsampling branch for faster but weaker training.",
+      "challenge_type": "sampling_protocol"
+    },
+    {
+      "action_id": "CA-000032",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "constant",
+        "columns": [
+          "AMT_INCOME_TOTAL"
+        ],
+        "fill_value": 0
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Zero-filling missing total income invents applicants with no income and distorts affordability relationships.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000134"
+      ],
+      "derivation_reasoning": "Synthetic zero-fill on a core affordability feature.",
+      "challenge_type": "bad_imputation"
+    },
+    {
+      "action_id": "CA-000033",
+      "action_type": "CYCLICAL_ENCODE",
+      "canonical_params": {
+        "columns": [
+          "HOUR_APPR_PROCESS_START"
+        ],
+        "period": 24,
+        "method": "sin_cos"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Applies cyclical encoding to application hour, adding an alternative temporal representation outside the benchmark backbone.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000076",
+        "CA-000023"
+      ],
+      "derivation_reasoning": "Synthetic cyclical-hour feature branch on the main application table.",
+      "challenge_type": "temporal_branch"
+    },
+    {
+      "action_id": "CA-000034",
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "SK_ID_PREV"
+        ],
+        "target_columns": [
+          "AMT_BALANCE",
+          "AMT_CREDIT_LIMIT_ACTUAL",
+          "AMT_DRAWINGS_ATM_CURRENT",
+          "AMT_PAYMENT_CURRENT",
+          "SK_DPD"
+        ],
+        "agg_functions": [
+          "min",
+          "max",
+          "mean",
+          "sum",
+          "std"
+        ],
+        "join_back": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Aggregates credit-card monthly rows by prior account instead of customer, so the main-table join still lacks an applicant-level summary.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000095"
+      ],
+      "derivation_reasoning": "Synthetic wrong-grain credit-card aggregation.",
+      "challenge_type": "wrong_grain_aggregation"
+    },
+    {
+      "action_id": "CA-000035",
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "SK_ID_CURR"
+        ],
+        "target_columns": [
+          "AMT_PAYMENT_CURRENT"
+        ],
+        "agg_functions": [
+          "mean"
+        ],
+        "join_back": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Keeps only the mean current credit-card payment amount and drops the broader balance, limit, drawing, and delinquency context from the benchmark path.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000095"
+      ],
+      "derivation_reasoning": "Synthetic overly narrow credit-card aggregation focused on a single payment summary.",
+      "challenge_type": "wrong_grain_aggregation"
+    },
+    {
+      "action_id": "CA-000036",
+      "action_type": "INTERACTION_FEATURE",
+      "canonical_params": {
+        "feature_columns": [
+          "DAYS_EMPLOYED",
+          "DAYS_BIRTH"
+        ],
+        "operator": "subtract"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "hard",
+      "reasoning": "A baseline EDA notebook adds a simple employment-versus-age interval feature from the application table.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "sz8416/eda-baseline-model-using-application"
+      ],
+      "source_profile": "explanatory_style",
+      "context_notes": "Canonicalized from the notebook's misspelled output name to an order-sensitive subtract interaction.",
+      "evidence_snippets": [
+        "### BIRTH_EMPLOTED_INTERVEL: the days between born and employed"
+      ],
+      "rareness": "rare",
+      "confidence": 0.75
+    },
+    {
+      "action_id": "CA-000037",
+      "action_type": "SCALE_NUMERIC",
+      "canonical_params": {
+        "method": "standard",
+        "columns": [
+          "AMT_INCOME_TOTAL",
+          "AMT_CREDIT",
+          "AMT_ANNUITY"
+        ],
+        "with_mean": true,
+        "with_std": true
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Standard-scales the main amount columns, introducing a generic scaling branch not required by the benchmark backbone.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000012",
+        "CA-000052"
+      ],
+      "derivation_reasoning": "Synthetic standard-scaling branch on central monetary features.",
+      "challenge_type": "scale_branch"
+    },
+    {
+      "action_id": "CA-000038",
+      "action_type": "DROP_ROWS_WITH_MISSING",
+      "canonical_params": {
+        "subset_columns": [
+          "EXT_SOURCE_1",
+          "EXT_SOURCE_2",
+          "EXT_SOURCE_3"
+        ],
+        "how": "any"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Drops too many applicants because the external source scores are sparse and stronger Home Credit pipelines keep partially observed rows.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000076",
+        "CA-000023"
+      ],
+      "derivation_reasoning": "Synthetic sparse-feature row-drop shortcut aligned with a legacy Home Credit fault.",
+      "challenge_type": "missing_row_drop"
+    },
+    {
+      "action_id": "CA-000039",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "AMT_CREDIT"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Drops the core credit amount field before affordability ratios and customer-history amount comparisons can be built.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000134",
+        "CA-000004",
+        "CA-000115"
+      ],
+      "derivation_reasoning": "Synthetic destructive drop of a core monetary feature used in several Home Credit branches.",
+      "challenge_type": "premature_drop"
+    },
+    {
+      "action_id": "CA-000040",
+      "action_type": "DIFF_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "AMT_BALANCE"
+        ],
+        "periods": 1,
+        "order_by_columns": [
+          "MONTHS_BALANCE"
+        ],
+        "group_by_columns": [
+          "SK_ID_PREV"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Creates first differences of credit-card balances across monthly history, adding a temporal derivative branch outside the benchmark backbone.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000095"
+      ],
+      "derivation_reasoning": "Synthetic monthly-difference feature branch on credit-card history.",
+      "challenge_type": "temporal_branch"
+    },
+    {
+      "action_id": "CA-000041",
+      "action_type": "PCA_REDUCTION",
+      "canonical_params": {
+        "feature_columns": [
+          "AMT_CREDIT",
+          "AMT_ANNUITY",
+          "AMT_GOODS_PRICE",
+          "AMT_INCOME_TOTAL"
+        ],
+        "n_components": 2,
+        "method": "svd"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Compresses core amount features into two latent components, losing the explicit ratios and amount semantics used in the benchmark backbone.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000134"
+      ],
+      "derivation_reasoning": "Synthetic dimensionality-reduction branch on applicant amount features.",
+      "challenge_type": "dimensionality_reduction"
+    },
+    {
+      "action_id": "CA-000042",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "AMT_ANNUITY"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Drops the annuity column before the credit-to-annuity ratio or several aggregate summaries can be computed.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000134",
+        "CA-000004",
+        "CA-000115"
+      ],
+      "derivation_reasoning": "Synthetic destructive drop targeting a ratio-defining Home Credit amount field.",
+      "challenge_type": "premature_drop"
+    },
+    {
+      "action_id": "CA-000043",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "installments_aggregates",
+        "left_on": [
+          "SK_ID_CURR"
+        ],
+        "right_on": [
+          "SK_ID_CURR"
+        ],
+        "how": "left"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "The installments aggregate table is left-joined back to the main application table.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "jsaguiar/lightgbm-7th-place-solution"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Specific replacement for the earlier broad `auxiliary_aggregates` join placeholder.",
+      "evidence_snippets": [
+        "df = pd.merge(df, ins, on='SK_ID_CURR', how='left')"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.9,
+      "must_follow_action_ids": [
+        "CA-000056"
+      ]
+    },
+    {
+      "action_id": "CA-000044",
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "CODE_GENDER != 'XNA' and DAYS_EMPLOYED != 365243"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Starts from the valid XNA cleanup but adds a harmful employment-sentinel row filter that removes applicants the benchmark expects to preserve.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000017",
+        "CA-000082"
+      ],
+      "derivation_reasoning": "Synthetic over-aggressive extension of the valid gender cleanup step.",
+      "challenge_type": "harmful_filter"
+    },
+    {
+      "action_id": "CA-000045",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "SK_ID_CURR"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Drops the customer key before any applicant-level aggregate tables can be joined back to the main application table.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000128",
+        "CA-000069",
+        "CA-000121",
+        "CA-000043",
+        "CA-000049"
+      ],
+      "derivation_reasoning": "Synthetic premature-drop variant of the Home Credit relational join backbone.",
+      "challenge_type": "premature_drop"
+    },
+    {
+      "action_id": "CA-000046",
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "SK_ID_CURR"
+        ],
+        "target_columns": [
+          "CC_MIN_PAYMENT_GAP"
+        ],
+        "agg_functions": [
+          "max"
+        ],
+        "join_back": false
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Keeps only a derived credit-card minimum-payment gap rather than the benchmark\u2019s broader raw balance, limit, drawing, and delinquency block.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000095"
+      ],
+      "derivation_reasoning": "Synthetic notebook-local credit-card aggregate variant.",
+      "challenge_type": "wrong_grain_aggregation"
+    },
+    {
+      "action_id": "CA-000047",
+      "action_type": "DROP_HIGH_NULL_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "COMMONAREA_AVG",
+          "COMMONAREA_MEDI",
+          "COMMONAREA_MODE"
+        ],
+        "null_ratio_threshold": 0.6
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Prunes highly sparse building columns wholesale instead of leaving the model to exploit any surviving structure.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000072"
+      ],
+      "derivation_reasoning": "Synthetic high-null pruning branch on Home Credit housing features.",
+      "challenge_type": "sparse_pruning"
+    },
+    {
+      "action_id": "CA-000048",
+      "action_type": "EXPANDING_WINDOW_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "AMT_BALANCE"
+        ],
+        "agg_functions": [
+          "mean",
+          "max"
+        ],
+        "order_by_columns": [
+          "MONTHS_BALANCE"
+        ],
+        "group_by_columns": [
+          "SK_ID_PREV"
+        ],
+        "min_periods": 1
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Builds cumulative balance statistics over credit-card monthly history, adding a sequential-history branch beyond the benchmark backbone.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000095",
+        "CA-000040"
+      ],
+      "derivation_reasoning": "Synthetic expanding-window credit-card feature branch.",
+      "challenge_type": "temporal_branch"
+    },
+    {
+      "action_id": "CA-000049",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "credit_card_aggregates",
+        "left_on": [
+          "SK_ID_CURR"
+        ],
+        "right_on": [
+          "SK_ID_CURR"
+        ],
+        "how": "left"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "The credit-card aggregate table is left-joined back to the main application table.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "jsaguiar/lightgbm-7th-place-solution"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Specific replacement for the earlier broad `auxiliary_aggregates` join placeholder.",
+      "evidence_snippets": [
+        "df = pd.merge(df, cc, on='SK_ID_CURR', how='left')"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.9,
+      "must_follow_action_ids": [
+        "CA-000095"
+      ]
+    },
+    {
+      "action_id": "CA-000050",
+      "action_type": "LAG_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "AMT_BALANCE"
+        ],
+        "lag_periods": [
+          1,
+          3
+        ],
+        "order_by_columns": [
+          "MONTHS_BALANCE"
+        ],
+        "group_by_columns": [
+          "SK_ID_PREV"
+        ],
+        "fill_value": 0
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Adds lagged credit-card balances from monthly account history, moving the task toward a sequence-modeling feature branch.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000095",
+        "CA-000040"
+      ],
+      "derivation_reasoning": "Synthetic lag feature branch on credit-card monthly history.",
+      "challenge_type": "temporal_branch"
+    },
+    {
+      "action_id": "CA-000051",
+      "action_type": "BIN_NUMERIC",
+      "canonical_params": {
+        "columns": [
+          "EXT_SOURCE_2"
+        ],
+        "method": "uniform",
+        "bins": 10
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Uniform-bins an external risk score, reducing a dense continuous signal to a coarse bucket code.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000038",
+        "CA-000090"
+      ],
+      "derivation_reasoning": "Synthetic discretization of an already bounded external score feature.",
+      "challenge_type": "coarse_binning"
+    },
+    {
+      "action_id": "CA-000052",
+      "action_type": "POWER_TRANSFORM",
+      "canonical_params": {
+        "columns": [
+          "AMT_INCOME_TOTAL",
+          "AMT_CREDIT"
+        ],
+        "method": "yeojohnson",
+        "standardize": true
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Applies a power transform to amount columns, changing their scale and distribution before modeling.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000012",
+        "CA-000041"
+      ],
+      "derivation_reasoning": "Synthetic power-transform branch on applicant amount features.",
+      "challenge_type": "scale_branch"
+    },
+    {
+      "action_id": "CA-000053",
+      "action_type": "TEXT_VECTORIZATION",
+      "canonical_params": {
+        "method": "bow",
+        "text_columns": [
+          "OCCUPATION_TYPE"
+        ],
+        "ngram_range": [
+          1,
+          1
+        ],
+        "max_features": 128,
+        "min_df": 2,
+        "lowercase": true
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Treats occupation labels as bag-of-words text instead of preserving them as explicit categories.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000099",
+        "CA-000098"
+      ],
+      "derivation_reasoning": "Synthetic text-vectorization branch on occupation labels.",
+      "challenge_type": "text_like_branch"
+    },
+    {
+      "action_id": "CA-000054",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "installments_payments",
+        "left_on": [
+          "SK_ID_CURR"
+        ],
+        "right_on": [
+          "SK_ID_CURR"
+        ],
+        "how": "left"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Directly joins raw installment payment events to the application table, creating duplicate applicant rows for each payment event.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000056",
+        "CA-000043"
+      ],
+      "derivation_reasoning": "Synthetic raw event-history join for installment payments.",
+      "challenge_type": "row_explosion_join"
+    },
+    {
+      "action_id": "CA-000055",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "label",
+        "columns": [
+          "CREDIT_ACTIVE",
+          "CREDIT_CURRENCY",
+          "CREDIT_TYPE"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Label-encodes bureau categoricals even though the benchmarked branch expands them before aggregation.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000010"
+      ],
+      "derivation_reasoning": "Synthetic alternative categorical encoding for bureau-side status/type features.",
+      "challenge_type": "encoding_near_miss"
+    },
+    {
+      "action_id": "CA-000056",
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "SK_ID_CURR"
+        ],
+        "target_columns": [
+          "DAYS_ENTRY_PAYMENT",
+          "AMT_INSTALMENT",
+          "AMT_PAYMENT"
+        ],
+        "agg_functions": [
+          "min",
+          "max",
+          "mean",
+          "sum",
+          "std"
+        ],
+        "join_back": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Installment-payment history is aggregated to customer-level raw payment timing and amount summaries.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "jsaguiar/lightgbm-with-simple-features",
+        "jsaguiar/lightgbm-7th-place-solution"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Restricted to raw installment columns that are directly aggregated in the close-read winner-style notebooks, so the repayment-history block does not rely on unnamed derived features such as DPD, DBD, PAYMENT_PERC, or PAYMENT_DIFF.",
+      "evidence_snippets": [
+        "ins_agg = ins.groupby('SK_ID_CURR').agg(aggregations)",
+        "pay_agg = group(pay, 'INS_', INSTALLMENTS_AGG)"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.9
+    },
+    {
+      "action_id": "CA-000057",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "pos_cash_balance",
+        "left_on": [
+          "SK_ID_CURR"
+        ],
+        "right_on": [
+          "SK_ID_CURR"
+        ],
+        "how": "left"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Directly joins raw POS cash monthly history to the application table instead of first aggregating it to one row per applicant.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000115",
+        "CA-000121"
+      ],
+      "derivation_reasoning": "Synthetic raw monthly-history join for the POS branch.",
+      "challenge_type": "row_explosion_join"
+    },
+    {
+      "action_id": "CA-000058",
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "SK_ID_CURR"
+        ],
+        "target_columns": [
+          "AMT_PAYMENT"
+        ],
+        "agg_functions": [
+          "max"
+        ],
+        "join_back": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Uses a single maximum installment payment aggregate and drops the rest of the raw payment-history context.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000056"
+      ],
+      "derivation_reasoning": "Synthetic overly narrow installment aggregation.",
+      "challenge_type": "wrong_grain_aggregation"
+    },
+    {
+      "action_id": "CA-000059",
+      "action_type": "LAG_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "AMT_PAYMENT"
+        ],
+        "lag_periods": [
+          1,
+          2
+        ],
+        "order_by_columns": [
+          "DAYS_ENTRY_PAYMENT"
+        ],
+        "group_by_columns": [
+          "SK_ID_PREV"
+        ],
+        "fill_value": 0
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Adds lagged installment payments ordered by payment entry day, introducing another sequential-history branch.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000056",
+        "CA-000085"
+      ],
+      "derivation_reasoning": "Synthetic lag feature branch on installment payment history.",
+      "challenge_type": "temporal_branch"
+    },
+    {
+      "action_id": "CA-000060",
+      "action_type": "TEXT_VECTORIZATION",
+      "canonical_params": {
+        "method": "tfidf",
+        "text_columns": [
+          "ORGANIZATION_TYPE"
+        ],
+        "ngram_range": [
+          1,
+          2
+        ],
+        "max_features": 256,
+        "min_df": 2,
+        "lowercase": true
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Treats organization labels as free text and builds TF-IDF features, replacing direct categorical handling with a text branch.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000064",
+        "CA-000133"
+      ],
+      "derivation_reasoning": "Synthetic text-vectorization branch on organization labels.",
+      "challenge_type": "text_like_branch"
+    },
+    {
+      "action_id": "CA-000061",
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "SK_ID_CURR"
+        ],
+        "target_columns": [
+          "AMT_ANNUITY",
+          "AMT_APPLICATION",
+          "AMT_CREDIT",
+          "CNT_PAYMENT",
+          "DAYS_DECISION"
+        ],
+        "agg_functions": [
+          "mean"
+        ],
+        "join_back": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Uses a mean-only previous-application aggregate that discards range and total-volume signals from prior Home Credit history.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000004"
+      ],
+      "derivation_reasoning": "Synthetic narrower previous-application aggregate variant.",
+      "challenge_type": "wrong_grain_aggregation"
+    },
+    {
+      "action_id": "CA-000062",
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "SK_ID_CURR"
+        ],
+        "target_columns": [
+          "DAYS_CREDIT",
+          "AMT_CREDIT_SUM",
+          "AMT_CREDIT_SUM_DEBT",
+          "AMT_CREDIT_SUM_OVERDUE",
+          "AMT_CREDIT_SUM_LIMIT",
+          "AMT_ANNUITY"
+        ],
+        "agg_functions": [
+          "min",
+          "max",
+          "mean",
+          "sum",
+          "std"
+        ],
+        "join_back": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Core bureau numeric fields are aggregated to customer level as one of the main Home Credit feature blocks.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "hikmetsezen/base-model-with-0-804-auc-on-home-credit",
+        "jsaguiar/lightgbm-with-simple-features"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Restricted to raw bureau columns so the customer aggregate block does not depend on unnamed bureau-balance intermediate outputs.",
+      "evidence_snippets": [
+        "bureau_agg = bureau.groupby('SK_ID_CURR').agg({**num_aggregations, **cat_aggregations})"
+      ],
+      "rareness": "common",
+      "confidence": 0.95
+    },
+    {
+      "action_id": "CA-000063",
+      "action_type": "ROLLING_WINDOW_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "AMT_BALANCE"
+        ],
+        "window_sizes": [
+          3,
+          6
+        ],
+        "agg_functions": [
+          "mean",
+          "max"
+        ],
+        "order_by_columns": [
+          "MONTHS_BALANCE"
+        ],
+        "group_by_columns": [
+          "SK_ID_PREV"
+        ],
+        "min_periods": 1
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Adds rolling balance statistics over credit-card monthly history, moving the task toward a sequence-feature branch.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000048",
+        "CA-000050"
+      ],
+      "derivation_reasoning": "Synthetic rolling-window branch on credit-card history.",
+      "challenge_type": "temporal_branch"
+    },
+    {
+      "action_id": "CA-000064",
+      "action_type": "NORMALIZE_STRING",
+      "canonical_params": {
+        "columns": [
+          "ORGANIZATION_TYPE"
+        ],
+        "case": "lower",
+        "strip": true,
+        "empty_to_null": true
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Normalizes organization labels as free text, pushing a categorical column toward a text-cleaning branch.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000076",
+        "CA-000023"
+      ],
+      "derivation_reasoning": "Synthetic string-normalization branch on organization labels.",
+      "challenge_type": "text_like_branch"
+    },
+    {
+      "action_id": "CA-000065",
+      "action_type": "PCA_REDUCTION",
+      "canonical_params": {
+        "feature_columns": [
+          "EXT_SOURCE_1",
+          "EXT_SOURCE_2",
+          "EXT_SOURCE_3"
+        ],
+        "n_components": 2,
+        "method": "pca"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Compresses the external score block with PCA, replacing directly interpretable score features with low-dimensional components.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000038",
+        "CA-000090"
+      ],
+      "derivation_reasoning": "Synthetic dimensionality-reduction branch on external score features.",
+      "challenge_type": "dimensionality_reduction"
+    },
+    {
+      "action_id": "CA-000066",
+      "action_type": "ROLLING_WINDOW_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "AMT_PAYMENT"
+        ],
+        "window_sizes": [
+          2,
+          4
+        ],
+        "agg_functions": [
+          "mean",
+          "sum"
+        ],
+        "order_by_columns": [
+          "DAYS_ENTRY_PAYMENT"
+        ],
+        "group_by_columns": [
+          "SK_ID_PREV"
+        ],
+        "min_periods": 1
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Adds rolling payment statistics over installment history, creating another sequential-history feature branch.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000027",
+        "CA-000059"
+      ],
+      "derivation_reasoning": "Synthetic rolling-window branch on installment history.",
+      "challenge_type": "temporal_branch"
+    },
+    {
+      "action_id": "CA-000067",
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "SK_ID_CURR"
+        ],
+        "target_columns": [
+          "SK_DPD"
+        ],
+        "agg_functions": [
+          "max"
+        ],
+        "join_back": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Keeps only the maximum POS delinquency value and drops average and count context from the benchmarked POS customer-history block.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000115"
+      ],
+      "derivation_reasoning": "Synthetic overly narrow POS delinquency aggregation.",
+      "challenge_type": "wrong_grain_aggregation"
+    },
+    {
+      "action_id": "CA-000068",
+      "action_type": "DATE_PART_FEATURE",
+      "canonical_params": {
+        "date_columns": [
+          "DAYS_BIRTH"
+        ],
+        "parts": [
+          "year",
+          "month"
+        ],
+        "drop_original": false
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Extracts calendar parts from a parsed day-offset age column, treating a relative day counter as if it were a real calendar timestamp.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000021"
+      ],
+      "derivation_reasoning": "Synthetic date-part branch that misreads relative day offsets as datetime features.",
+      "challenge_type": "misread_datetime",
+      "must_follow_action_ids": [
+        "CA-000021"
+      ]
+    },
+    {
+      "action_id": "CA-000069",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "previous_application_aggregates",
+        "left_on": [
+          "SK_ID_CURR"
+        ],
+        "right_on": [
+          "SK_ID_CURR"
+        ],
+        "how": "left"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "The previous-application aggregate table is left-joined back to the main application table.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "jsaguiar/lightgbm-7th-place-solution",
+        "willkoehrsen/introduction-to-feature-selection"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Specific replacement for the earlier broad `auxiliary_aggregates` join placeholder.",
+      "evidence_snippets": [
+        "df = pd.merge(df, prev_df, on='SK_ID_CURR', how='left')",
+        "train = train_bureau.merge(train_previous[previous_features], on = 'SK_ID_CURR')"
+      ],
+      "rareness": "common",
+      "confidence": 0.95,
+      "must_follow_action_ids": [
+        "CA-000004"
+      ]
+    },
+    {
+      "action_id": "CA-000070",
+      "action_type": "TARGET_ENCODE_OOF",
+      "canonical_params": {
+        "columns": [
+          "SK_ID_CURR",
+          "NAME_INCOME_TYPE"
+        ],
+        "target_column": "TARGET",
+        "cv_strategy": "stratifiedkfold",
+        "n_splits": 5,
+        "shuffle": true,
+        "random_state": 42,
+        "smoothing": 5.0
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Applies out-of-fold target encoding to an identifier-plus-category combination that is close to unique per applicant and encourages memorization.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000017",
+        "CA-000076"
+      ],
+      "derivation_reasoning": "Synthetic near-unique target-encoding branch built on the application identifier plus one category.",
+      "challenge_type": "encoding_near_miss"
+    },
+    {
+      "action_id": "CA-000071",
+      "action_type": "SAMPLE_ROWS",
+      "canonical_params": {
+        "method": "stratified",
+        "frac": 0.3,
+        "stratify_columns": [
+          "TARGET"
+        ],
+        "replace": false
+      },
+      "eval_stage": "validation_protocol",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Stratified subsampling keeps only a fraction of labeled rows, shrinking the effective training set instead of using the full competition data.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000031"
+      ],
+      "derivation_reasoning": "Synthetic stratified subsampling branch for training-time speedups.",
+      "challenge_type": "sampling_protocol"
+    },
+    {
+      "action_id": "CA-000072",
+      "action_type": "CREATE_MISSING_INDICATOR",
+      "canonical_params": {
+        "columns": [
+          "FLAG_PHONE",
+          "FLAG_EMAIL"
+        ],
+        "indicator_suffix": "_NA_FLAG"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Introduces missingness flags on dense binary contact indicators, adding redundant noise rather than a useful sparse-feature repair.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000076",
+        "CA-000023"
+      ],
+      "derivation_reasoning": "Synthetic redundant-indicator branch on contact flags that rarely carry missingness.",
+      "challenge_type": "missingness_branch"
+    },
+    {
+      "action_id": "CA-000073",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "count",
+        "columns": [
+          "NAME_CONTRACT_TYPE",
+          "CODE_GENDER",
+          "FLAG_OWN_CAR",
+          "FLAG_OWN_REALTY",
+          "NAME_INCOME_TYPE",
+          "NAME_EDUCATION_TYPE",
+          "NAME_FAMILY_STATUS",
+          "NAME_HOUSING_TYPE",
+          "OCCUPATION_TYPE",
+          "ORGANIZATION_TYPE"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Count-encodes the main application categoricals instead of using the benchmark\u2019s explicit one-hot or label alternatives.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000076",
+        "CA-000023"
+      ],
+      "derivation_reasoning": "Synthetic near-miss categorical strategy for the same Home Credit application columns.",
+      "challenge_type": "encoding_near_miss"
+    },
+    {
+      "action_id": "CA-000074",
+      "action_type": "BIN_NUMERIC",
+      "canonical_params": {
+        "columns": [
+          "AMT_INCOME_TOTAL"
+        ],
+        "method": "quantile",
+        "bins": 5
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Buckets total income into coarse quantile bands, throwing away useful numeric resolution from a core affordability signal.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000134"
+      ],
+      "derivation_reasoning": "Synthetic discretization branch on a continuous Home Credit amount feature.",
+      "challenge_type": "coarse_binning"
+    },
+    {
+      "action_id": "CA-000075",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "hash",
+        "columns": [
+          "NAME_CONTRACT_TYPE",
+          "CODE_GENDER",
+          "FLAG_OWN_CAR",
+          "FLAG_OWN_REALTY",
+          "NAME_INCOME_TYPE",
+          "NAME_EDUCATION_TYPE",
+          "NAME_FAMILY_STATUS",
+          "NAME_HOUSING_TYPE",
+          "OCCUPATION_TYPE",
+          "ORGANIZATION_TYPE"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Hash-encodes a small, known nominal column set where the benchmark expects direct explicit categorical handling.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000076"
+      ],
+      "derivation_reasoning": "Synthetic lossy encoding alternative for the core application categorical block.",
+      "challenge_type": "encoding_near_miss"
+    },
+    {
+      "action_id": "CA-000076",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "onehot",
+        "columns": [
+          "NAME_CONTRACT_TYPE",
+          "CODE_GENDER",
+          "FLAG_OWN_CAR",
+          "FLAG_OWN_REALTY",
+          "NAME_INCOME_TYPE",
+          "NAME_EDUCATION_TYPE",
+          "NAME_FAMILY_STATUS",
+          "NAME_HOUSING_TYPE",
+          "OCCUPATION_TYPE",
+          "ORGANIZATION_TYPE"
+        ],
+        "handle_unknown": "ignore"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "One common application-table strategy is to one-hot encode the main nominal categorical fields before modeling.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "hadeux/auto-simple-ensemble-model"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Alternative application categorical encoding strategy for the same column set as CA-000023.",
+      "evidence_snippets": [
+        "df_train = pd.get_dummies(df_train)"
+      ],
+      "rareness": "rare",
+      "confidence": 0.75,
+      "equivalence_group": "home_credit_application_categorical_encoding_strategy"
+    },
+    {
+      "action_id": "CA-000077",
+      "action_type": "TIME_SINCE_REFERENCE",
+      "canonical_params": {
+        "columns": [
+          "DAYS_EMPLOYED"
+        ],
+        "reference": "2018-01-01",
+        "unit": "days"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Computes elapsed time from a parsed employment-offset column to a fixed calendar date, building pseudo-age features from offset data.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000020"
+      ],
+      "derivation_reasoning": "Synthetic elapsed-time feature branch on a misparsed employment-offset column.",
+      "challenge_type": "misread_datetime",
+      "must_follow_action_ids": [
+        "CA-000020"
+      ]
+    },
+    {
+      "action_id": "CA-000078",
+      "action_type": "CLIP_OUTLIERS",
+      "canonical_params": {
+        "columns": [
+          "AMT_CREDIT",
+          "AMT_INCOME_TOTAL"
+        ],
+        "method": "winsorize",
+        "lower_quantile": 0.01,
+        "upper_quantile": 0.99
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Winsorizes the two main amount fields aggressively, flattening tail behavior that often matters in Home Credit risk signals.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000134"
+      ],
+      "derivation_reasoning": "Synthetic aggressive outlier clipping on applicant amount features.",
+      "challenge_type": "aggressive_clipping"
+    },
+    {
+      "action_id": "CA-000079",
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "SK_ID_PREV"
+        ],
+        "target_columns": [
+          "AMT_ANNUITY",
+          "AMT_APPLICATION",
+          "AMT_CREDIT",
+          "CNT_PAYMENT",
+          "DAYS_DECISION"
+        ],
+        "agg_functions": [
+          "min",
+          "max",
+          "mean",
+          "sum",
+          "std"
+        ],
+        "join_back": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Aggregates previous applications at the loan grain instead of summarizing them to the customer level expected by the benchmark.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000004"
+      ],
+      "derivation_reasoning": "Synthetic wrong-grain previous-application aggregation.",
+      "challenge_type": "wrong_grain_aggregation"
+    },
+    {
+      "action_id": "CA-000080",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "bureau_aggregates",
+        "left_on": [
+          "SK_ID_CURR"
+        ],
+        "right_on": [
+          "SK_ID_CURR"
+        ],
+        "how": "outer"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Outer-joining bureau aggregates can introduce rows that are not anchored to the supervised application table.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000128"
+      ],
+      "derivation_reasoning": "Synthetic outer-join variant of the bureau aggregate merge.",
+      "challenge_type": "wrong_join_type"
+    },
+    {
+      "action_id": "CA-000081",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "previous_application_aggregates",
+        "left_on": [
+          "SK_ID_CURR"
+        ],
+        "right_on": [
+          "SK_ID_CURR"
+        ],
+        "how": "inner"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Inner-joining previous-application aggregates discards applicants who have no prior Home Credit application history.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000069"
+      ],
+      "derivation_reasoning": "Synthetic wrong-join-type variant for the previous-application aggregate merge.",
+      "challenge_type": "wrong_join_type"
+    },
+    {
+      "action_id": "CA-000082",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "DAYS_EMPLOYED = NaN when DAYS_EMPLOYED == 365243",
+        "output_columns": [
+          "DAYS_EMPLOYED"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "The sentinel employment-day value `365243` is repeatedly normalized to missing before downstream feature engineering.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "dromosys/fork-of-fork-lightgbm-with-simple-features-cee847",
+        "mlisovyi/lightgbm-hyperparameter-optimisation-lb-0-761",
+        "jsaguiar/lightgbm-with-simple-features"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "If both anomaly flagging and sentinel replacement are suggested, the anomaly flag must come first.",
+      "evidence_snippets": [
+        "df['DAYS_EMPLOYED'].replace(365243, np.nan, inplace= True)",
+        "application_train['DAYS_EMPLOYED'] = (application_train['DAYS_EMPLOYED'].apply(lambda x: x if x != 365243 else np.nan))"
+      ],
+      "rareness": "common",
+      "confidence": 0.95,
+      "invalidates_action_ids": [
+        "CA-000102"
+      ]
+    },
+    {
+      "action_id": "CA-000083",
+      "action_type": "POLYNOMIAL_FEATURE",
+      "canonical_params": {
+        "feature_columns": [
+          "EXT_SOURCE_1",
+          "EXT_SOURCE_2",
+          "EXT_SOURCE_3"
+        ],
+        "degree": 2,
+        "interaction_only": false,
+        "include_bias": false
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Builds polynomial expansions over the external score block, shifting the task toward a richer nonlinear feature branch.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000065"
+      ],
+      "derivation_reasoning": "Synthetic polynomial expansion branch on external risk scores.",
+      "challenge_type": "interaction_branch"
+    },
+    {
+      "action_id": "CA-000084",
+      "action_type": "ORDINAL_ENCODE",
+      "canonical_params": {
+        "columns": [
+          "NAME_EDUCATION_TYPE"
+        ],
+        "order": [
+          "Lower secondary",
+          "Secondary / secondary special",
+          "Incomplete higher",
+          "Higher education",
+          "Academic degree"
+        ],
+        "unknown_value": -1
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Ordinal-encodes education labels with a manually chosen ranking instead of the benchmark categorical alternatives.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000076",
+        "CA-000023",
+        "CA-000114"
+      ],
+      "derivation_reasoning": "Synthetic ordered-category encoding branch on education labels.",
+      "challenge_type": "encoding_near_miss"
+    },
+    {
+      "action_id": "CA-000085",
+      "action_type": "DIFF_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "AMT_PAYMENT"
+        ],
+        "periods": 1,
+        "order_by_columns": [
+          "DAYS_ENTRY_PAYMENT"
+        ],
+        "group_by_columns": [
+          "SK_ID_PREV"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Creates differences over installment payment amounts ordered by payment-entry day, introducing a sequential payment-delta branch.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000056"
+      ],
+      "derivation_reasoning": "Synthetic difference feature over installment payment history.",
+      "challenge_type": "temporal_branch"
+    },
+    {
+      "action_id": "CA-000086",
+      "action_type": "MAP_CATEGORIES",
+      "canonical_params": {
+        "columns": [
+          "NAME_HOUSING_TYPE"
+        ],
+        "mapping": {
+          "House / apartment": "owned_like",
+          "Municipal apartment": "rented_like",
+          "Rented apartment": "rented_like",
+          "With parents": "other",
+          "Office apartment": "other",
+          "Co-op apartment": "other"
+        },
+        "default_value": "other"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Coarsens housing types into a few broad groups, dropping distinctions preserved in the benchmark categorical handling.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000076",
+        "CA-000023"
+      ],
+      "derivation_reasoning": "Synthetic category-coarsening branch on housing labels.",
+      "challenge_type": "category_coarsening"
+    },
+    {
+      "action_id": "CA-000087",
+      "action_type": "DROP_DUPLICATES",
+      "canonical_params": {
+        "subset_columns": [
+          "SK_ID_CURR",
+          "AMT_CREDIT",
+          "AMT_ANNUITY"
+        ],
+        "keep": "first"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Deduplicates main application rows by a coarse subset, risking accidental loss of legitimate applicants with matching loan amounts.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000017",
+        "CA-000134"
+      ],
+      "derivation_reasoning": "Synthetic deduplication shortcut on the supervised application table.",
+      "challenge_type": "destructive_dedup"
+    },
+    {
+      "action_id": "CA-000088",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "credit_card_aggregates",
+        "left_on": [
+          "SK_ID_CURR"
+        ],
+        "right_on": [
+          "SK_ID_CURR"
+        ],
+        "how": "inner"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Inner-joining credit-card aggregates discards applicants without credit-card history.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000049"
+      ],
+      "derivation_reasoning": "Synthetic wrong-join-type variant for the credit-card aggregate merge.",
+      "challenge_type": "wrong_join_type"
+    },
+    {
+      "action_id": "CA-000089",
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "SK_ID_CURR"
+        ],
+        "target_columns": [
+          "NAME_CONTRACT_STATUS"
+        ],
+        "agg_functions": [
+          "nunique"
+        ],
+        "join_back": false
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "hard",
+      "reasoning": "Some pipelines add per-customer contract-status diversity from POS-CASH history.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "yekenot/catboostarter"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Optional POS status-diversity branch retained outside primary scope because notebook support is limited.",
+      "evidence_snippets": [
+        "POS_CASH[['SK_ID_CURR', 'NAME_CONTRACT_STATUS']].groupby('SK_ID_CURR')"
+      ],
+      "rareness": "rare",
+      "confidence": 0.75
+    },
+    {
+      "action_id": "CA-000090",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "constant",
+        "columns": [
+          "EXT_SOURCE_1",
+          "EXT_SOURCE_2",
+          "EXT_SOURCE_3"
+        ],
+        "fill_value": 0
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Fills all sparse external risk scores with zero, collapsing missingness and valid low scores into the same signal.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000038"
+      ],
+      "derivation_reasoning": "Synthetic constant-fill alternative to sparse-score preservation.",
+      "challenge_type": "bad_imputation"
+    },
+    {
+      "action_id": "CA-000091",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "constant",
+        "columns": [
+          "DAYS_EMPLOYED"
+        ],
+        "fill_value": -999
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Replaces the employment sentinel with a broad constant code rather than normalizing it to missing or handling it explicitly.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000082",
+        "CA-000102"
+      ],
+      "derivation_reasoning": "Synthetic constant-code alternative to the intended employment-sentinel repair.",
+      "challenge_type": "bad_imputation"
+    },
+    {
+      "action_id": "CA-000092",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "most_frequent",
+        "columns": [
+          "OCCUPATION_TYPE",
+          "ORGANIZATION_TYPE"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Collapses missing occupation and organization labels to dominant categories, which can distort applicant-profile signals more than preserving sparse categories.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000076",
+        "CA-000023"
+      ],
+      "derivation_reasoning": "Synthetic mode-imputation branch for sparse application categoricals.",
+      "challenge_type": "bad_imputation"
+    },
+    {
+      "action_id": "CA-000093",
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "SK_ID_CURR"
+        ],
+        "target_columns": [
+          "AMT_CREDIT_SUM",
+          "AMT_CREDIT_SUM_DEBT"
+        ],
+        "agg_functions": [
+          "max"
+        ],
+        "join_back": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Keeps only maximum bureau balances and debt values, dropping the broader min/mean/sum/std customer-history summary.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000062"
+      ],
+      "derivation_reasoning": "Synthetic partial bureau aggregate variant.",
+      "challenge_type": "wrong_grain_aggregation"
+    },
+    {
+      "action_id": "CA-000094",
+      "action_type": "SCALE_NUMERIC",
+      "canonical_params": {
+        "method": "minmax",
+        "columns": [
+          "EXT_SOURCE_1",
+          "EXT_SOURCE_2",
+          "EXT_SOURCE_3"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Min-max scales already bounded external score columns, adding another unnecessary scaling branch.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000065"
+      ],
+      "derivation_reasoning": "Synthetic min-max scaling branch on already bounded risk scores.",
+      "challenge_type": "scale_branch"
+    },
+    {
+      "action_id": "CA-000095",
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "SK_ID_CURR"
+        ],
+        "target_columns": [
+          "AMT_BALANCE",
+          "AMT_CREDIT_LIMIT_ACTUAL",
+          "AMT_DRAWINGS_ATM_CURRENT",
+          "AMT_PAYMENT_CURRENT",
+          "SK_DPD"
+        ],
+        "agg_functions": [
+          "min",
+          "max",
+          "mean",
+          "sum",
+          "std"
+        ],
+        "join_back": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Credit-card balance history is aggregated to customer-level utilization and delinquency summaries.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "jsaguiar/lightgbm-with-simple-features",
+        "jsaguiar/lightgbm-7th-place-solution"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Canonicalized from source var-based dispersion terms into the current shared std-style aggregation vocabulary.",
+      "evidence_snippets": [
+        "cc_agg = cc.groupby('SK_ID_CURR').agg(['min', 'max', 'mean', 'sum', 'var'])",
+        "cc_agg = cc.groupby('SK_ID_CURR').agg(CREDIT_CARD_AGG)"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.9
+    },
+    {
+      "action_id": "CA-000096",
+      "action_type": "TIME_SINCE_REFERENCE",
+      "canonical_params": {
+        "columns": [
+          "DAYS_BIRTH"
+        ],
+        "reference": "2018-01-01",
+        "unit": "days"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Computes elapsed time from a parsed age-offset column to a fixed calendar date, compounding the datetime misread of Home Credit day offsets.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000021"
+      ],
+      "derivation_reasoning": "Synthetic elapsed-time feature branch on a misparsed day-offset column.",
+      "challenge_type": "misread_datetime",
+      "must_follow_action_ids": [
+        "CA-000021"
+      ]
+    },
+    {
+      "action_id": "CA-000097",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "bureau",
+        "left_on": [
+          "SK_ID_CURR"
+        ],
+        "right_on": [
+          "SK_ID_CURR"
+        ],
+        "how": "left"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Directly left-joins raw bureau history onto the main application table, duplicating applicants with multiple bureau rows.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000062",
+        "CA-000128"
+      ],
+      "derivation_reasoning": "Synthetic raw one-to-many join instead of the applicant-level bureau aggregate path.",
+      "challenge_type": "row_explosion_join"
+    },
+    {
+      "action_id": "CA-000098",
+      "action_type": "RARE_CATEGORY_BUCKETIZE",
+      "canonical_params": {
+        "columns": [
+          "OCCUPATION_TYPE"
+        ],
+        "min_freq": 0.01,
+        "other_label": "__RARE__"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Buckets rare occupation labels into an other bin, reducing fine-grained applicant profile information.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000076",
+        "CA-000023",
+        "CA-000099"
+      ],
+      "derivation_reasoning": "Synthetic rare-label bucketization on occupation types.",
+      "challenge_type": "category_coarsening"
+    },
+    {
+      "action_id": "CA-000099",
+      "action_type": "NORMALIZE_STRING",
+      "canonical_params": {
+        "columns": [
+          "OCCUPATION_TYPE"
+        ],
+        "case": "lower",
+        "strip": true,
+        "empty_to_null": true
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Normalizes occupation labels as free text, adding a text-cleaning step to a nominal categorical column.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000076",
+        "CA-000023"
+      ],
+      "derivation_reasoning": "Synthetic string-normalization branch on occupation labels.",
+      "challenge_type": "text_like_branch"
+    },
+    {
+      "action_id": "CA-000100",
+      "action_type": "ORDINAL_ENCODE",
+      "canonical_params": {
+        "columns": [
+          "WEEKDAY_APPR_PROCESS_START"
+        ],
+        "order": [
+          "MONDAY",
+          "TUESDAY",
+          "WEDNESDAY",
+          "THURSDAY",
+          "FRIDAY",
+          "SATURDAY",
+          "SUNDAY"
+        ],
+        "unknown_value": -1
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Ordinal-encodes application weekday labels, imposing a linear order on a cyclic categorical variable.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000033"
+      ],
+      "derivation_reasoning": "Synthetic ordered-category encoding on weekday labels.",
+      "challenge_type": "encoding_near_miss"
+    },
+    {
+      "action_id": "CA-000101",
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "SK_ID_PREV"
+        ],
+        "target_columns": [
+          "MONTHS_BALANCE",
+          "SK_DPD",
+          "SK_DPD_DEF"
+        ],
+        "agg_functions": [
+          "max",
+          "mean",
+          "count"
+        ],
+        "join_back": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Aggregates POS cash rows by prior loan id rather than customer id, leaving row explosion unresolved for the main application table.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000115"
+      ],
+      "derivation_reasoning": "Synthetic wrong-grain POS aggregation.",
+      "challenge_type": "wrong_grain_aggregation"
+    },
+    {
+      "action_id": "CA-000102",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "DAYS_EMPLOYED_ANOM = (DAYS_EMPLOYED == 365243).astype(int)",
+        "output_columns": [
+          "DAYS_EMPLOYED_ANOM"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "hard",
+      "reasoning": "Some starter-style pipelines keep an explicit anomaly flag for the employment sentinel rather than only replacing it.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "willkoehrsen/start-here-a-gentle-introduction"
+      ],
+      "source_profile": "explanatory_style",
+      "context_notes": "If both this action and CA-000082 are selected, this anomaly flag should appear earlier in a valid execution order.",
+      "evidence_snippets": [
+        "app_train['DAYS_EMPLOYED_ANOM'] = app_train[\"DAYS_EMPLOYED\"] == 365243"
+      ],
+      "rareness": "rare",
+      "confidence": 0.75
+    },
+    {
+      "action_id": "CA-000103",
+      "action_type": "DROP_CONSTANT_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "FLAG_DOCUMENT_10",
+          "FLAG_DOCUMENT_13"
+        ],
+        "min_unique_values": 2,
+        "include_nan_as_value": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Drops rare document flags under a constant-column heuristic rather than letting downstream models decide their value.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000076",
+        "CA-000023"
+      ],
+      "derivation_reasoning": "Synthetic constant-style pruning branch for rare document indicators.",
+      "challenge_type": "aggressive_pruning"
+    },
+    {
+      "action_id": "CA-000104",
+      "action_type": "CLIP_OUTLIERS",
+      "canonical_params": {
+        "columns": [
+          "AMT_ANNUITY",
+          "AMT_GOODS_PRICE"
+        ],
+        "method": "iqr",
+        "iqr_k": 1.0
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Applies a tight IQR clip to annuity and goods price, truncating large but real loan values.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000134"
+      ],
+      "derivation_reasoning": "Synthetic tight-IQR clipping branch on monetary columns.",
+      "challenge_type": "aggressive_clipping"
+    },
+    {
+      "action_id": "CA-000105",
+      "action_type": "DROP_ROWS_WITH_MISSING",
+      "canonical_params": {
+        "subset_columns": [
+          "OCCUPATION_TYPE"
+        ],
+        "how": "any"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Removes many applicants solely because occupation labels are missing, even though the benchmark path expects categorical handling instead of row deletion.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000076",
+        "CA-000023"
+      ],
+      "derivation_reasoning": "Synthetic sparse-categorical row-drop variant for Home Credit application features.",
+      "challenge_type": "missing_row_drop"
+    },
+    {
+      "action_id": "CA-000106",
+      "action_type": "REPLACE_INF",
+      "canonical_params": {
+        "columns": [
+          "AMT_CREDIT",
+          "AMT_ANNUITY"
+        ],
+        "strategy": "constant",
+        "replace_value": 0
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Runs generic infinity replacement over raw amount columns, suggesting a boilerplate sanitization branch that is not motivated by the raw Home Credit tables.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000134",
+        "CA-000012"
+      ],
+      "derivation_reasoning": "Synthetic boilerplate infinity-sanitization step on raw amount columns.",
+      "challenge_type": "boilerplate_cleanup"
+    },
+    {
+      "action_id": "CA-000107",
+      "action_type": "CYCLICAL_ENCODE",
+      "canonical_params": {
+        "columns": [
+          "WEEKDAY_APPR_PROCESS_START"
+        ],
+        "period": 7,
+        "method": "sin_cos"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Cyclically encodes application weekday after imposing an ordinal weekday order, adding a temporal branch outside the benchmark backbone.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000033",
+        "CA-000100"
+      ],
+      "derivation_reasoning": "Synthetic weekday cyclical branch that becomes possible only after ordinal weekday encoding.",
+      "challenge_type": "temporal_branch",
+      "must_follow_action_ids": [
+        "CA-000100"
+      ]
+    },
+    {
+      "action_id": "CA-000108",
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "SK_ID_CURR"
+        ],
+        "target_columns": [
+          "SK_ID_BUREAU"
+        ],
+        "agg_functions": [
+          "count"
+        ],
+        "join_back": false
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "hard",
+      "reasoning": "Manual feature-engineering walkthrough explicitly counts previous bureau loans per customer.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "willkoehrsen/introduction-to-manual-feature-engineering"
+      ],
+      "source_profile": "explanatory_style",
+      "context_notes": "Optional bureau-loan-count branch retained outside primary scope to keep the main add-side denominator conservative.",
+      "evidence_snippets": [
+        "previous_loan_counts = bureau.groupby('SK_ID_CURR', as_index=False)['SK_ID_BUREAU'].count().rename(columns = {'SK_ID_BUREAU': 'previous_loan_counts'})"
+      ],
+      "rareness": "rare",
+      "confidence": 0.9
+    },
+    {
+      "action_id": "CA-000109",
+      "action_type": "HASH_CROSS",
+      "canonical_params": {
+        "columns": [
+          "NAME_INCOME_TYPE",
+          "NAME_EDUCATION_TYPE"
+        ],
+        "n_buckets": 128,
+        "seed": 42
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Hashes a cross of income type and education category, adding a high-cardinality interaction branch instead of the benchmark backbone.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000076",
+        "CA-000023"
+      ],
+      "derivation_reasoning": "Synthetic hashed cross-feature branch on application categoricals.",
+      "challenge_type": "interaction_branch"
+    },
+    {
+      "action_id": "CA-000110",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "previous_application_aggregates",
+        "left_on": [
+          "SK_ID_CURR"
+        ],
+        "right_on": [
+          "SK_ID_CURR"
+        ],
+        "how": "outer"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Outer-joining previous-application aggregates can expand the main table with non-application rows rather than preserving the applicant frame.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000069"
+      ],
+      "derivation_reasoning": "Synthetic outer-join variant of the previous-application aggregate merge.",
+      "challenge_type": "wrong_join_type"
+    },
+    {
+      "action_id": "CA-000111",
+      "action_type": "POLYNOMIAL_FEATURE",
+      "canonical_params": {
+        "feature_columns": [
+          "AMT_CREDIT",
+          "AMT_ANNUITY"
+        ],
+        "degree": 2,
+        "interaction_only": true,
+        "include_bias": false
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Adds pairwise polynomial interactions on credit and annuity instead of keeping only the benchmarked explicit ratio.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000134"
+      ],
+      "derivation_reasoning": "Synthetic polynomial interaction branch on core amount columns.",
+      "challenge_type": "interaction_branch"
+    },
+    {
+      "action_id": "CA-000112",
+      "action_type": "DROP_ROWS_WITH_MISSING",
+      "canonical_params": {
+        "subset_columns": [
+          "DAYS_EMPLOYED",
+          "ORGANIZATION_TYPE"
+        ],
+        "how": "any"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Drops rows with missing employment or organization fields instead of preserving them for sentinel cleanup and categorical processing.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000082",
+        "CA-000076",
+        "CA-000023"
+      ],
+      "derivation_reasoning": "Synthetic row-drop branch that combines missing employment and categorical shortcuts.",
+      "challenge_type": "missing_row_drop"
+    },
+    {
+      "action_id": "CA-000113",
+      "action_type": "LOG_TRANSFORM",
+      "canonical_params": {
+        "columns": [
+          "FLAG_MOBIL",
+          "FLAG_PHONE",
+          "FLAG_EMAIL"
+        ],
+        "offset": 1.0,
+        "handle_nonpositive": "shift"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Applies log transforms to binary contact and mobility flags, producing an unnecessary nonlinear rewrite of near-binary indicators.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000076",
+        "CA-000023"
+      ],
+      "derivation_reasoning": "Synthetic log-transform misuse on binary flag columns.",
+      "challenge_type": "scale_branch"
+    },
+    {
+      "action_id": "CA-000114",
+      "action_type": "MAP_CATEGORIES",
+      "canonical_params": {
+        "columns": [
+          "NAME_EDUCATION_TYPE"
+        ],
+        "mapping": {
+          "Lower secondary": "low",
+          "Secondary / secondary special": "mid",
+          "Incomplete higher": "mid",
+          "Higher education": "high",
+          "Academic degree": "high"
+        },
+        "default_value": "other"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Coarsens detailed education labels into a few broad buckets, discarding granularity that the benchmark keeps explicit.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000076",
+        "CA-000023"
+      ],
+      "derivation_reasoning": "Synthetic category-coarsening branch on education labels.",
+      "challenge_type": "category_coarsening"
+    },
+    {
+      "action_id": "CA-000115",
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "SK_ID_CURR"
+        ],
+        "target_columns": [
+          "MONTHS_BALANCE",
+          "SK_DPD",
+          "SK_DPD_DEF"
+        ],
+        "agg_functions": [
+          "max",
+          "mean",
+          "count"
+        ],
+        "join_back": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "POS-CASH history is aggregated to customer-level recency and delinquency summaries.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "jsaguiar/lightgbm-with-simple-features",
+        "jsaguiar/lightgbm-7th-place-solution"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Count captures the repeated size/count style summaries used in the source notebooks.",
+      "evidence_snippets": [
+        "pos_agg = pos.groupby('SK_ID_CURR').agg(aggregations)"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.9
+    },
+    {
+      "action_id": "CA-000116",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "DAYS_BIRTH"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Drops applicant age information before the employed-to-birth ratio or interval-style features can be constructed.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000030",
+        "CA-000036"
+      ],
+      "derivation_reasoning": "Synthetic destructive drop targeting the age-normalization branch.",
+      "challenge_type": "premature_drop"
+    },
+    {
+      "action_id": "CA-000117",
+      "action_type": "CAST_DTYPE",
+      "canonical_params": {
+        "columns": [
+          "EXT_SOURCE_1",
+          "EXT_SOURCE_2",
+          "EXT_SOURCE_3"
+        ],
+        "dtype": "int"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Casts normalized external score features to integers, collapsing almost all useful variation into a few values.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000038",
+        "CA-000090"
+      ],
+      "derivation_reasoning": "Synthetic lossy dtype conversion on bounded external score columns.",
+      "challenge_type": "lossy_cast"
+    },
+    {
+      "action_id": "CA-000118",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "pos_cash_aggregates",
+        "left_on": [
+          "SK_ID_CURR"
+        ],
+        "right_on": [
+          "SK_ID_CURR"
+        ],
+        "how": "outer"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Outer-joining POS aggregates changes the supervised table frame instead of preserving the original application rows.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000121"
+      ],
+      "derivation_reasoning": "Synthetic outer-join variant of the POS aggregate merge.",
+      "challenge_type": "wrong_join_type"
+    },
+    {
+      "action_id": "CA-000119",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "credit_card_aggregates",
+        "left_on": [
+          "SK_ID_CURR"
+        ],
+        "right_on": [
+          "SK_ID_CURR"
+        ],
+        "how": "outer"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Outer-joining credit-card aggregates expands the row set beyond the supervised application table.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000049"
+      ],
+      "derivation_reasoning": "Synthetic outer-join variant of the credit-card aggregate merge.",
+      "challenge_type": "wrong_join_type"
+    },
+    {
+      "action_id": "CA-000120",
+      "action_type": "TARGET_ENCODE_OOF",
+      "canonical_params": {
+        "columns": [
+          "SK_ID_CURR"
+        ],
+        "target_column": "TARGET",
+        "cv_strategy": "stratifiedkfold",
+        "n_splits": 5,
+        "shuffle": true,
+        "random_state": 42,
+        "smoothing": 10.0
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Applies out-of-fold target encoding directly to the applicant identifier, creating a high-cardinality memorization feature rather than a generalizable preprocessing step.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000017",
+        "CA-000128"
+      ],
+      "derivation_reasoning": "Synthetic identifier-target-encoding branch on the primary application key.",
+      "challenge_type": "encoding_near_miss"
+    },
+    {
+      "action_id": "CA-000121",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "pos_cash_aggregates",
+        "left_on": [
+          "SK_ID_CURR"
+        ],
+        "right_on": [
+          "SK_ID_CURR"
+        ],
+        "how": "left"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "The POS-CASH aggregate table is left-joined back to the main application table.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "jsaguiar/lightgbm-7th-place-solution"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Specific replacement for the earlier broad `auxiliary_aggregates` join placeholder.",
+      "evidence_snippets": [
+        "df = pd.merge(df, pos, on='SK_ID_CURR', how='left')"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.9,
+      "must_follow_action_ids": [
+        "CA-000115"
+      ]
+    },
+    {
+      "action_id": "CA-000122",
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "SK_ID_CURR"
+        ],
+        "target_columns": [
+          "PAYMENT_DIFF"
+        ],
+        "agg_functions": [
+          "max"
+        ],
+        "join_back": false
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Summarizes only a derived payment-difference feature instead of the benchmark\u2019s broader raw installment payment and timing block.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000056"
+      ],
+      "derivation_reasoning": "Synthetic notebook-local installment aggregate variant.",
+      "challenge_type": "wrong_grain_aggregation"
+    },
+    {
+      "action_id": "CA-000123",
+      "action_type": "RATIO_FEATURE",
+      "canonical_params": {
+        "left_columns": [
+          "AMT_ANNUITY"
+        ],
+        "right_columns": [
+          "AMT_CREDIT"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Uses the inverse annuity-to-credit ratio instead of the benchmark\u2019s credit-to-annuity affordability feature.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000134"
+      ],
+      "derivation_reasoning": "Synthetic inverse-ratio variant of the core affordability feature.",
+      "challenge_type": "near_miss_feature"
+    },
+    {
+      "action_id": "CA-000124",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "pos_cash_aggregates",
+        "left_on": [
+          "SK_ID_CURR"
+        ],
+        "right_on": [
+          "SK_ID_CURR"
+        ],
+        "how": "inner"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Inner-joining POS aggregates removes applicants without POS cash history instead of preserving the main application table.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000121"
+      ],
+      "derivation_reasoning": "Synthetic wrong-join-type variant for the POS aggregate merge.",
+      "challenge_type": "wrong_join_type"
+    },
+    {
+      "action_id": "CA-000125",
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "SK_ID_CURR"
+        ],
+        "target_columns": [
+          "SK_ID_PREV"
+        ],
+        "agg_functions": [
+          "count"
+        ],
+        "join_back": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Counts prior Home Credit applications only, which is weaker than the benchmark\u2019s richer previous-application aggregate block.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000004"
+      ],
+      "derivation_reasoning": "Synthetic underpowered previous-application count-only aggregate.",
+      "challenge_type": "wrong_grain_aggregation"
+    },
+    {
+      "action_id": "CA-000126",
+      "action_type": "DROP_DUPLICATES",
+      "canonical_params": {
+        "subset_columns": [
+          "CODE_GENDER",
+          "DAYS_BIRTH",
+          "AMT_INCOME_TOTAL"
+        ],
+        "keep": "first"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Drops one of multiple applicants whenever a coarse demographic-and-income signature repeats, which can silently remove real rows.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000017",
+        "CA-000134"
+      ],
+      "derivation_reasoning": "Synthetic harmful deduplication on common applicant profile columns.",
+      "challenge_type": "destructive_dedup"
+    },
+    {
+      "action_id": "CA-000127",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "installments_aggregates",
+        "left_on": [
+          "SK_ID_CURR"
+        ],
+        "right_on": [
+          "SK_ID_CURR"
+        ],
+        "how": "inner"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Inner-joining installment aggregates removes applicants who lack installment history.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000043"
+      ],
+      "derivation_reasoning": "Synthetic wrong-join-type variant for the installment aggregate merge.",
+      "challenge_type": "wrong_join_type"
+    },
+    {
+      "action_id": "CA-000128",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "bureau_aggregates",
+        "left_on": [
+          "SK_ID_CURR"
+        ],
+        "right_on": [
+          "SK_ID_CURR"
+        ],
+        "how": "left"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "The customer-level bureau aggregate table is left-joined back to the main application table.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "jsaguiar/lightgbm-7th-place-solution"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Specific replacement for the earlier broad `auxiliary_aggregates` join placeholder.",
+      "evidence_snippets": [
+        "df = pd.merge(df, bureau_df, on='SK_ID_CURR', how='left')"
+      ],
+      "rareness": "common",
+      "confidence": 0.95,
+      "must_follow_action_ids": [
+        "CA-000062"
+      ]
+    },
+    {
+      "action_id": "CA-000129",
+      "action_type": "FEATURE_SELECTION",
+      "canonical_params": {
+        "method": "variance",
+        "feature_columns": [
+          "FLAG_DOCUMENT_2",
+          "FLAG_DOCUMENT_3",
+          "FLAG_DOCUMENT_4",
+          "FLAG_DOCUMENT_5"
+        ],
+        "threshold": 0.0
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Performs variance-based pruning on sparse document flags, potentially removing rare-but-useful binary indicators.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000131",
+        "CA-000103"
+      ],
+      "derivation_reasoning": "Synthetic filter-based feature-selection branch on binary document features.",
+      "challenge_type": "feature_selection_branch"
+    },
+    {
+      "action_id": "CA-000130",
+      "action_type": "DROP_ROWS_WITH_MISSING",
+      "canonical_params": {
+        "subset_columns": [
+          "AMT_ANNUITY",
+          "AMT_GOODS_PRICE"
+        ],
+        "how": "any"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Discarding applicants with missing loan-amount fields is a blunt shortcut that changes the supervised population instead of preserving rows.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000134"
+      ],
+      "derivation_reasoning": "Synthetic missing-row drop on key application amount columns.",
+      "challenge_type": "missing_row_drop"
+    },
+    {
+      "action_id": "CA-000131",
+      "action_type": "DROP_CONSTANT_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "FLAG_MOBIL",
+          "FLAG_DOCUMENT_12"
+        ],
+        "min_unique_values": 2,
+        "include_nan_as_value": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Drops near-constant document and mobility flags as a coarse pruning shortcut that may still remove weak but real signal.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000076",
+        "CA-000023"
+      ],
+      "derivation_reasoning": "Synthetic near-constant feature pruning branch on sparse/binary flags.",
+      "challenge_type": "aggressive_pruning"
+    },
+    {
+      "action_id": "CA-000132",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "CC_MIN_PAYMENT_GAP = max(AMT_PAYMENT_CURRENT - AMT_INST_MIN_REGULARITY, 0)",
+        "output_columns": [
+          "CC_MIN_PAYMENT_GAP"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Builds a credit-card minimum-payment gap with the sign reversed, suppressing true underpayment cases.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000095"
+      ],
+      "derivation_reasoning": "Synthetic sign-flipped credit-card payment-gap expression.",
+      "challenge_type": "wrong_expression"
+    },
+    {
+      "action_id": "CA-000133",
+      "action_type": "RARE_CATEGORY_BUCKETIZE",
+      "canonical_params": {
+        "columns": [
+          "ORGANIZATION_TYPE"
+        ],
+        "min_freq": 0.01,
+        "other_label": "__RARE__"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Buckets rare organization labels into a generic category, collapsing distinctions that the benchmark categorical handling keeps explicit.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000076",
+        "CA-000023",
+        "CA-000064"
+      ],
+      "derivation_reasoning": "Synthetic rare-label bucketization on organization types.",
+      "challenge_type": "category_coarsening"
+    },
+    {
+      "action_id": "CA-000134",
+      "action_type": "RATIO_FEATURE",
+      "canonical_params": {
+        "left_columns": [
+          "AMT_CREDIT"
+        ],
+        "right_columns": [
+          "AMT_ANNUITY"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Credit-to-annuity burden ratio is a recurring application-level affordability feature.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "poohtls/fork-of-fork-lightgbm-with-simple-features",
+        "ogrellier/lighgbm-with-selected-features",
+        "jsaguiar/lightgbm-7th-place-solution"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Canonicalized to a ratio feature so notebook-specific output names do not create duplicate gold actions.",
+      "evidence_snippets": [
+        "df['NEW_CREDIT_TO_ANNUITY_RATIO'] = df['AMT_CREDIT'] / df['AMT_ANNUITY']",
+        "df['CREDIT_TO_ANNUITY_RATIO'] = df['AMT_CREDIT'] / df['AMT_ANNUITY']"
+      ],
+      "rareness": "common",
+      "confidence": 0.95
+    },
+    {
+      "action_id": "CA-000135",
+      "action_type": "CREATE_MISSING_INDICATOR",
+      "canonical_params": {
+        "columns": [
+          "SK_ID_CURR",
+          "FLAG_MOBIL"
+        ],
+        "indicator_suffix": "_IS_MISSING"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Adds missingness flags for an identifier and a near-constant mobility flag where missingness is effectively nonexistent, creating pure noise features.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000017",
+        "CA-000076"
+      ],
+      "derivation_reasoning": "Synthetic noise-feature branch that manufactures missingness indicators on effectively complete application columns.",
+      "challenge_type": "missingness_branch"
+    },
+    {
+      "action_id": "CA-000136",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "credit_card_balance",
+        "left_on": [
+          "SK_ID_CURR"
+        ],
+        "right_on": [
+          "SK_ID_CURR"
+        ],
+        "how": "left"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Directly joins raw credit-card monthly history to the application table instead of an applicant-level summary.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000095",
+        "CA-000049"
+      ],
+      "derivation_reasoning": "Synthetic raw monthly-history join for the credit-card branch.",
+      "challenge_type": "row_explosion_join"
+    },
+    {
+      "action_id": "CA-000137",
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "SK_ID_CURR"
+        ],
+        "target_columns": [
+          "NAME_CONTRACT_STATUS"
+        ],
+        "agg_functions": [
+          "count"
+        ],
+        "join_back": false
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Counts status rows instead of the benchmark\u2019s retained status-diversity variant, making the POS status branch noisier and less interpretable.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000089"
+      ],
+      "derivation_reasoning": "Synthetic near-miss variant of the POS status feature branch.",
+      "challenge_type": "wrong_grain_aggregation"
+    }
+  ]
+}

@@ -1,0 +1,126 @@
+{
+  "competition_slug": "zillow-prize-1",
+  "testcase_id": "tc1_from_scratch",
+  "artifact_type": "eval_human_baseline_action_trace",
+  "related_output": "../tc1_human.json",
+  "traces": [
+    {
+      "predicted_action_id": "CA-000107",
+      "artifact": "../work.ipynb",
+      "section": "Join Train With Property Lookup",
+      "mapping_rationale": "Direct bank match for the left join from train_2016_v2 to properties_2016 on parcelid."
+    },
+    {
+      "predicted_action_id": "CA-000045",
+      "artifact": "../work.ipynb",
+      "section": "Parse Transaction Date",
+      "mapping_rationale": "Selected as the baseline datetime parse for transactiondate before any downstream temporal feature engineering."
+    },
+    {
+      "predicted_action_id": "CA-000010",
+      "artifact": "../work.ipynb",
+      "section": "Date Part Features",
+      "mapping_rationale": "Selected as the broad date-part feature block to expose year, month, quarter, and day from transactiondate."
+    },
+    {
+      "predicted_action_id": "CA-000007",
+      "artifact": "../work.ipynb",
+      "section": "Boolean-Like Missing Fill",
+      "mapping_rationale": "Selected to fill sparse boolean-like amenity flags with FALSE."
+    },
+    {
+      "predicted_action_id": "CA-000031",
+      "artifact": "../work.ipynb",
+      "section": "Sentinel Fill For Core Numeric Columns",
+      "mapping_rationale": "Selected to assign a sentinel negative value to key lot and tax-related numeric fields."
+    },
+    {
+      "predicted_action_id": "CA-000050",
+      "artifact": "../work.ipynb",
+      "section": "Median Impute Broad Numeric Property Columns",
+      "mapping_rationale": "Selected as the broad median-imputation block over the main numeric property features."
+    },
+    {
+      "predicted_action_id": "CA-000068",
+      "artifact": "../work.ipynb",
+      "section": "Region Identifier Fill",
+      "mapping_rationale": "Selected to fill region identifier columns with a constant value when missing."
+    },
+    {
+      "predicted_action_id": "CA-000073",
+      "artifact": "../work.ipynb",
+      "section": "Pool And Fireplace Count Fill",
+      "mapping_rationale": "Selected to fill sparse pool and fireplace count-style columns with zero."
+    },
+    {
+      "predicted_action_id": "CA-000036",
+      "artifact": "../work.ipynb",
+      "section": "Drop Ultra-High-Null Columns",
+      "mapping_rationale": "Selected to remove a small set of columns whose value is mostly missing."
+    },
+    {
+      "predicted_action_id": "CA-000033",
+      "artifact": "../work.ipynb",
+      "section": "Clip Derived Ratio Extremes",
+      "mapping_rationale": "Selected to cap pathological values in a derived tax-value-per-square-foot style feature."
+    },
+    {
+      "predicted_action_id": "CA-000069",
+      "artifact": "../work.ipynb",
+      "section": "Conservative Logerror Outlier Filter",
+      "mapping_rationale": "Selected as a conservative percentile-based trimming rule for extreme logerror rows."
+    },
+    {
+      "predicted_action_id": "CA-000060",
+      "artifact": "../work.ipynb",
+      "section": "Drop Duplicate Transaction Rows",
+      "mapping_rationale": "Selected to deduplicate repeated parcel/date records while keeping the last occurrence."
+    },
+    {
+      "predicted_action_id": "CA-000059",
+      "artifact": "../work.ipynb",
+      "section": "One-Hot Encode Categorical Id Columns",
+      "mapping_rationale": "Selected to one-hot encode a block of important categorical identifier columns."
+    },
+    {
+      "predicted_action_id": "CA-000055",
+      "artifact": "../work.ipynb",
+      "section": "Ordinal Encode Building Quality",
+      "mapping_rationale": "Selected to map building quality into an ordered numeric scale."
+    },
+    {
+      "predicted_action_id": "CA-000099",
+      "artifact": "../work.ipynb",
+      "section": "Cast Sparse Flags To Integer",
+      "mapping_rationale": "Selected to coerce sparse flag columns into an integer representation."
+    },
+    {
+      "predicted_action_id": "CA-000038",
+      "artifact": "../work.ipynb",
+      "section": "Seasonal Sin Cos Features",
+      "mapping_rationale": "Selected to add a sinusoidal seasonal representation derived from transactiondate."
+    }
+  ],
+  "omitted_notebook_steps": [
+    {
+      "section": "Missingness Indicators",
+      "note": "Missing-indicator candidates were not selected in this iteration."
+    },
+    {
+      "section": "Categorical Encoding And Cleanup",
+      "note": "Encoding, outlier trimming, and final cleanup actions were not selected in this iteration of the human baseline."
+    },
+    {
+      "section": "Sampling",
+      "note": "No row-sampling action was selected in this human pass."
+    },
+    {
+      "section": "Text Or Target Encoding",
+      "note": "Text vectorization, target encoding, and hash-cross candidates were not selected in this iteration."
+    },
+    {
+      "section": "Scaling And Log/Power Transforms",
+      "note": "Scaling and log/power-transform candidates were mostly left out in this iteration aside from one seasonal expression feature."
+    }
+  ]
+}

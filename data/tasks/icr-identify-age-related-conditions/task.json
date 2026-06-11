@@ -1,0 +1,76 @@
+{
+  "competition_slug": "icr-identify-age-related-conditions",
+  "dataset": {
+    "provider": "kaggle",
+    "competition": "icr-identify-age-related-conditions",
+    "train_files": [
+      "train.csv"
+    ],
+    "test_files": [
+      "test.csv"
+    ],
+    "lookup_files": [
+      "greeks.csv"
+    ],
+    "sample_submission_files": [
+      "sample_submission.csv"
+    ],
+    "target_column": "Class",
+    "primary_key": "Id"
+  },
+  "goal": "Suggest preprocessing and feature-engineering actions for predicting Class on anonymized biomarker data under the balanced_log_loss metric using only official competition files.",
+  "task_characteristics": {
+    "ml_domain": "biomedical_tabular",
+    "problem_type": "binary_classification",
+    "table_structure": "multi_table_lookup",
+    "dataset_size_bucket": "small",
+    "dataset_size_raw": 617,
+    "feature_dimensionality_bucket": "medium",
+    "feature_dimensionality_raw": 63,
+    "preprocessing_complexity_bucket": "medium",
+    "preprocessing_complexity_raw": 9,
+    "analysis_notes": "Small official biomarker-classification task with 617 labeled training rows, a 5-row test table, and one official train-side auxiliary lookup file (greeks.csv) keyed by Id. The benchmark-relevant case-insensitive column union across train/test/greeks is 63. Most feature columns are numeric, EJ is the only main-table categorical feature, and missingness is concentrated in BQ and EL. The curated bank intentionally keeps the primary good spine conservative: drop the identifier column, encode EJ, and handle sparse numeric missingness; wider model-specific and validation-side branches are represented outside the primary denominator. preprocessing_complexity_raw is authored as the retained good-row count before equivalence-group collapse and excludes notes-only workflow assumptions such as trimming whitespace from BD / CD / CW / FD headers."
+  },
+  "dataset_description": {
+    "summary": "The official competition scope for this benchmark is limited to four CSV files already present locally: train.csv (617 rows x 58 columns), test.csv (5 rows x 57 columns), greeks.csv (617 rows x 6 columns), and sample_submission.csv (5 rows x 3 columns). train.csv contains anonymized biomarker-style features plus categorical EJ and binary target Class. greeks.csv is an official auxiliary train-side table keyed by Id with Alpha/Beta/Gamma/Delta category labels and Epsilon date-like strings. Across train/test/greeks, the case-insensitive column union is 63. Missingness is concentrated in BQ and EL, with a few single-digit gaps in CB, CC, DU, FC, FL, FS, and GL. Four official feature names contain trailing whitespace: BD , CD , CW , and FD .",
+    "raw_text": "Official-only benchmark scope:\n- train.csv: labeled training table keyed by Id with binary target Class\n- test.csv: small prediction table keyed by Id\n- greeks.csv: official auxiliary metadata for training rows with Alpha, Beta, Gamma, Delta, and Epsilon\n- sample_submission.csv: submission template with Id, class_0, class_1\n\nObserved local file shape:\n- train.csv: 617 x 58\n- test.csv: 5 x 57\n- greeks.csv: 617 x 6\n- sample_submission.csv: 5 x 3\n\nObserved data properties:\n- one main categorical feature in the primary table: EJ\n- missing values are concentrated in BQ and EL\n- four official headers carry trailing whitespace: BD , CD , CW , FD \n- case-insensitive benchmark-relevant column union across train/test/greeks is 63",
+    "file_summary": {
+      "total_file_count": 4,
+      "file_types": [
+        {
+          "extension": ".csv",
+          "file_count": 4,
+          "total_size_bytes": 356882
+        }
+      ]
+    },
+    "column_summary": {
+      "total_column_count": 63,
+      "column_types": [
+        {
+          "column_type": "Decimal",
+          "column_count": 55
+        },
+        {
+          "column_type": "Integer",
+          "column_count": 1
+        },
+        {
+          "column_type": "Id",
+          "column_count": 1
+        },
+        {
+          "column_type": "String",
+          "column_count": 5
+        },
+        {
+          "column_type": "DateString",
+          "column_count": 1
+        }
+      ]
+    }
+  },
+  "metric": {
+    "name": "balanced_log_loss"
+  }
+}

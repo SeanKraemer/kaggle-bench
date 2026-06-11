@@ -1,0 +1,1932 @@
+{
+  "competition_slug": "elo-merchant-category-recommendation",
+  "generated_at": "2026-04-02T10:00:24-05:00",
+  "actions": [
+    {
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "purchase_date"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Eliminates the raw transaction timestamp before month-distance recency features can be constructed.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "fault_actions.json#FA-000003"
+      ],
+      "derivation_reasoning": "Migrated legacy fault action FA-000003 into the action-bank benchmark.",
+      "challenge_type": "legacy_fault",
+      "action_id": "CA-000001"
+    },
+    {
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "purchase_date",
+          "card_id"
+        ],
+        "target_columns": [
+          "purchase_amount",
+          "installments",
+          "month_lag",
+          "month_diff"
+        ],
+        "agg_functions": [
+          "mean"
+        ],
+        "join_back": false,
+        "how": "left",
+        "prefix": "new_"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Aggregates over the wrong grouping or with an impoverished summary set, producing a weaker feature table.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000013: Aggregates over the wrong grouping or with an impoverished summary set, producing a weaker feature table.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000002",
+      "derived_from_action_ids": [
+        "CA-000049"
+      ]
+    },
+    {
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "freq",
+        "columns": [
+          "category_2"
+        ],
+        "output_columns": [
+          "category_2_freq"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Frequency-encoding low-cardinality category_2 collapses nominal category identity into a single prevalence feature before aggregation.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000005: collapses the five-level category_2 signal into a frequency proxy instead of preserving explicit category identity.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000003",
+      "derived_from_action_ids": [
+        "CA-000042"
+      ]
+    },
+    {
+      "action_type": "DATE_PART_FEATURE",
+      "canonical_params": {
+        "date_columns": [
+          "first_active_month"
+        ],
+        "parts": [
+          "year",
+          "month"
+        ],
+        "drop_original": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "A conservative year/month split from first_active_month is repeatedly engineered as a self-contained card-age feature block.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "artgor/elo-eda-and-models",
+        "ashishpatel26/80-features-with-lightgbm-cv-bayesian-approach",
+        "samaxtech/eda-clean-feng-lgbm-xgboost-stacked-model"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Composite card-age block: notebooks parse first_active_month and immediately split year/month, so date parsing is not treated as a hidden prerequisite.",
+      "evidence_snippets": [
+        "train['month']= train['first_active_month'].dt.month",
+        "train['year']= train['first_active_month'].dt.year"
+      ],
+      "rareness": "common",
+      "confidence": 0.75,
+      "action_id": "CA-000004"
+    },
+    {
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "purchase_date",
+          "card_id"
+        ],
+        "target_columns": [
+          "purchase_amount",
+          "installments",
+          "month_lag",
+          "month_diff"
+        ],
+        "agg_functions": [
+          "mean"
+        ],
+        "join_back": false,
+        "how": "left",
+        "prefix": "hist_"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Aggregates over the wrong grouping or with an impoverished summary set, producing a weaker feature table.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000012: Aggregates over the wrong grouping or with an impoverished summary set, producing a weaker feature table.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000005",
+      "derived_from_action_ids": [
+        "CA-000060"
+      ]
+    },
+    {
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "purchase_date",
+          "month_lag",
+          "card_id"
+        ],
+        "target_columns": [
+          "purchase_amount",
+          "installments",
+          "month_lag",
+          "month_diff"
+        ],
+        "agg_functions": [
+          "max"
+        ],
+        "join_back": true,
+        "how": "left",
+        "prefix": "hist_"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Aggregates over the wrong grouping or with an impoverished summary set, producing a weaker feature table.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000012: Aggregates over the wrong grouping or with an impoverished summary set, producing a weaker feature table.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000007",
+      "derived_from_action_ids": [
+        "CA-000060"
+      ]
+    },
+    {
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "card_id",
+          "purchase_date"
+        ],
+        "target_columns": [
+          "authorized_flag",
+          "category_1",
+          "category_2_1.0",
+          "category_2_2.0",
+          "category_2_3.0",
+          "category_2_4.0",
+          "category_2_5.0",
+          "category_3_A",
+          "category_3_B",
+          "category_3_C"
+        ],
+        "agg_functions": [
+          "sum"
+        ],
+        "join_back": false,
+        "how": "left",
+        "prefix": "new_"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Aggregates over the wrong grouping or with an impoverished summary set, producing a weaker feature table.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000015: Aggregates over the wrong grouping or with an impoverished summary set, producing a weaker feature table.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000008",
+      "derived_from_action_ids": [
+        "CA-000072"
+      ]
+    },
+    {
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "purchase_date",
+          "card_id"
+        ],
+        "target_columns": [
+          "merchant_id",
+          "merchant_category_id",
+          "subsector_id",
+          "state_id",
+          "city_id"
+        ],
+        "agg_functions": [
+          "mean"
+        ],
+        "join_back": false,
+        "how": "left",
+        "prefix": "hist_"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Aggregates over the wrong grouping or with an impoverished summary set, producing a weaker feature table.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000010: Aggregates over the wrong grouping or with an impoverished summary set, producing a weaker feature table.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000009",
+      "derived_from_action_ids": [
+        "CA-000065"
+      ]
+    },
+    {
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "count",
+        "columns": [
+          "feature_2"
+        ],
+        "output_columns": [
+          "feature_2_count"
+        ],
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Count-encoding three-level feature_2 across the full train and test pool leaks global prevalence and discards the original category identities.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000008: replaces the clean low-cardinality dummy block with a leakage-prone global count proxy.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000010",
+      "derived_from_action_ids": [
+        "CA-000011"
+      ]
+    },
+    {
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "onehot",
+        "columns": [
+          "feature_2"
+        ],
+        "output_columns": [
+          "f2_1",
+          "f2_2",
+          "f2_3"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "One-hot expansion of anonymized card feature_2 is part of the same repeated base-card preprocessing block.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "ashishpatel26/80-features-with-lightgbm-cv-bayesian-approach",
+        "thuongdinh/feature-engineering-and-lightgbm-starter-fork",
+        "truocpham/feature-engineering-and-lightgbm-starter"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Kept column-scoped for exact matching because notebooks often encode the three base card features separately.",
+      "evidence_snippets": [
+        "ohe_df_2 = pd.get_dummies(train['feature_2'], prefix='f2_')"
+      ],
+      "rareness": "common",
+      "confidence": 0.75,
+      "action_id": "CA-000011"
+    },
+    {
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "card_id",
+          "purchase_date"
+        ],
+        "target_columns": [
+          "merchant_id",
+          "merchant_category_id",
+          "subsector_id",
+          "state_id",
+          "city_id"
+        ],
+        "agg_functions": [
+          "sum"
+        ],
+        "join_back": false,
+        "how": "left",
+        "prefix": "hist_"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Aggregates over the wrong grouping or with an impoverished summary set, producing a weaker feature table.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000010: Aggregates over the wrong grouping or with an impoverished summary set, producing a weaker feature table.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000012",
+      "derived_from_action_ids": [
+        "CA-000065"
+      ]
+    },
+    {
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "purchase_date",
+          "month_lag",
+          "card_id"
+        ],
+        "target_columns": [
+          "purchase_amount",
+          "installments",
+          "month_lag",
+          "month_diff"
+        ],
+        "agg_functions": [
+          "max"
+        ],
+        "join_back": true,
+        "how": "left",
+        "prefix": "new_"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Aggregates over the wrong grouping or with an impoverished summary set, producing a weaker feature table.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000013: Aggregates over the wrong grouping or with an impoverished summary set, producing a weaker feature table.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000013",
+      "derived_from_action_ids": [
+        "CA-000049"
+      ]
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "month_diff = ((datetime('2018-02-01') - purchase_date).days // 30) - month_lag",
+        "output_columns": [
+          "month_diff"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Subtracting month_lag flips part of the recency signal and distorts the shared Elo month-difference feature.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000001: subtracts month_lag instead of adding it, reversing part of the intended recency adjustment.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000015",
+      "derived_from_action_ids": [
+        "CA-000051"
+      ]
+    },
+    {
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "purchase_date",
+          "card_id"
+        ],
+        "target_columns": [
+          "authorized_flag",
+          "category_1",
+          "category_2_1.0",
+          "category_2_2.0",
+          "category_2_3.0",
+          "category_2_4.0",
+          "category_2_5.0",
+          "category_3_A",
+          "category_3_B",
+          "category_3_C"
+        ],
+        "agg_functions": [
+          "mean"
+        ],
+        "join_back": false,
+        "how": "left",
+        "prefix": "new_"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Aggregates over the wrong grouping or with an impoverished summary set, producing a weaker feature table.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000015: Aggregates over the wrong grouping or with an impoverished summary set, producing a weaker feature table.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000017",
+      "derived_from_action_ids": [
+        "CA-000072"
+      ]
+    },
+    {
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "label",
+        "columns": [
+          "feature_3"
+        ],
+        "output_columns": [
+          "feature_3"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Overwriting binary feature_3 with arbitrary integer codes introduces fake ordinality where the benchmark keeps separate dummy columns.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000009: destructively remaps the binary feature_3 categories into a single ordinal-coded column.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000018",
+      "derived_from_action_ids": [
+        "CA-000062"
+      ]
+    },
+    {
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "label",
+        "columns": [
+          "category_1"
+        ],
+        "output_columns": [
+          "category_1_encoded"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "category_1 is commonly mapped from Y/N into numeric form before aggregation.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "artgor/elo-eda-and-models",
+        "ashishpatel26/80-features-with-lightgbm-cv-bayesian-approach",
+        "fabiendaniel/elo-world",
+        "prasunmishra/nn-relu-one-hiddenlayer"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Represents the shared mapping applied separately on both transaction tables before grouped feature generation.",
+      "evidence_snippets": [
+        "hist_trans['category_1'] = hist_trans['category_1'].map({'Y': 1, 'N': 0})"
+      ],
+      "rareness": "common",
+      "confidence": 0.75,
+      "action_id": "CA-000019"
+    },
+    {
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "merchant_id"
+        ],
+        "target_columns": [
+          "purchase_amount",
+          "installments",
+          "month_lag"
+        ],
+        "agg_functions": [
+          "sum",
+          "mean",
+          "max",
+          "min",
+          "std"
+        ],
+        "join_back": true,
+        "how": "left",
+        "prefix": "hist_"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Looks structurally plausible, but it aggregates by merchant instead of by card and breaks the task's entity semantics.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "fault_actions.json#FA-000004"
+      ],
+      "derivation_reasoning": "Migrated legacy fault action FA-000004 into the action-bank benchmark.",
+      "challenge_type": "legacy_fault",
+      "action_id": "CA-000020"
+    },
+    {
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "freq",
+        "columns": [
+          "category_3"
+        ],
+        "output_columns": [
+          "category_3_freq"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Frequency-encoding three-way category_3 collapses its nominal states into a single prevalence feature before aggregation.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000006: replaces explicit category_3 dummy columns with a frequency proxy.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000021",
+      "derived_from_action_ids": [
+        "CA-000031"
+      ]
+    },
+    {
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "freq",
+        "columns": [
+          "feature_3"
+        ],
+        "output_columns": [
+          "feature_3_freq"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Frequency-encoding binary feature_3 replaces a tiny nominal base-card signal with a global prevalence proxy.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000009: swaps the rewarded dummy expansion for a lossy prevalence statistic.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000022",
+      "derived_from_action_ids": [
+        "CA-000062"
+      ]
+    },
+    {
+      "action_type": "DATE_PART_FEATURE",
+      "canonical_params": {
+        "date_columns": [
+          "first_active_month"
+        ],
+        "parts": [
+          "week"
+        ],
+        "drop_original": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Extracts a weaker or overly destructive calendar representation than the benchmark-preferred date block.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000002: Extracts a weaker or overly destructive calendar representation than the benchmark-preferred date block.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000023",
+      "derived_from_action_ids": [
+        "CA-000004"
+      ]
+    },
+    {
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "card_id",
+          "purchase_date"
+        ],
+        "target_columns": [
+          "purchase_amount",
+          "installments",
+          "month_lag",
+          "month_diff"
+        ],
+        "agg_functions": [
+          "sum"
+        ],
+        "join_back": false,
+        "how": "left",
+        "prefix": "new_"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Aggregates over the wrong grouping or with an impoverished summary set, producing a weaker feature table.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000013: Aggregates over the wrong grouping or with an impoverished summary set, producing a weaker feature table.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000024",
+      "derived_from_action_ids": [
+        "CA-000049"
+      ]
+    },
+    {
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "label",
+        "columns": [
+          "category_3"
+        ],
+        "output_columns": [
+          "category_3_encoded"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Label-encoding category_3 into a single ordinal-coded column imposes an arbitrary ordering on a nominal transaction flag.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000006: compresses category_3 into one ordinal-coded column instead of preserving separate dummy signals.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000025",
+      "derived_from_action_ids": [
+        "CA-000031"
+      ]
+    },
+    {
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "hash",
+        "columns": [
+          "feature_1"
+        ],
+        "output_columns": [
+          "feature_1_hash"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Hashing five-level feature_1 into a single code throws away the clean low-cardinality dummy structure the benchmark rewards.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000007: replaces an interpretable one-hot block with a lossy hashed representation.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000026",
+      "derived_from_action_ids": [
+        "CA-000035"
+      ]
+    },
+    {
+      "action_type": "DATE_PART_FEATURE",
+      "canonical_params": {
+        "date_columns": [
+          "first_active_month"
+        ],
+        "parts": [
+          "day"
+        ],
+        "drop_original": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Extracts a weaker or overly destructive calendar representation than the benchmark-preferred date block.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000002: Extracts a weaker or overly destructive calendar representation than the benchmark-preferred date block.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000027",
+      "derived_from_action_ids": [
+        "CA-000004"
+      ]
+    },
+    {
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "purchase_date",
+          "month_lag",
+          "card_id"
+        ],
+        "target_columns": [
+          "merchant_id",
+          "merchant_category_id",
+          "subsector_id",
+          "state_id",
+          "city_id"
+        ],
+        "agg_functions": [
+          "max"
+        ],
+        "join_back": true,
+        "how": "left",
+        "prefix": "hist_"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Aggregates over the wrong grouping or with an impoverished summary set, producing a weaker feature table.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000010: Aggregates over the wrong grouping or with an impoverished summary set, producing a weaker feature table.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000028",
+      "derived_from_action_ids": [
+        "CA-000065"
+      ]
+    },
+    {
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "card_id",
+          "purchase_date"
+        ],
+        "target_columns": [
+          "merchant_id",
+          "merchant_category_id",
+          "subsector_id",
+          "state_id",
+          "city_id"
+        ],
+        "agg_functions": [
+          "sum"
+        ],
+        "join_back": false,
+        "how": "left",
+        "prefix": "new_"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Aggregates over the wrong grouping or with an impoverished summary set, producing a weaker feature table.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000011: Aggregates over the wrong grouping or with an impoverished summary set, producing a weaker feature table.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000029",
+      "derived_from_action_ids": [
+        "CA-000050"
+      ]
+    },
+    {
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "purchase_date",
+          "month_lag",
+          "card_id"
+        ],
+        "target_columns": [
+          "authorized_flag",
+          "category_1",
+          "category_2_1.0",
+          "category_2_2.0",
+          "category_2_3.0",
+          "category_2_4.0",
+          "category_2_5.0",
+          "category_3_A",
+          "category_3_B",
+          "category_3_C"
+        ],
+        "agg_functions": [
+          "max"
+        ],
+        "join_back": true,
+        "how": "left",
+        "prefix": "hist_"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Aggregates over the wrong grouping or with an impoverished summary set, producing a weaker feature table.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000014: Aggregates over the wrong grouping or with an impoverished summary set, producing a weaker feature table.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000030",
+      "derived_from_action_ids": [
+        "CA-000040"
+      ]
+    },
+    {
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "onehot",
+        "columns": [
+          "category_3"
+        ],
+        "output_columns": [
+          "category_3_A",
+          "category_3_B",
+          "category_3_C"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "category_3 is repeatedly expanded to dummy columns before card-level aggregations.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "artgor/elo-eda-and-models",
+        "ashishpatel26/80-features-with-lightgbm-cv-bayesian-approach",
+        "fabiendaniel/elo-world",
+        "peterhurford/you-re-going-to-want-more-categories-lb-3-737"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Split into one action per source column for exact matching, even when notebooks call get_dummies on both together.",
+      "evidence_snippets": [
+        "hist_trans = pd.get_dummies(hist_trans, columns=['category_2', 'category_3'])"
+      ],
+      "rareness": "common",
+      "confidence": 0.75,
+      "action_id": "CA-000031"
+    },
+    {
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "label",
+        "columns": [
+          "category_2"
+        ],
+        "output_columns": [
+          "category_2_encoded"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Label-encoding category_2 into one ordinal-coded column imposes a false ranking on a nominal multi-class transaction category.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000005: compresses category_2 into a single ordinal-coded column instead of preserving explicit category indicators.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000032",
+      "derived_from_action_ids": [
+        "CA-000042"
+      ]
+    },
+    {
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "onehot",
+        "columns": [
+          "authorized_flag"
+        ],
+        "output_columns": [
+          "authorized_flag_Y",
+          "authorized_flag_N"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Expanding binary authorized_flag into redundant dummy columns adds width without preserving the single stable 0/1 mapping used by the benchmark.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000003: replaces the shared binary mapping with a redundant dummy expansion.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000033",
+      "derived_from_action_ids": [
+        "CA-000058"
+      ]
+    },
+    {
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "count",
+        "columns": [
+          "category_2"
+        ],
+        "output_columns": [
+          "category_2_count"
+        ],
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Count-encoding category_2 across the full train and test pool leaks global prevalence and collapses the five-way nominal signal.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000005: replaces explicit category_2 dummy columns with a leakage-prone global count proxy.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000034",
+      "derived_from_action_ids": [
+        "CA-000042"
+      ]
+    },
+    {
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "onehot",
+        "columns": [
+          "feature_1"
+        ],
+        "output_columns": [
+          "f1_1",
+          "f1_2",
+          "f1_3",
+          "f1_4",
+          "f1_5"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "One-hot expansion of anonymized card feature_1 appears in the stronger feature-engineering starter lineage.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "ashishpatel26/80-features-with-lightgbm-cv-bayesian-approach",
+        "thuongdinh/feature-engineering-and-lightgbm-starter-fork",
+        "truocpham/feature-engineering-and-lightgbm-starter"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Kept column-scoped for exact matching because notebooks often encode the three base card features separately.",
+      "evidence_snippets": [
+        "ohe_df_1 = pd.get_dummies(train['feature_1'], prefix='f1_')"
+      ],
+      "rareness": "common",
+      "confidence": 0.75,
+      "action_id": "CA-000035"
+    },
+    {
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "purchase_date",
+          "month_lag",
+          "card_id"
+        ],
+        "target_columns": [
+          "merchant_id",
+          "merchant_category_id",
+          "subsector_id",
+          "state_id",
+          "city_id"
+        ],
+        "agg_functions": [
+          "max"
+        ],
+        "join_back": true,
+        "how": "left",
+        "prefix": "new_"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Aggregates over the wrong grouping or with an impoverished summary set, producing a weaker feature table.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000011: Aggregates over the wrong grouping or with an impoverished summary set, producing a weaker feature table.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000036",
+      "derived_from_action_ids": [
+        "CA-000050"
+      ]
+    },
+    {
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "card_id",
+          "purchase_date"
+        ],
+        "target_columns": [
+          "purchase_amount",
+          "installments",
+          "month_lag",
+          "month_diff"
+        ],
+        "agg_functions": [
+          "sum"
+        ],
+        "join_back": false,
+        "how": "left",
+        "prefix": "hist_"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Aggregates over the wrong grouping or with an impoverished summary set, producing a weaker feature table.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000012: Aggregates over the wrong grouping or with an impoverished summary set, producing a weaker feature table.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000037",
+      "derived_from_action_ids": [
+        "CA-000060"
+      ]
+    },
+    {
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "card_id"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Drops the card-level entity key before any transaction aggregates can be grouped or joined back correctly.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "fault_actions.json#FA-000001"
+      ],
+      "derivation_reasoning": "Migrated legacy fault action FA-000001 into the action-bank benchmark.",
+      "challenge_type": "legacy_fault",
+      "action_id": "CA-000039"
+    },
+    {
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "card_id"
+        ],
+        "target_columns": [
+          "authorized_flag",
+          "category_1",
+          "category_2_1.0",
+          "category_2_2.0",
+          "category_2_3.0",
+          "category_2_4.0",
+          "category_2_5.0",
+          "category_3_A",
+          "category_3_B",
+          "category_3_C"
+        ],
+        "agg_functions": [
+          "sum",
+          "mean"
+        ],
+        "join_back": true,
+        "how": "left",
+        "prefix": "hist_"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "A historical card-level categorical aggregation block folds in the standard authorization/category mappings before sum/mean aggregation.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "artgor/elo-eda-and-models",
+        "ashishpatel26/80-features-with-lightgbm-cv-bayesian-approach",
+        "fabiendaniel/elo-world"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Composite aggregation unit: this bank action stands for the shared transaction encoding plus card-level categorical aggregation block rather than a hidden dependency chain.",
+      "evidence_snippets": [
+        "agg_func = {'authorized_flag': ['sum', 'mean'], 'category_1': ['sum', 'mean'], 'category_2_1.0': ['mean'], 'category_3_A': ['mean']}"
+      ],
+      "rareness": "common",
+      "confidence": 0.75,
+      "action_id": "CA-000040"
+    },
+    {
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "purchase_date",
+          "card_id"
+        ],
+        "target_columns": [
+          "merchant_id",
+          "merchant_category_id",
+          "subsector_id",
+          "state_id",
+          "city_id"
+        ],
+        "agg_functions": [
+          "mean"
+        ],
+        "join_back": false,
+        "how": "left",
+        "prefix": "new_"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Aggregates over the wrong grouping or with an impoverished summary set, producing a weaker feature table.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000011: Aggregates over the wrong grouping or with an impoverished summary set, producing a weaker feature table.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000041",
+      "derived_from_action_ids": [
+        "CA-000050"
+      ]
+    },
+    {
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "onehot",
+        "columns": [
+          "category_2"
+        ],
+        "output_columns": [
+          "category_2_1.0",
+          "category_2_2.0",
+          "category_2_3.0",
+          "category_2_4.0",
+          "category_2_5.0"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "category_2 is repeatedly expanded to dummy columns before card-level aggregations.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "artgor/elo-eda-and-models",
+        "ashishpatel26/80-features-with-lightgbm-cv-bayesian-approach",
+        "fabiendaniel/elo-world",
+        "peterhurford/you-re-going-to-want-more-categories-lb-3-737"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Split into one action per source column for exact matching, even when notebooks call get_dummies on both together.",
+      "evidence_snippets": [
+        "hist_trans = pd.get_dummies(hist_trans, columns=['category_2', 'category_3'])"
+      ],
+      "rareness": "common",
+      "confidence": 0.75,
+      "action_id": "CA-000042"
+    },
+    {
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "label",
+        "columns": [
+          "feature_1"
+        ],
+        "output_columns": [
+          "feature_1"
+        ],
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Overwriting nominal feature_1 with arbitrary train and test integer codes creates fake ordinality and a leakage-prone remap.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000007: destructively remaps feature_1 into a single ordinal-coded column fit across the full dataset.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000043",
+      "derived_from_action_ids": [
+        "CA-000035"
+      ]
+    },
+    {
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "count",
+        "columns": [
+          "feature_1"
+        ],
+        "output_columns": [
+          "feature_1_count"
+        ],
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Count-encoding five-way feature_1 across train and test turns a clean nominal feature into a leakage-prone global frequency proxy.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000007: replaces the rewarded one-hot block with a full-dataset count encoding.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000044",
+      "derived_from_action_ids": [
+        "CA-000035"
+      ]
+    },
+    {
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "month_lag"
+        ],
+        "target_columns": [
+          "purchase_amount",
+          "installments"
+        ],
+        "agg_functions": [
+          "sum",
+          "mean"
+        ],
+        "join_back": true,
+        "how": "left",
+        "prefix": "new_"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Groups new-merchant transactions by lag bucket rather than card_id, mixing different cards together and losing card-level signal.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "fault_actions.json#FA-000005"
+      ],
+      "derivation_reasoning": "Migrated legacy fault action FA-000005 into the action-bank benchmark.",
+      "challenge_type": "legacy_fault",
+      "action_id": "CA-000045"
+    },
+    {
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "freq",
+        "columns": [
+          "authorized_flag"
+        ],
+        "output_columns": [
+          "authorized_flag_freq"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Frequency-encoding authorized_flag replaces a simple binary signal with a global prevalence statistic that adds noise before aggregation.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000003: swaps the stable Y/N mapping for a prevalence proxy.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000046",
+      "derived_from_action_ids": [
+        "CA-000058"
+      ]
+    },
+    {
+      "action_type": "TIME_SINCE_REFERENCE",
+      "canonical_params": {
+        "columns": [
+          "first_active_month"
+        ],
+        "reference": "2018-02-01",
+        "unit": "days",
+        "output_columns": [
+          "elapsed_time"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Elapsed card age from the competition reference window is one of the most repeated Elo base-table features.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "artgor/elo-eda-and-models",
+        "ashishpatel26/80-features-with-lightgbm-cv-bayesian-approach",
+        "fabiendaniel/elo-world"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Composite card-age block: the benchmark treats February 1 2018 elapsed-time features as self-contained rather than requiring a separate parse action first.",
+      "evidence_snippets": [
+        "df['elapsed_time'] = (datetime.date(2018, 2, 1) - df['first_active_month'].dt.date).dt.days"
+      ],
+      "rareness": "common",
+      "confidence": 0.9,
+      "action_id": "CA-000047"
+    },
+    {
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "purchase_date",
+          "month_lag",
+          "card_id"
+        ],
+        "target_columns": [
+          "authorized_flag",
+          "category_1",
+          "category_2_1.0",
+          "category_2_2.0",
+          "category_2_3.0",
+          "category_2_4.0",
+          "category_2_5.0",
+          "category_3_A",
+          "category_3_B",
+          "category_3_C"
+        ],
+        "agg_functions": [
+          "max"
+        ],
+        "join_back": true,
+        "how": "left",
+        "prefix": "new_"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Aggregates over the wrong grouping or with an impoverished summary set, producing a weaker feature table.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000015: Aggregates over the wrong grouping or with an impoverished summary set, producing a weaker feature table.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000048",
+      "derived_from_action_ids": [
+        "CA-000072"
+      ]
+    },
+    {
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "card_id"
+        ],
+        "target_columns": [
+          "purchase_amount",
+          "installments",
+          "month_lag",
+          "month_diff"
+        ],
+        "agg_functions": [
+          "sum",
+          "mean",
+          "max",
+          "min",
+          "std"
+        ],
+        "join_back": true,
+        "how": "left",
+        "prefix": "new_"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "New-merchant transactions are usually aggregated with the shared numeric plus month_diff block and joined back to the base card table.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "artgor/elo-eda-and-models",
+        "prasunmishra/nn-relu-one-hiddenlayer",
+        "truocpham/feature-engineering-and-lightgbm-starter"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Composite aggregation unit: the numeric new-merchant block already includes the repeated recency feature engineering needed to aggregate month_diff.",
+      "evidence_snippets": [
+        "grouped = new_transactions.groupby('card_id').agg(aggregations)",
+        "test = pd.merge(test, grouped, on='card_id', how='left')"
+      ],
+      "rareness": "common",
+      "confidence": 0.75,
+      "action_id": "CA-000049"
+    },
+    {
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "card_id"
+        ],
+        "target_columns": [
+          "merchant_id",
+          "merchant_category_id",
+          "subsector_id",
+          "state_id",
+          "city_id"
+        ],
+        "agg_functions": [
+          "nunique"
+        ],
+        "join_back": true,
+        "how": "left",
+        "prefix": "new_"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Distinct-merchant and location counts from new-merchant transactions are a repeated complementary card-level feature family.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "ashishpatel26/ridge-lightgbm-feature-engineering-bayesian"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Observed in a small minority of notebooks, so this nunique new-merchant diversity block is retained only for all-stage scoring.",
+      "evidence_snippets": [
+        "new_trans_agg = new_trans.groupby(['card_id']).agg(agg_func)"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.75,
+      "action_id": "CA-000050"
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "month_diff = ((datetime('2018-02-01') - purchase_date).days // 30) + month_lag",
+        "output_columns": [
+          "month_diff"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "A month-distance feature that combines purchase recency with month_lag is a repeated Elo transaction feature.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "artgor/elo-eda-and-models",
+        "fabiendaniel/elo-world",
+        "prasunmishra/nn-relu-one-hiddenlayer"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Composite transaction-recency block: includes the implied purchase_date parsing needed to compute month_diff across both transaction tables.",
+      "evidence_snippets": [
+        "trans['month_diff'] = ((datetime.datetime.today() - trans['purchase_date']).dt.days)//30",
+        "trans['month_diff'] += trans['month_lag']"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.75,
+      "action_id": "CA-000051"
+    },
+    {
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "freq",
+        "columns": [
+          "category_1"
+        ],
+        "output_columns": [
+          "category_1_freq"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Frequency-encoding binary category_1 replaces a small categorical signal with a global prevalence statistic.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000004: swaps the shared Y/N mapping for a frequency proxy.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000053",
+      "derived_from_action_ids": [
+        "CA-000019"
+      ]
+    },
+    {
+      "action_type": "DATE_PART_FEATURE",
+      "canonical_params": {
+        "date_columns": [
+          "first_active_month"
+        ],
+        "parts": [
+          "dayofweek",
+          "day"
+        ],
+        "drop_original": true
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Extracts a weaker or overly destructive calendar representation than the benchmark-preferred date block.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000002: Extracts a weaker or overly destructive calendar representation than the benchmark-preferred date block.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000054",
+      "derived_from_action_ids": [
+        "CA-000004"
+      ]
+    },
+    {
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "onehot",
+        "columns": [
+          "category_1"
+        ],
+        "output_columns": [
+          "category_1_Y",
+          "category_1_N"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Expanding binary category_1 into redundant dummy columns adds width without improving the shared 0/1 transaction mapping.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000004: replaces the stable binary mapping with a redundant dummy expansion.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000055",
+      "derived_from_action_ids": [
+        "CA-000019"
+      ]
+    },
+    {
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "first_active_month"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Removes the base card activation date before card-age and activation-month features can be engineered.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "fault_actions.json#FA-000002"
+      ],
+      "derivation_reasoning": "Migrated legacy fault action FA-000002 into the action-bank benchmark.",
+      "challenge_type": "legacy_fault",
+      "action_id": "CA-000056"
+    },
+    {
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "freq",
+        "columns": [
+          "feature_2"
+        ],
+        "output_columns": [
+          "feature_2_freq"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Frequency-encoding feature_2 collapses a tiny nominal base-card feature into a global prevalence proxy.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000008: replaces the rewarded low-cardinality dummy block with a prevalence statistic.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000057",
+      "derived_from_action_ids": [
+        "CA-000011"
+      ]
+    },
+    {
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "label",
+        "columns": [
+          "authorized_flag"
+        ],
+        "output_columns": [
+          "authorized_flag_encoded"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Binarizing authorized_flag is a stable preprocessing step before transaction aggregation.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "artgor/elo-eda-and-models",
+        "ashishpatel26/80-features-with-lightgbm-cv-bayesian-approach",
+        "fabiendaniel/elo-world",
+        "prasunmishra/nn-relu-one-hiddenlayer"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Represents the shared mapping applied separately on both transaction tables before grouped feature generation.",
+      "evidence_snippets": [
+        "hist_trans['authorized_flag'] = hist_trans['authorized_flag'].map({'Y': 1, 'N': 0})"
+      ],
+      "rareness": "common",
+      "confidence": 0.9,
+      "action_id": "CA-000058"
+    },
+    {
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "authorized_flag == 'Y'"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Drops all unauthorized transactions even though those rows carry important loyalty signal and appear in successful Elo feature pipelines.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "fault_actions.json#FA-000008"
+      ],
+      "derivation_reasoning": "Migrated legacy fault action FA-000008 into the action-bank benchmark.",
+      "challenge_type": "legacy_fault",
+      "action_id": "CA-000059"
+    },
+    {
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "card_id"
+        ],
+        "target_columns": [
+          "purchase_amount",
+          "installments",
+          "month_lag",
+          "month_diff"
+        ],
+        "agg_functions": [
+          "sum",
+          "mean",
+          "max",
+          "min",
+          "std"
+        ],
+        "join_back": true,
+        "how": "left",
+        "prefix": "hist_"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "The dominant historical transaction block aggregates amount, installment, month_lag, and month_diff statistics back to card_id.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "artgor/elo-eda-and-models",
+        "ashishpatel26/80-features-with-lightgbm-cv-bayesian-approach",
+        "truocpham/feature-engineering-and-lightgbm-starter"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Composite aggregation unit: the shared historical numeric block already includes the repeated month_diff preparation rather than requiring a separate prerequisite action.",
+      "evidence_snippets": [
+        "grouped = historical_transactions.groupby('card_id').agg(aggregations)",
+        "train = pd.merge(train, grouped, on='card_id', how='left')"
+      ],
+      "rareness": "common",
+      "confidence": 0.75,
+      "action_id": "CA-000060"
+    },
+    {
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "onehot",
+        "columns": [
+          "feature_3"
+        ],
+        "output_columns": [
+          "f3_0",
+          "f3_1"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "One-hot expansion of anonymized card feature_3 is part of the same repeated base-card preprocessing block.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "ashishpatel26/80-features-with-lightgbm-cv-bayesian-approach",
+        "thuongdinh/feature-engineering-and-lightgbm-starter-fork",
+        "truocpham/feature-engineering-and-lightgbm-starter"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Kept column-scoped for exact matching because notebooks often encode the three base card features separately.",
+      "evidence_snippets": [
+        "ohe_df_3 = pd.get_dummies(train['feature_3'], prefix='f3_')"
+      ],
+      "rareness": "common",
+      "confidence": 0.75,
+      "action_id": "CA-000062"
+    },
+    {
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "constant",
+        "columns": [
+          "category_2",
+          "category_3"
+        ],
+        "fill_value": 0
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Injects a synthetic zero category into transaction category fields instead of preserving the observed category structure before encoding.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "fault_actions.json#FA-000007"
+      ],
+      "derivation_reasoning": "Migrated legacy fault action FA-000007 into the action-bank benchmark.",
+      "challenge_type": "legacy_fault",
+      "action_id": "CA-000063"
+    },
+    {
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "purchase_date",
+          "card_id"
+        ],
+        "target_columns": [
+          "authorized_flag",
+          "category_1",
+          "category_2_1.0",
+          "category_2_2.0",
+          "category_2_3.0",
+          "category_2_4.0",
+          "category_2_5.0",
+          "category_3_A",
+          "category_3_B",
+          "category_3_C"
+        ],
+        "agg_functions": [
+          "mean"
+        ],
+        "join_back": false,
+        "how": "left",
+        "prefix": "hist_"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Aggregates over the wrong grouping or with an impoverished summary set, producing a weaker feature table.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000014: Aggregates over the wrong grouping or with an impoverished summary set, producing a weaker feature table.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000064",
+      "derived_from_action_ids": [
+        "CA-000040"
+      ]
+    },
+    {
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "card_id"
+        ],
+        "target_columns": [
+          "merchant_id",
+          "merchant_category_id",
+          "subsector_id",
+          "state_id",
+          "city_id"
+        ],
+        "agg_functions": [
+          "nunique"
+        ],
+        "join_back": true,
+        "how": "left",
+        "prefix": "hist_"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Unique-merchant and location diversity counts are a repeated historical card-level summary family.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "ashishpatel26/ridge-lightgbm-feature-engineering-bayesian"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Observed in a small minority of notebooks, so this historical nunique diversity block is retained only for all-stage scoring.",
+      "evidence_snippets": [
+        "agg_func = {'merchant_id': ['nunique'], 'merchant_category_id': ['nunique'], 'subsector_id': ['nunique'], 'state_id': ['nunique'], 'city_id': ['nunique']}"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.75,
+      "action_id": "CA-000065"
+    },
+    {
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "hash",
+        "columns": [
+          "feature_2"
+        ],
+        "output_columns": [
+          "feature_2_hash"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Hashing three-way feature_2 into a single opaque code discards the separable dummy structure used in the benchmark-preferred base-card block.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000008: replaces an interpretable one-hot block with a lossy hashed representation.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000066",
+      "derived_from_action_ids": [
+        "CA-000011"
+      ]
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "month_lag = abs(month_lag)",
+        "output_columns": [
+          "month_lag"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Taking the absolute value of month_lag destroys whether a transaction happened before or after the reference window.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of the shared Elo transaction-recency block: removes the sign information from month_lag before aggregation.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000067",
+      "derived_from_action_ids": [
+        "CA-000060"
+      ]
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "purchase_amount = abs(purchase_amount)",
+        "output_columns": [
+          "purchase_amount"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Forcing purchase_amount non-negative erases refund and reversal direction that strong Elo pipelines preserve in card-level aggregates.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of the shared Elo transaction numeric aggregation family: removes refund direction by taking absolute purchase_amount values before aggregation.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000068",
+      "derived_from_action_ids": [
+        "CA-000060"
+      ]
+    },
+    {
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "hash",
+        "columns": [
+          "category_3"
+        ],
+        "output_columns": [
+          "category_3_hash"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Hashing low-cardinality category_3 into one opaque code destroys the explicit category-level aggregate columns the benchmark rewards.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000006: replaces explicit category_3 dummy columns with a hashed representation.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000069",
+      "derived_from_action_ids": [
+        "CA-000031"
+      ]
+    },
+    {
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "count",
+        "columns": [
+          "feature_3"
+        ],
+        "output_columns": [
+          "feature_3_count"
+        ],
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Count-encoding binary feature_3 across train and test leaks prevalence and erases the original two-category signal.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000009: replaces the clean binary dummy block with a full-dataset count encoding.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000070",
+      "derived_from_action_ids": [
+        "CA-000062"
+      ]
+    },
+    {
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "card_id",
+          "purchase_date"
+        ],
+        "target_columns": [
+          "authorized_flag",
+          "category_1",
+          "category_2_1.0",
+          "category_2_2.0",
+          "category_2_3.0",
+          "category_2_4.0",
+          "category_2_5.0",
+          "category_3_A",
+          "category_3_B",
+          "category_3_C"
+        ],
+        "agg_functions": [
+          "sum"
+        ],
+        "join_back": false,
+        "how": "left",
+        "prefix": "hist_"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Aggregates over the wrong grouping or with an impoverished summary set, producing a weaker feature table.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000014: Aggregates over the wrong grouping or with an impoverished summary set, producing a weaker feature table.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000071",
+      "derived_from_action_ids": [
+        "CA-000040"
+      ]
+    },
+    {
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "card_id"
+        ],
+        "target_columns": [
+          "authorized_flag",
+          "category_1",
+          "category_2_1.0",
+          "category_2_2.0",
+          "category_2_3.0",
+          "category_2_4.0",
+          "category_2_5.0",
+          "category_3_A",
+          "category_3_B",
+          "category_3_C"
+        ],
+        "agg_functions": [
+          "sum",
+          "mean"
+        ],
+        "join_back": true,
+        "how": "left",
+        "prefix": "new_"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "New-merchant transactions also contribute a card-level encoded categorical mix block after the standard Y/N and category preparation.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "artgor/elo-eda-and-models",
+        "ashishpatel26/80-features-with-lightgbm-cv-bayesian-approach",
+        "fabiendaniel/elo-world"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Composite aggregation unit: this bank action stands for the repeated new-merchant encoding plus card-level categorical aggregation block.",
+      "evidence_snippets": [
+        "new = aggregate_transactions(new_transactions, prefix='new_')"
+      ],
+      "rareness": "common",
+      "confidence": 0.75,
+      "action_id": "CA-000072"
+    }
+  ]
+}

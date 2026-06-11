@@ -1,0 +1,93 @@
+{
+  "competition_slug": "sberbank-russian-housing-market",
+  "dataset": {
+    "provider": "kaggle",
+    "competition": "sberbank-russian-housing-market",
+    "train_files": [
+      "train.csv"
+    ],
+    "test_files": [
+      "test.csv"
+    ],
+    "lookup_files": [
+      "macro.csv"
+    ],
+    "sample_submission_files": [
+      "sample_submission.csv"
+    ],
+    "data_dictionary_files": [
+      "data_dictionary.txt"
+    ],
+    "target_column": "price_doc",
+    "primary_key": "id"
+  },
+  "goal": "Suggest preprocessing and feature-engineering actions for predicting apartment sale prices from housing rows plus timestamp-aligned macroeconomic lookup data under the Kaggle RMSLE metric.",
+  "task_characteristics": {
+    "ml_domain": "real_estate_tabular",
+    "problem_type": "regression",
+    "table_structure": "multi_table_lookup",
+    "dataset_size_bucket": "small",
+    "dataset_size_raw": 30471,
+    "feature_dimensionality_bucket": "high",
+    "feature_dimensionality_raw": 391,
+    "preprocessing_complexity_bucket": "high",
+    "preprocessing_complexity_raw": 22,
+    "analysis_notes": "The largest relevant labeled table is train.csv with 30,471 rows; test.csv has 7,662 rows and macro.csv adds 2,484 timestamp-keyed lookup rows. The benchmark-relevant case-insensitive column union across train, test, macro, and sample submission files is exactly 391 columns, driven by a 292-column housing table, a 100-column macro table, and a compact 2-column submission file. The current curated Sberbank candidate bank rewards 22 good preprocessing actions, 8 of them core_preprocessing, so the task remains high-complexity despite its small row count. Benchmark-relevant work centers on impossible-value cleanup for apartment geometry, timestamp parsing and calendar features, timestamp-aligned macro joins, categorical handling, grouped time counts, and housing-specific ratios and interactions."
+  },
+  "overview": {
+    "title": "Sberbank Russian Housing Market",
+    "summary": "Predict Russian apartment sale prices from housing attributes and macroeconomic context.",
+    "raw_text": "Sberbank Russian Housing Market is a Featured Kaggle real-estate regression competition in which participants predict price_doc for each id in test.csv. The task combines a wide apartment-level housing table with a timestamp-keyed macroeconomic lookup table, so strong solutions typically mix housing-specific data cleaning with selected macro joins and timestamp-derived features. Public notebooks in the local collector consistently treat it as a preprocessing-heavy benchmark with anomaly repair around full_sq, life_sq, kitch_sq, floor, max_floor, build_year, and state, followed by categorical handling, grouped temporal counts, and a small number of housing-specific ratios or interactions. Local competition-selection metadata records Sberbank as the host, Featured as the category, a 25,000 USD prize pool, 3,264 teams, and a June 29, 2017 deadline.",
+    "host": "Sberbank",
+    "category": "Featured",
+    "reward": "25,000 Usd",
+    "team_count": 3264,
+    "enabled_date": "2017",
+    "new_entrant_deadline": null,
+    "deadline": "2017-06-29T23:59:00.000Z",
+    "url": "https://www.kaggle.com/competitions/sberbank-russian-housing-market"
+  },
+  "dataset_description": {
+    "summary": "The benchmark-relevant raw bundle is a five-file competition package: train.csv (30,471 x 292), test.csv (7,662 x 291), macro.csv (2,484 x 100), sample_submission.csv (7,662 x 2), and one plain-text data dictionary.",
+    "raw_text": "The local download bundle contains four CSVs plus data_dictionary.txt. train.csv provides 30,471 labeled transactions with columns such as id, timestamp, full_sq, life_sq, floor, max_floor, material, build_year, num_room, kitch_sq, state, product_type, and target price_doc. test.csv mirrors the same housing schema without the target and contains 7,662 prediction rows. macro.csv provides 2,484 daily macroeconomic snapshots keyed by timestamp and includes indicators such as balance_trade, eurrub, deposits_rate, mortgage_value, mortgage_rate, income_per_cap, and apartment_build that are selectively joined by strong notebook baselines. sample_submission.csv defines the final id-indexed prediction format for price_doc. data_dictionary.txt describes the main housing fields, the macro indicators, and the neighborhood feature prefixes used throughout the raw tables. Across the benchmark-relevant CSVs, the exact case-insensitive raw-column union is 391 columns.",
+    "file_summary": {
+      "total_file_count": 5,
+      "file_types": [
+        {
+          "extension": ".csv",
+          "file_count": 4,
+          "total_size_bytes": 60136794
+        },
+        {
+          "extension": ".txt",
+          "file_count": 1,
+          "total_size_bytes": 25986
+        }
+      ]
+    },
+    "column_summary": {
+      "total_column_count": 391,
+      "column_types": [
+        {
+          "column_type": "Numeric",
+          "column_count": 374
+        },
+        {
+          "column_type": "Categorical",
+          "column_count": 15
+        },
+        {
+          "column_type": "DateTime",
+          "column_count": 1
+        },
+        {
+          "column_type": "Id",
+          "column_count": 1
+        }
+      ]
+    }
+  },
+  "metric": {
+    "name": "Root Mean Squared Logarithmic Error"
+  }
+}

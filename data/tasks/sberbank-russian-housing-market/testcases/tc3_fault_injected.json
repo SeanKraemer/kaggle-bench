@@ -1,0 +1,15 @@
+{
+  "testcase_id": "tc3_fault_injected",
+  "competition_slug": "sberbank-russian-housing-market",
+  "task_ref": "../task.json",
+  "input": {
+    "scenario": "fault_injected",
+    "context_action_ids": [
+      "CA-000028",
+      "CA-000050",
+      "CA-000065",
+      "CA-000070",
+      "CA-000102"
+    ]
+  }
+}

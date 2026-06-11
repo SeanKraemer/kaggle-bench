@@ -1,0 +1,21 @@
+{
+  "competition_slug": "allstate-claims-severity",
+  "testcase_id": "tc1_from_scratch",
+  "artifact_type": "eval_human_baseline_provenance",
+  "author": "Sean Kraemer",
+  "created_at": "2026-04-24T00:00:00-05:00",
+  "source_mode": "simple_manual_baseline_reauthored_from_migrated_notes",
+  "related_output": "../tc1_human.json",
+  "source_notebook_artifacts": [
+    "../work.ipynb"
+  ],
+  "supporting_artifacts": [
+    "../notes.md",
+    "action_trace.json"
+  ],
+  "time_spent_minutes": 30,
+  "consulted_candidate_bank": true,
+  "consulted_legacy_human_output": true,
+  "notes": "I used the migrated branch notes and candidate bank to write a deliberately simple TC1 human baseline. This is not an independent Kaggle rerun and it should not be read as a fresh finalized human optimum. I intentionally left out the target log transform so the baseline reflects a realistic imperfect first pass rather than the curated answer key.",
+  "legacy_source_branch": "origin/allstate-claims"
+}

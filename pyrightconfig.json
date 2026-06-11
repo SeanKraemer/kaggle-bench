@@ -1,0 +1,17 @@
+{
+  "pythonVersion": "3.11",
+  "typeCheckingMode": "standard",
+  "include": [
+    "src",
+    "eval",
+    "data/collector/scripts"
+  ],
+  "exclude": [
+    "**/__pycache__",
+    "data/collector/data",
+    "docs"
+  ],
+  "extraPaths": [
+    "src"
+  ]
+}

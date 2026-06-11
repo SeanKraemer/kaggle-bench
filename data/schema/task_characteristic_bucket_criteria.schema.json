@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "data/schema/task_characteristic_bucket_criteria.schema.json",
+  "title": "TaskCharacteristicBucketCriteria",
+  "description": "Shared bucket thresholds for task characteristics used across tasks.",
+  "type": "object",
+  "required": [
+    "version",
+    "dataset_size",
+    "feature_dimensionality",
+    "preprocessing_complexity"
+  ],
+  "properties": {
+    "version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "dataset_size": {
+      "$ref": "#/$defs/four_bucket_criteria"
+    },
+    "feature_dimensionality": {
+      "$ref": "#/$defs/three_bucket_criteria"
+    },
+    "preprocessing_complexity": {
+      "$ref": "#/$defs/three_bucket_criteria"
+    }
+  },
+  "$defs": {
+    "three_bucket_thresholds": {
+      "type": "object",
+      "required": [
+        "low_max",
+        "medium_max"
+      ],
+      "properties": {
+        "low_max": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "medium_max": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "four_bucket_thresholds": {
+      "type": "object",
+      "required": [
+        "small_max",
+        "medium_max",
+        "large_max"
+      ],
+      "properties": {
+        "small_max": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "medium_max": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "large_max": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "three_bucket_criteria": {
+      "type": "object",
+      "required": [
+        "metric_name",
+        "thresholds"
+      ],
+      "properties": {
+        "metric_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "thresholds": {
+          "$ref": "#/$defs/three_bucket_thresholds"
+        }
+      },
+      "additionalProperties": false
+    },
+    "four_bucket_criteria": {
+      "type": "object",
+      "required": [
+        "metric_name",
+        "thresholds"
+      ],
+      "properties": {
+        "metric_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "thresholds": {
+          "$ref": "#/$defs/four_bucket_thresholds"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

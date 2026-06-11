@@ -1,0 +1,14 @@
+{
+  "competition_slug": "icr-identify-age-related-conditions",
+  "testcase_id": "tc1_from_scratch",
+  "artifact_type": "eval_human_baseline_provenance",
+  "author": "annotator_c",
+  "created_at": "2026-04-14T03:45:00-05:00",
+  "source_mode": "manual_notebook_baseline_reauthored_to_bank_ids",
+  "related_output": "../tc1_human.json",
+  "source_notebook_artifacts": ["../work.ipynb"],
+  "time_spent_minutes": 45,
+  "consulted_candidate_bank": true,
+  "consulted_selected_notebooks": true,
+  "notes": "This artifact was authored directly against the current icr-identify-age-related-conditions candidate bank. It is not a migration from a legacy evaluator output. The selected actions intentionally keep the primary spine conservative while still recording one official greeks validation branch and one model-family preprocessing branch."
+}

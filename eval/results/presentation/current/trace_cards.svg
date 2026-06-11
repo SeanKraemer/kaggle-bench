@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+<style>
+.title{font:700 31px Arial,sans-serif;fill:#111827}
+.subtitle{font:400 16px Arial,sans-serif;fill:#4b5563}
+.cardTitle{font:700 23px Arial,sans-serif;fill:#ffffff}
+.metric{font:700 18px Arial,sans-serif;fill:#111827}
+.section{font:700 14px Arial,sans-serif;fill:#111827}
+.body{font:400 13px Arial,sans-serif;fill:#374151}
+.small{font:400 12px Arial,sans-serif;fill:#6b7280}
+</style>
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text class="title" x="44" y="48">Trace Examples: What the Scores Mean</text>
+<text class="subtitle" x="44" y="76">Use this as a qualitative companion to the numeric results slide.</text>
+<rect x="62" y="104" width="560" height="570" rx="12" fill="#ffffff" stroke="#d1d5db"/>
+<rect x="62" y="104" width="560" height="58" rx="12" fill="#0f766e"/>
+<text class="cardTitle" x="86" y="142">Works well</text>
+<text class="metric" x="86" y="192">recruit-restaurant-visitor-forecasting</text>
+<text class="small" x="86" y="218">tc1 from scratch; context actions: 0</text>
+<text class="metric" x="86" y="254">Completion 0.93 | Add F1 0.86 | Remove recall 1.00</text>
+<text class="section" x="86" y="288">Input -&gt; tool evidence</text>
+<text class="body"><tspan x="86" y="310">Used tools: summarize_context_actions, profile_target_distribution,</tspan><tspan x="86" y="327">inspect_dataset_tables, lookup_actions.</tspan><tspan x="86" y="344">Inspected 7 dataset tables before selecting actions.</tspan><tspan x="86" y="361">Looked up candidate action families: JOIN_LOOKUP, PARSE_DATETIME.</tspan></text>
+<text class="section" x="86" y="406">Decision</text>
+<text class="body"><tspan x="86" y="428">Correct selected actions:</tspan><tspan x="86" y="445">- CA-000023: PARSE_DATETIME (visit_date)</tspan><tspan x="86" y="462">- CA-000005: PARSE_DATETIME (visit_datetime, reserve_datetime)</tspan><tspan x="86" y="479">- CA-000009: TIME_SINCE_REFERENCE (reserve_datetime vs visit_datetime)</tspan><tspan x="86" y="496">- CA-000046: JOIN_LOOKUP (air_store_info)</tspan></text>
+<text class="section" x="86" y="538">Outcome</text>
+<text class="body"><tspan x="86" y="560">Rollback outcome:</tspan><tspan x="86" y="577">- No harmful context actions were expected.</tspan></text>
+<text class="section" x="86" y="614">Lesson learned</text>
+<text class="body"><tspan x="86" y="636">Tool-grounded inspection helped the agent recover relational date,</tspan><tspan x="86" y="653">reservation, store, and calendar preprocessing.</tspan></text>
+<rect x="658" y="104" width="560" height="570" rx="12" fill="#ffffff" stroke="#d1d5db"/>
+<rect x="658" y="104" width="560" height="58" rx="12" fill="#b45309"/>
+<text class="cardTitle" x="682" y="142">Struggles</text>
+<text class="metric" x="682" y="192">lish-moa</text>
+<text class="small" x="682" y="218">tc4 mixed history; context actions: 5</text>
+<text class="metric" x="682" y="254">Completion 0.31 | Add F1 0.29 | Remove recall 0.33</text>
+<text class="section" x="682" y="288">Input -&gt; tool evidence</text>
+<text class="body"><tspan x="682" y="310">Used tools: summarize_context_actions, profile_target_distribution,</tspan><tspan x="682" y="327">inspect_columns, lookup_actions.</tspan><tspan x="682" y="344">Looked up candidate action families: FILTER_ROWS, APPLY_EXPRESSION.</tspan><tspan x="682" y="361">Reviewed 5 existing context actions.</tspan></text>
+<text class="section" x="682" y="406">Decision</text>
+<text class="body"><tspan x="682" y="428">Correct selected actions:</tspan><tspan x="682" y="445">- CA-000034: FILTER_ROWS (cp_type != &#x27;ctl_vehicle&#x27; on training rows</tspan><tspan x="682" y="462">only; preserve all...)</tspan></text>
+<text class="section" x="682" y="538">Outcome</text>
+<text class="body"><tspan x="682" y="560">Missed removals:</tspan><tspan x="682" y="577">- CA-000014: PCA_REDUCTION (g-*, c-*, n=100)</tspan><tspan x="682" y="594">- CA-000030: APPLY_EXPRESSION (for each g-* and c-* column, fit...)</tspan></text>
+<text class="section" x="682" y="614">Lesson learned</text>
+<text class="body"><tspan x="682" y="636">The agent caught one direct conflict, but missed subtler semantic</tspan><tspan x="682" y="653">faults that required stronger rollback checks.</tspan></text>
+</svg>

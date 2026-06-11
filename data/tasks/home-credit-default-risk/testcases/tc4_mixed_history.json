@@ -1,0 +1,20 @@
+{
+  "testcase_id": "tc4_mixed_history",
+  "competition_slug": "home-credit-default-risk",
+  "task_ref": "../task.json",
+  "input": {
+    "scenario": "mixed",
+    "context_action_ids": [
+      "CA-000017",
+      "CA-000082",
+      "CA-000030",
+      "CA-000023",
+      "CA-000062",
+      "CA-000128",
+      "CA-000115",
+      "CA-000121",
+      "CA-000038",
+      "CA-000054"
+    ]
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "competition_slug": "rossmann-store-sales",
+  "dataset": {
+    "provider": "kaggle",
+    "competition": "rossmann-store-sales",
+    "train_files": [
+      "train.csv"
+    ],
+    "test_files": [
+      "test.csv"
+    ],
+    "lookup_files": [
+      "store.csv"
+    ],
+    "sample_submission_files": [
+      "sample_submission.csv"
+    ],
+    "target_column": "Sales"
+  },
+  "goal": "Suggest preprocessing and feature-engineering actions for forecasting daily Rossmann store sales under the Kaggle RMSPE metric.",
+  "task_characteristics": {
+    "ml_domain": "retail_forecasting",
+    "problem_type": "forecasting",
+    "table_structure": "multi_table_lookup",
+    "dataset_size_bucket": "large",
+    "dataset_size_raw": 1017209,
+    "feature_dimensionality_bucket": "low",
+    "feature_dimensionality_raw": 19,
+    "preprocessing_complexity_bucket": "medium",
+    "preprocessing_complexity_raw": 12,
+    "analysis_notes": "Rossmann is a large retail forecasting task with a 1,017,209-row store-day training table, a 41,088-row future test table, and a 1,115-row store metadata lookup table. The benchmark-relevant case-insensitive column union is only 19 columns, so the raw feature surface is narrow despite the row count. For this task, `preprocessing_complexity_raw` tracks primary effective good units after collapsing equivalence groups and excluding `model_specific_preprocessing` rows; the current Rossmann bank scores 12 such units. Most difficulty comes from the lookup join, calendar decomposition, promo and competition timing repairs, leakage cleanup, and Rossmann-specific closure handling rather than from raw width."
+  },
+  "overview": {
+    "title": "Rossmann Store Sales",
+    "summary": "Forecast sales using store, promotion, and competitor data",
+    "raw_text": "Rossmann Store Sales is a Kaggle Featured forecasting competition about predicting daily store-level Sales for Rossmann drug stores in Germany. Participants forecast the future `Sales` value for each `Store` and `Date` row in the test horizon using `train.csv`, `test.csv`, and `store.csv`, and submissions are evaluated with RMSPE.",
+    "host": "Kaggle",
+    "category": "Featured",
+    "reward": "35,000 Usd",
+    "team_count": 3298,
+    "enabled_date": "2015-09-30T00:00:00.000Z",
+    "new_entrant_deadline": null,
+    "deadline": "2015-12-14T23:59:00.000Z",
+    "url": "https://www.kaggle.com/competitions/rossmann-store-sales"
+  },
+  "dataset_description": {
+    "summary": "The raw competition bundle contains a 1,017,209-row `train.csv` store-day table, a 41,088-row `test.csv` future horizon table, a 1,115-row `store.csv` lookup table with store metadata, and `sample_submission.csv`. Across those files, the case-insensitive column union is 19 columns.",
+    "raw_text": "Rossmann is a multi-table retail forecasting task. `train.csv` contains one row per store-day from 2013-01-01 through 2015-07-31 with target `Sales` plus fields such as `Customers`, `Open`, `Promo`, `StateHoliday`, `SchoolHoliday`, `DayOfWeek`, `Store`, and `Date`. `test.csv` continues the same store-day grain from 2015-08-01 through 2015-09-17, omits `Sales`, and contains 11 missing `Open` values. `store.csv` contributes store-level lookup fields such as `StoreType`, `Assortment`, `CompetitionDistance`, `CompetitionOpenSinceMonth`, `CompetitionOpenSinceYear`, `Promo2`, `Promo2SinceWeek`, `Promo2SinceYear`, and `PromoInterval`. The benchmark-relevant slice focuses on joining `store.csv`, parsing and decomposing `Date`, repairing sparse store metadata, encoding low-cardinality categoricals, and keeping the train/test feature contract aligned.",
+    "file_summary": {
+      "total_file_count": 4,
+      "file_types": [
+        {
+          "extension": ".csv",
+          "file_count": 4,
+          "total_size_bytes": 39847998
+        }
+      ]
+    },
+    "column_summary": {
+      "total_column_count": 19,
+      "column_types": [
+        {
+          "column_type": "Integer",
+          "column_count": 11
+        },
+        {
+          "column_type": "Decimal",
+          "column_count": 1
+        },
+        {
+          "column_type": "Categorical",
+          "column_count": 4
+        },
+        {
+          "column_type": "DateTime",
+          "column_count": 1
+        },
+        {
+          "column_type": "Id",
+          "column_count": 2
+        }
+      ]
+    }
+  },
+  "metric": {
+    "name": "RMSPE"
+  }
+}

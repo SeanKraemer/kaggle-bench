@@ -1,0 +1,57 @@
+{
+  "competition_slug": "amex-default-prediction",
+  "testcase_id": "tc1_from_scratch",
+  "artifact_type": "eval_human_baseline_action_trace",
+  "related_output": "../tc1_human.json",
+  "traces": [
+    {
+      "predicted_action_id": "CA-000014",
+      "artifact": "../work.py",
+      "section": "Raw Schema Audit",
+      "mapping_rationale": "The scratch notebook explicitly previews the standard AMEX rounding trick on the wide numeric statement block before any heavier feature construction."
+    },
+    {
+      "predicted_action_id": "CA-000009",
+      "artifact": "../work.py",
+      "section": "Raw Schema Audit",
+      "mapping_rationale": "The raw-schema pass separates the 11 known categorical columns and casts them into an integer-like block before downstream encoding or aggregation."
+    },
+    {
+      "predicted_action_id": "CA-000049",
+      "artifact": "../work.py",
+      "section": "Categorical Handling",
+      "mapping_rationale": "The categorical-handling section inspects level concentration but keeps the final baseline at simple label-ready encoding rather than a richer custom collapse scheme."
+    },
+    {
+      "predicted_action_id": "CA-000020",
+      "artifact": "../work.py",
+      "section": "Customer-Level Aggregations",
+      "mapping_rationale": "The customer-level aggregation section groups the categorical block by `customer_ID` with `count`, `first`, `last`, and `nunique`, which is the selected representative for that equivalence group."
+    },
+    {
+      "predicted_action_id": "CA-000056",
+      "artifact": "../work.py",
+      "section": "Customer-Level Aggregations",
+      "mapping_rationale": "The same section keeps the standard AMEX numeric customer-summary aggregation scaffold without treating the alternative branches as separate required units."
+    },
+    {
+      "predicted_action_id": "CA-000001",
+      "artifact": "../work.py",
+      "section": "Customer-Level Aggregations",
+      "mapping_rationale": "After concatenating the grouped numeric and categorical summaries, the notebook flattens the multi-index columns back into a usable single-level feature matrix."
+    },
+    {
+      "predicted_action_id": "CA-000029",
+      "artifact": "../work.py",
+      "section": "Missingness And Ordered Deltas",
+      "mapping_rationale": "The missingness section explicitly keeps simple imputation for the better-covered numeric subset rather than a more elaborate missing-data strategy."
+    },
+    {
+      "predicted_action_id": "CA-000043",
+      "artifact": "../work.py",
+      "section": "Missingness And Ordered Deltas",
+      "mapping_rationale": "Explicit binary missingness flags remain in the conservative baseline because null patterns themselves are a clear AMEX signal."
+    }
+  ],
+  "notes": "Conservative AMEX TC1 manual baseline trace. Each selected action is mapped back to a concrete scratch-notebook section, with the worksheet retained as the late bank-id alignment record."
+}

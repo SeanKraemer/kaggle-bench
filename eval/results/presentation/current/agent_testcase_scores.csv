@@ -1,0 +1,25 @@
+agent_name,testcase_id,testcase_label,group_count,task_completion_score,add_f1,remove_recall,total_tokens
+human,tc1_from_scratch,TC1 Scratch,20,0.885878,0.771756,1.0,
+human,tc2_partial_good,TC2 Good prior,0,,,,
+human,tc3_fault_injected,TC3 Bad prior,0,,,,
+human,tc4_mixed_history,TC4 Mixed,0,,,,
+rule_based,tc1_from_scratch,TC1 Scratch,20,0.638675,0.277351,1.0,
+rule_based,tc2_partial_good,TC2 Good prior,20,0.583339,0.166679,1.0,
+rule_based,tc3_fault_injected,TC3 Bad prior,20,0.26944,0.28888,0.25,
+rule_based,tc4_mixed_history,TC4 Mixed,20,0.220502,0.157671,0.283333,
+single_llm,tc1_from_scratch,TC1 Scratch,20,0.876399,0.752797,1.0,1152.09
+single_llm,tc2_partial_good,TC2 Good prior,20,0.821893,0.643787,1.0,2283.33
+single_llm,tc3_fault_injected,TC3 Bad prior,20,0.670885,0.622436,0.719333,2342.47
+single_llm,tc4_mixed_history,TC4 Mixed,20,0.737807,0.683948,0.791667,2358.26
+generic_agent,tc1_from_scratch,TC1 Scratch,20,0.872498,0.744995,1.0,17615.31
+generic_agent,tc2_partial_good,TC2 Good prior,20,0.798586,0.597173,1.0,15035.21
+generic_agent,tc3_fault_injected,TC3 Bad prior,20,0.663367,0.577901,0.748833,15185.82
+generic_agent,tc4_mixed_history,TC4 Mixed,20,0.72756,0.646786,0.808333,15584.32
+claude_code,tc1_from_scratch,TC1 Scratch,20,0.882857,0.765714,1.0,7079.37
+claude_code,tc2_partial_good,TC2 Good prior,20,0.809969,0.619938,1.0,5256.65
+claude_code,tc3_fault_injected,TC3 Bad prior,20,0.635417,0.476333,0.7945,5012.43
+claude_code,tc4_mixed_history,TC4 Mixed,20,0.696541,0.593081,0.8,5527.21
+proposed_agent,tc1_from_scratch,TC1 Scratch,20,0.869947,0.739895,1.0,19090.58
+proposed_agent,tc2_partial_good,TC2 Good prior,20,0.864443,0.728887,1.0,18200.45
+proposed_agent,tc3_fault_injected,TC3 Bad prior,20,0.605337,0.59284,0.617833,20726.11
+proposed_agent,tc4_mixed_history,TC4 Mixed,20,0.655046,0.641759,0.668333,23538.77

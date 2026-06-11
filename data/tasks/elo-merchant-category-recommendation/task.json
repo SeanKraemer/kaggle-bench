@@ -1,0 +1,87 @@
+{
+  "competition_slug": "elo-merchant-category-recommendation",
+  "dataset": {
+    "provider": "kaggle",
+    "competition": "elo-merchant-category-recommendation",
+    "train_files": [
+      "train.csv",
+      "historical_transactions.csv",
+      "new_merchant_transactions.csv"
+    ],
+    "test_files": [
+      "test.csv"
+    ],
+    "lookup_files": [
+      "merchants.csv"
+    ],
+    "sample_submission_files": [
+      "sample_submission.csv"
+    ],
+    "target_column": "target",
+    "primary_key": "card_id"
+  },
+  "goal": "Suggest preprocessing and feature-engineering actions for predicting card-level loyalty score from Elo card metadata plus historical and new-merchant transaction logs under the competition RMSE metric. This benchmark slice scores card-age features, transaction encodings, and card-level aggregations rather than merchant-table enrichment.",
+  "task_characteristics": {
+    "ml_domain": "finance_tabular",
+    "problem_type": "regression",
+    "table_structure": "multi_table_relational",
+    "dataset_size_bucket": "xlarge",
+    "dataset_size_raw": 29112361,
+    "feature_dimensionality_bucket": "medium",
+    "feature_dimensionality_raw": 34,
+    "preprocessing_complexity_bucket": "medium",
+    "preprocessing_complexity_raw": 14,
+    "analysis_notes": "Large multi-table finance regression task centered on card_id, with a 29,112,361-row historical transaction table plus a smaller but still substantial new-merchant table and an auxiliary merchant lookup table. The broader competition data remains moderately wide at a 34-column case-insensitive union, but the curated benchmark slice intentionally narrows to 14 core preprocessing actions plus 2 low-support model-specific aggregation variants. The scored path focuses on card-age features, transaction encodings, and card-level relational aggregation rather than merchant-table enrichment, and its repeated date-derived features are now scored through self-contained composite units rather than standalone parse steps."
+  },
+  "overview": {
+    "title": "Elo Merchant Category Recommendation",
+    "summary": "Can you identify the most relevant merchant opportunities by predicting each cardholder's future loyalty score?",
+    "raw_text": "Elo built partnerships with merchants to offer promotions and discounts to cardholders, but irrelevant offers hurt the customer experience. The competition asks participants to predict a continuous loyalty score for each card_id by uncovering signal in anonymized card metadata, historical transactions, new merchant transactions, and broader merchant context. The benchmark slice here narrows to the repeated notebook core: engineer card-age features from first_active_month, encode recurring transaction flags and categories, and aggregate transaction behavior back to card_id before fitting a regressor. Submissions are evaluated by root mean squared error on the target loyalty score.",
+    "host": "Kaggle",
+    "category": "Featured",
+    "reward": "50,000 Usd",
+    "team_count": 4129,
+    "enabled_date": "2018-11-26T00:00:00.000Z",
+    "new_entrant_deadline": null,
+    "deadline": "2019-02-26T23:59:00.000Z",
+    "url": "https://www.kaggle.com/competitions/elo-merchant-category-recommendation"
+  },
+  "dataset_description": {
+    "summary": "The downloadable competition bundle consists of a card-level train/test pair keyed by card_id, two large transaction fact tables (historical and new merchant transactions), a merchant lookup table merchants.csv, and sample_submission.csv. Public notebook close reading for this benchmark slice consistently focuses on the card table plus the two transaction logs: train/test contribute first_active_month and three anonymized base card features, while the transaction tables contribute purchase timing, purchase amount, installments, month lag, merchant/location ids, and repeated categorical flags. The benchmark keeps merchants.csv as part of the raw competition package, but the scored action bank intentionally emphasizes card-age features, transaction encodings, and card-level aggregates rather than merchant-attribute joins.",
+    "raw_text": "The Elo competition data is organized around one row per card in train and test plus two transaction logs and one merchant lookup table. train.csv and test.csv each include card_id, first_active_month, and three anonymized base card features; train also includes the continuous loyalty target. historical_transactions.csv records prior card activity, while new_merchant_transactions.csv records activity at merchants not seen in the historical window. Both transaction tables contain purchase timing, authorization and category flags, purchase amount, installments, month lag, and multiple merchant/location ids keyed by card_id. merchants.csv provides merchant-level categorical attributes and lagged sales and purchase summary statistics keyed by merchant_id, but the curated benchmark slice does not score merchant-table joins. Instead, it centers on date-derived card-age and recency features, repeated Y/N and category encodings, and aggregating each transaction table back to card_id before fitting a card-level regressor.",
+    "file_summary": {
+      "total_file_count": 6,
+      "file_types": [
+        {
+          "extension": ".csv",
+          "file_count": 6,
+          "total_size_bytes": 2960000000
+        }
+      ]
+    },
+    "column_summary": {
+      "total_column_count": 34,
+      "column_types": [
+        {
+          "column_type": "Numeric",
+          "column_count": 15
+        },
+        {
+          "column_type": "Categorical",
+          "column_count": 15
+        },
+        {
+          "column_type": "Id",
+          "column_count": 2
+        },
+        {
+          "column_type": "DateTime",
+          "column_count": 2
+        }
+      ]
+    }
+  },
+  "metric": {
+    "name": "RMSE"
+  }
+}

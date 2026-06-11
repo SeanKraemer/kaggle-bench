@@ -1,0 +1,111 @@
+{
+  "competition_slug": "lish-moa",
+  "dataset": {
+    "provider": "kaggle",
+    "competition": "lish-moa",
+    "train_files": [
+      "train_features.csv",
+      "train_targets_scored.csv",
+      "train_targets_nonscored.csv",
+      "train_drug.csv"
+    ],
+    "test_files": [
+      "test_features.csv"
+    ],
+    "lookup_files": [],
+    "sample_submission_files": [
+      "sample_submission.csv"
+    ],
+    "data_dictionary_files": [],
+    "target_column": "206 scored MoA binary targets",
+    "primary_key": "sig_id"
+  },
+  "goal": "Suggest preprocessing and feature-engineering actions for predicting mechanisms of action (MoA) binary targets on drug perturbation data under the mean column-wise log loss evaluation metric.",
+  "task_characteristics": {
+    "ml_domain": "bioinformatics_tabular",
+    "problem_type": "other",
+    "table_structure": "single_table",
+    "dataset_size_bucket": "small",
+    "dataset_size_raw": 23814,
+    "feature_dimensionality_bucket": "high",
+    "feature_dimensionality_raw": 876,
+    "preprocessing_complexity_bucket": "medium",
+    "preprocessing_complexity_raw": 11,
+    "analysis_notes": "Multi-label binary classification task with 23,814 training samples and 876 input features (772 gene expression g-* columns, 100 cell viability c-* columns, plus 3 categorical treatment descriptors and 1 identifier). The 206 scored targets are binary MoA labels; additional non-scored targets and anonymized drug IDs are also available. Control perturbation samples (cp_type='ctl_vehicle') account for 1,866 rows, or roughly 7.8% of training rows, and have all-zero targets, requiring explicit filtering. Key preprocessing patterns include control sample removal, RankGauss normalization of continuous features, separate PCA on gene and cell feature groups, VarianceThreshold feature selection, and one-hot or ordinal encoding of cp_time and cp_dose."
+  },
+  "overview": {
+    "title": "Mechanisms of Action (MoA) Prediction",
+    "summary": "Can you improve the algorithm that classifies drugs based on their biological activity?",
+    "raw_text": "Description\n\nWhat is the Mechanism of Action (MoA) of a drug? And why is it important?\n\nIn the past, scientists derived drugs from natural products or were inspired by traditional remedies. Very common drugs, such as paracetamol, known in the US as acetaminophen, were put into clinical use decades before the biological mechanisms driving their pharmacological activities were understood. Today, with the advent of more powerful technologies, drug discovery has changed from the serendipitous approaches of the past to a more targeted model based on an understanding of the underlying biological mechanism of a disease. In this new framework, scientists seek to identify a protein target associated with a disease and develop a molecule that can modulate that protein target. As a shorthand to describe the biological activity of a given molecule, scientists assign a label referred to as mechanism-of-action or MoA for short.\n\nHow do we determine the MoAs of a new drug?\n\nOne approach is to treat a sample of human cells with the drug and then analyze the cellular responses with algorithms that search for similarity to known patterns in large genomic databases, such as libraries of gene expression or cell viability patterns of drugs with known MoAs.\n\nIn this competition, you will have access to a unique dataset that combines gene expression and cell viability data. The data is based on a new technology that measures simultaneously human cells' responses to drugs in a pool of 100 different cell types. In addition, you will have access to MoA annotations for more than 5,000 drugs in this dataset.\n\nAs is customary, the dataset has been split into testing and training subsets. Hence, the task is to use the training dataset to develop an algorithm that automatically labels each case in the test set as one or more MoA classes. Since drugs can have multiple MoA annotations, the task is formally a multi-label classification problem.\n\nEvaluation\n\nThe evaluation metric for this competition is the mean of column-wise log loss.\n\nFor each sig_id in the test set, participants predict a probability for each of the 206 scored targets.",
+    "host": "Laboratory for Innovation Science at Harvard (LISH)",
+    "category": "Research",
+    "reward": "30,000 Usd",
+    "team_count": 4373,
+    "enabled_date": "2020-09-01T00:00:00.000Z",
+    "new_entrant_deadline": null,
+    "deadline": "2020-11-30T23:59:00.000Z",
+    "url": "https://www.kaggle.com/competitions/lish-moa"
+  },
+  "dataset_description": {
+    "summary": "The downloaded dataset contains train_features.csv (23,814 rows x 876 columns), train_targets_scored.csv (23,814 rows x 207 columns), train_targets_nonscored.csv, train_drug.csv, test_features.csv (3,982 rows x 876 columns), and sample_submission.csv.",
+    "raw_text": "Files\n\ntrain_features.csv - Features for the training set. Features g-* signify gene expression data, and c-* signify cell viability data.\n\ntrain_drug.csv - An anonymized drug_id for the training set only. Not all sig_ids have a corresponding drug_id.\n\ntrain_targets_scored.csv - The binary MoA targets that are scored.\n\ntrain_targets_nonscored.csv - Additional optional binary MoA targets that are not scored.\n\ntest_features.csv - Features for the test set.\n\nsample_submission.csv - A valid sample submission.\n\nColumns\n\nsig_id - Sample identifier.\n\ncp_type - Type of perturbation. trt_cp indicates a compound treatment; ctl_vehicle indicates a control perturbation. Control perturbations have no MoAs and all targets are zero.\n\ncp_time - Treatment duration: 24, 48, or 72 hours.\n\ncp_dose - Dose level of the compound: D1 or D2.\n\ng-* - Gene expression features.\n\nc-* - Cell viability features.",
+    "file_summary": {
+      "total_file_count": 6,
+      "file_types": [
+        {
+          "extension": ".csv",
+          "file_count": 6,
+          "total_size_bytes": 215958735
+        }
+      ]
+    },
+    "column_summary": {
+      "total_column_count": 876,
+      "column_types": [
+        {
+          "column_type": "Id",
+          "column_count": 1
+        },
+        {
+          "column_type": "Categorical",
+          "column_count": 3
+        },
+        {
+          "column_type": "Decimal",
+          "column_count": 872
+        }
+      ]
+    },
+    "feature_list": {
+      "features": [
+        {
+          "name": "sig_id",
+          "description": "Unique sample identifier string"
+        },
+        {
+          "name": "cp_type",
+          "description": "Type of perturbation: trt_cp or ctl_vehicle"
+        },
+        {
+          "name": "cp_time",
+          "description": "Treatment duration in hours: 24, 48, or 72"
+        },
+        {
+          "name": "cp_dose",
+          "description": "Dose level of compound: D1 or D2"
+        },
+        {
+          "name": "g-*",
+          "description": "772 gene expression features"
+        },
+        {
+          "name": "c-*",
+          "description": "100 cell viability features"
+        }
+      ]
+    }
+  },
+  "metric": {
+    "name": "MeanColumnwiseLogLoss"
+  }
+}

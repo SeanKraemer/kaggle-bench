@@ -1,0 +1,2133 @@
+{
+  "competition_slug": "optiver-trading-at-the-close",
+  "generated_at": "2026-04-07T20:45:00-05:00",
+  "actions": [
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "volume = ask_size + bid_size; mid_price = (ask_price + bid_price) / 2; liquidity_imbalance = (bid_size - ask_size) / (bid_size + ask_size); matched_imbalance = (imbalance_size - matched_size) / (imbalance_size + matched_size); size_imbalance = bid_size / ask_size",
+        "output_columns": [
+          "volume",
+          "mid_price",
+          "liquidity_imbalance",
+          "matched_imbalance",
+          "size_imbalance"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Create first-order order-book imbalance features from quoted prices and sizes to summarize spread, depth, and buy/sell pressure at each timestamp.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "chinzorigtganbat/feature-generation-technical-analysis-functions",
+        "jirkaborovec/optiver-feature-eng-optuna-lightgbm-gpu",
+        "jirkaborovec/optiver-gpu-speedsup-feature-eng-torch-dnn",
+        "nhsmith/ns-histgb-optimized-v1",
+        "rickpack/multiple-linear-regression-forward-selection",
+        "rickpack/time-series-xgboost-cross-validation"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "This is the core Optiver feature block and recurs across many LightGBM/XGBoost baselines. `matched_imbalance` is sometimes written as a split eval expression but resolves to the same ratio.",
+      "evidence_snippets": [
+        "df[\"volume\"] = df.eval(\"ask_size + bid_size\")",
+        "df[\"mid_price\"] = df.eval(\"ask_price + bid_price\")/2",
+        "df[\"liquidity_imbalance\"] = df.eval(\"(bid_size-ask_size)/(bid_size+ask_size)\")",
+        "df[\"matched_imbalance\"] = df.eval(\"imbalance_size-matched_size\")/df.eval(\"matched_size+imbalance_size\")",
+        "df[\"size_imbalance\"] = df.eval(\"bid_size / ask_size\")"
+      ],
+      "rareness": "common",
+      "confidence": 0.9,
+      "action_id": "CA-000001"
+    },
+    {
+      "action_type": "DROP_HIGH_NULL_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "far_price",
+          "near_price"
+        ],
+        "null_ratio_threshold": 0.4
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Drops far_price and near_price because they have approximately 50% missing values, but these are the core indicative auction price signals essential for microstructure feature engineering.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "fault_actions.json#FA-000007"
+      ],
+      "derivation_reasoning": "Migrated legacy fault action FA-000007 into the action-bank benchmark.",
+      "challenge_type": "legacy_fault",
+      "action_id": "CA-000002"
+    },
+    {
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "date_id",
+          "stock_id"
+        ],
+        "target_columns": [
+          "bid_size",
+          "ask_size",
+          "bid_price",
+          "ask_price"
+        ],
+        "agg_functions": [
+          "mean"
+        ],
+        "join_back": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Aggregates over the wrong grouping or with an impoverished summary set, producing a weaker feature table.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000011: Aggregates over the wrong grouping or with an impoverished summary set, producing a weaker feature table.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000003",
+      "derived_from_action_ids": [
+        "CA-000011"
+      ]
+    },
+    {
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "columns": [
+          "far_price",
+          "near_price"
+        ],
+        "strategy": "median",
+        "group_by_columns": [
+          "stock_id"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Imputes far_price and near_price using per-stock median instead of the domain-appropriate constant fills (0 and 1). The median conflates rows where an indicative auction price was published with rows where it was absent, losing the informative missingness signal.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "fault_actions.json#FA-000005"
+      ],
+      "derivation_reasoning": "Migrated legacy fault action FA-000005 into the action-bank benchmark.",
+      "challenge_type": "legacy_fault",
+      "action_id": "CA-000004"
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "compute row-wise summary statistics over prices = [reference_price, ask_price, bid_price, wap] and sizes = [matched_size, bid_size, ask_size] using mean, std, skew, and kurtosis",
+        "output_columns": [
+          "all_prices_mean",
+          "all_prices_std",
+          "all_prices_skew",
+          "all_prices_kurt",
+          "all_sizes_mean",
+          "all_sizes_std",
+          "all_sizes_skew",
+          "all_sizes_kurt"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Drops the auction-only price columns and the imbalance_size signal from the summary-statistics block, weakening the book-shape features just where Optiver kernels rely on them most.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of CA-000045: keeps the same summary-statistics template but omits the auction-specific price and imbalance columns that make the block useful.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000005",
+      "derived_from_action_ids": [
+        "CA-000045"
+      ]
+    },
+    {
+      "action_type": "LAG_FEATURE",
+      "canonical_params": {
+        "group_by_columns": [
+          "stock_id"
+        ],
+        "target_columns": [
+          "matched_size",
+          "imbalance_size",
+          "reference_price"
+        ],
+        "lag_periods": [
+          1,
+          2,
+          3
+        ],
+        "order_by_columns": [
+          "date_id",
+          "seconds_in_bucket"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Observed legacy output suggestion that was not part of the rewarded legacy action set.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "outputs/tc1_from_scratch_single_llm_try2.json#predicted_add_action_ids[5]"
+      ],
+      "derivation_reasoning": "Preserves a legacy false-positive suggestion as an explicit distractor in the new action bank.",
+      "challenge_type": "legacy_output_false_positive",
+      "action_id": "CA-000006"
+    },
+    {
+      "action_type": "CAST_DTYPE",
+      "canonical_params": {
+        "columns": "all numeric feature columns after feature generation",
+        "dtype": "category"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Casts the same columns into a lossy or poorly aligned dtype choice.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000009: Casts the same columns into a lossy or poorly aligned dtype choice.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000007",
+      "derived_from_action_ids": [
+        "CA-000054"
+      ]
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "within each stock_id ordered by [date_id, seconds_in_bucket], compute pct_change(window) for matched_size, imbalance_size, reference_price, and imbalance_buy_sell_flag at windows [1, 2, 3, 10]",
+        "output_columns": [
+          "matched_size_ret_1",
+          "matched_size_ret_2",
+          "matched_size_ret_3",
+          "matched_size_ret_10",
+          "imbalance_size_ret_1",
+          "imbalance_size_ret_2",
+          "imbalance_size_ret_3",
+          "imbalance_size_ret_10",
+          "reference_price_ret_1",
+          "reference_price_ret_2",
+          "reference_price_ret_3",
+          "reference_price_ret_10",
+          "imbalance_buy_sell_flag_ret_1",
+          "imbalance_buy_sell_flag_ret_2",
+          "imbalance_buy_sell_flag_ret_3",
+          "imbalance_buy_sell_flag_ret_10"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Compute grouped percent-change features over short windows for the most important imbalance and reference-price signals.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "chinzorigtganbat/feature-generation-technical-analysis-functions",
+        "jirkaborovec/optiver-feature-eng-optuna-lightgbm-gpu",
+        "jirkaborovec/optiver-gpu-speedsup-feature-eng-torch-dnn",
+        "rickpack/multiple-linear-regression-forward-selection",
+        "rickpack/time-series-xgboost-cross-validation"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "The schema does not have a dedicated percent-change action, so this recurring pattern is encoded as `APPLY_EXPRESSION`. It normally appears alongside the shift features above.",
+      "evidence_snippets": [
+        "df[f\"{col}_ret_{window}\"] = df.groupby('stock_id')[col].pct_change(window)"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.9,
+      "action_id": "CA-000008"
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "for each pair of price columns in [reference_price, far_price, near_price, ask_price, bid_price, wap], compute (<price_a> - <price_b>) / <price_b>",
+        "output_columns": [
+          "reference_price_far_price_imb",
+          "reference_price_near_price_imb",
+          "reference_price_ask_price_imb",
+          "reference_price_bid_price_imb",
+          "reference_price_wap_imb",
+          "far_price_near_price_imb",
+          "far_price_ask_price_imb",
+          "far_price_bid_price_imb",
+          "far_price_wap_imb",
+          "near_price_ask_price_imb",
+          "near_price_bid_price_imb",
+          "near_price_wap_imb",
+          "ask_price_bid_price_imb",
+          "ask_price_wap_imb",
+          "bid_price_wap_imb"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Uses an asymmetric single-column denominator, making the pairwise imbalance features unstable and scale-dependent instead of normalized between the two prices.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of CA-000043: keeps the pairwise quote-difference idea but normalizes by one raw price instead of by the two-price sum.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000009",
+      "derived_from_action_ids": [
+        "CA-000043"
+      ]
+    },
+    {
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "stock_id",
+          "date_id"
+        ],
+        "target_columns": [
+          "bid_size",
+          "ask_size",
+          "bid_price",
+          "ask_price"
+        ],
+        "agg_functions": [
+          "sum"
+        ],
+        "join_back": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Aggregates over the wrong grouping or with an impoverished summary set, producing a weaker feature table.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000011: Aggregates over the wrong grouping or with an impoverished summary set, producing a weaker feature table.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000010",
+      "derived_from_action_ids": [
+        "CA-000011"
+      ]
+    },
+    {
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "stock_id"
+        ],
+        "target_columns": [
+          "bid_size",
+          "ask_size",
+          "bid_price",
+          "ask_price"
+        ],
+        "agg_functions": [
+          "median",
+          "std",
+          "min",
+          "max"
+        ],
+        "join_back": true
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Build stock-level quote summary features from bid/ask price and size distributions and join them back to each row as self-contained stock priors.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "chinzorigtganbat/feature-generation-technical-analysis-functions",
+        "jirkaborovec/optiver-feature-eng-optuna-lightgbm-gpu",
+        "jirkaborovec/optiver-gpu-speedsup-feature-eng-torch-dnn",
+        "rickpack/multiple-linear-regression-forward-selection",
+        "rickpack/time-series-xgboost-cross-validation"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "This row stands on its own as a stock-prior strategy: compute per-stock median/std/min/max quote summaries and merge them back by stock_id. Some notebooks stop at these joined summary features, while others continue to collapse them into composite priors.",
+      "evidence_snippets": [
+        "df_train.groupby(\"stock_id\")[\"bid_size\"].median()",
+        "df_train.groupby(\"stock_id\")[\"ask_size\"].std()",
+        "df_train.groupby(\"stock_id\")[\"bid_price\"].max()",
+        "df_train.groupby(\"stock_id\")[\"ask_price\"].min()"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.9,
+      "action_id": "CA-000011",
+      "equivalence_group": "optiver_stock_prior_strategy"
+    },
+    {
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "columns": "remaining numeric feature columns after fixed far_price/near_price defaults",
+        "strategy": "median",
+        "group_by_columns": [
+          "stock_id",
+          "imbalance_buy_sell_flag"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "hard",
+      "reasoning": "Impute the remaining missing numeric values with medians conditioned on stock identity and imbalance direction.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "jirkaborovec/optiver-gpu-speedsup-feature-eng-torch-dnn"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Alternative (OR) to time-bucket median imputation. This version appears in the Torch DNN pipeline after the larger feature block has already been generated. The grouped median step is only coherent after the Optiver-specific far_price=0 and near_price=1 defaults are already in place.",
+      "evidence_snippets": [
+        "cols_group_by = ['stock_id', 'imbalance_buy_sell_flag']",
+        "train_grouped_median = df_train_feats.groupby(cols_group_by).transform('median')",
+        "df_train_feats.fillna(train_grouped_median, inplace=True)"
+      ],
+      "rareness": "rare",
+      "confidence": 0.75,
+      "equivalence_group": "optiver_remaining_nan_strategy",
+      "action_id": "CA-000012",
+      "must_follow_action_ids": [
+        "CA-000061",
+        "CA-000020"
+      ]
+    },
+    {
+      "action_type": "CLIP_OUTLIERS",
+      "canonical_params": {
+        "columns": [
+          "reference_price",
+          "far_price",
+          "near_price",
+          "ask_price",
+          "bid_price",
+          "wap"
+        ],
+        "method": "winsorize",
+        "lower_quantile": 0.01,
+        "upper_quantile": 0.99
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Aggressively clips all price columns at the 1st/99th percentiles, destroying informative auction-tail price signals that are critical for predicting closing price movements.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "fault_actions.json#FA-000003"
+      ],
+      "derivation_reasoning": "Migrated legacy fault action FA-000003 into the action-bank benchmark.",
+      "challenge_type": "legacy_fault",
+      "action_id": "CA-000013"
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "compute row-wise summary statistics over prices = [reference_price, far_price, near_price, ask_price, bid_price, wap] and sizes = [matched_size, bid_size, ask_size, imbalance_size] using min, max, median, and range",
+        "output_columns": [
+          "all_prices_min",
+          "all_prices_max",
+          "all_prices_median",
+          "all_prices_range",
+          "all_sizes_min",
+          "all_sizes_max",
+          "all_sizes_median",
+          "all_sizes_range"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Replaces the first-four-moment summary block with extrema-only summaries, discarding the skew and kurtosis cues that capture auction-shape asymmetry.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of CA-000045: swaps the intended moment features for an extrema-only block that loses the asymmetry information used by strong Optiver feature sets.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000014",
+      "derived_from_action_ids": [
+        "CA-000045"
+      ]
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "imbalance_ratio = imbalance_size / (matched_size + ask_size + bid_size)",
+        "output_columns": [
+          "imbalance_ratio"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Dilutes the imbalance ratio with both book-side depth columns, turning a direct unmatched-pressure measure into a heavily shrunk volume fraction.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of CA-000065: changes the denominator so the ratio no longer isolates unmatched auction pressure versus matched size.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000015",
+      "derived_from_action_ids": [
+        "CA-000065"
+      ]
+    },
+    {
+      "action_type": "SCALE_NUMERIC",
+      "canonical_params": {
+        "columns": "all model feature columns",
+        "method": "standard",
+        "fit_scope": "train_only"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Standardize engineered numeric features for linear-model and neural-network pipelines that are sensitive to feature scale.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "jirkaborovec/optiver-eda-pytorch-auto-regression",
+        "renatoreggiani/optv-linear-model",
+        "ruihaokaggle/simple-transformer-optiver-trading-at-the-close",
+        "zhangqubai/simple-transformer-optiver-trading-at-the-close"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Rare and model-specific. Tree-based Optiver pipelines usually skip explicit scaling, but the linear and transformer notebooks do not.",
+      "evidence_snippets": [
+        "scaler = StandardScaler()",
+        "train[feature_cols] = (train[feature_cols] - avg)/std"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.6,
+      "action_id": "CA-000016"
+    },
+    {
+      "action_type": "LAG_FEATURE",
+      "canonical_params": {
+        "group_by_columns": [
+          "stock_id"
+        ],
+        "target_columns": [
+          "matched_size",
+          "imbalance_size",
+          "reference_price"
+        ],
+        "lag_periods": [
+          1,
+          2
+        ],
+        "order_by_columns": [
+          "date_id",
+          "seconds_in_bucket"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Observed legacy output suggestion that was not part of the rewarded legacy action set.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "outputs/tc2_partial_good_single_llm_try1.json#predicted_add_action_ids[2]"
+      ],
+      "derivation_reasoning": "Preserves a legacy false-positive suggestion as an explicit distractor in the new action bank.",
+      "challenge_type": "legacy_output_false_positive",
+      "action_id": "CA-000017"
+    },
+    {
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "columns": [
+          "far_price",
+          "near_price"
+        ],
+        "strategy": "mean"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Fill `far_price` and `near_price` with their respective global column means before building transformer-style sequence features.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "ruihaokaggle/simple-transformer-optiver-trading-at-the-close",
+        "zhangqubai/simple-transformer-optiver-trading-at-the-close"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Rare alternative to the dominant constant-fill approach. Observed in the two transformer notebooks before row-completion and rolling-window feature generation.",
+      "evidence_snippets": [
+        "far_price_mean = df['far_price'].mean()",
+        "near_price_mean = df['near_price'].mean()",
+        "df['far_price'] = df['far_price'].fillna(far_price_mean)",
+        "df['near_price'] = df['near_price'].fillna(near_price_mean)"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.6,
+      "action_id": "CA-000018"
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "within each date_id ordered by [stock_id, seconds_in_bucket], compute pct_change(window) for matched_size, imbalance_size, reference_price, and imbalance_buy_sell_flag at windows [1, 2, 3, 10]",
+        "output_columns": [
+          "matched_size_ret_1",
+          "matched_size_ret_2",
+          "matched_size_ret_3",
+          "matched_size_ret_10",
+          "imbalance_size_ret_1",
+          "imbalance_size_ret_2",
+          "imbalance_size_ret_3",
+          "imbalance_size_ret_10",
+          "reference_price_ret_1",
+          "reference_price_ret_2",
+          "reference_price_ret_3",
+          "reference_price_ret_10",
+          "imbalance_buy_sell_flag_ret_1",
+          "imbalance_buy_sell_flag_ret_2",
+          "imbalance_buy_sell_flag_ret_3",
+          "imbalance_buy_sell_flag_ret_10"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Computes percent-change features across different stocks inside the same day, mixing entities instead of following one stock through time.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of CA-000008: keeps the same percent-change windows but groups by date_id, which destroys the per-stock sequence semantics.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000019",
+      "derived_from_action_ids": [
+        "CA-000008"
+      ]
+    },
+    {
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "columns": [
+          "near_price"
+        ],
+        "strategy": "constant",
+        "fill_value": 1
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Fill missing `near_price` with one before additional preprocessing.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "jirkaborovec/optiver-eda-baseline-xgb-regressor-gpu",
+        "jirkaborovec/optiver-eda-pytorch-auto-regression",
+        "jirkaborovec/optiver-gpu-speedsup-feature-eng-torch-dnn",
+        "lonnieqin/optiver-2023-prediction-with-keras",
+        "renatoreggiani/optv-lightgbm",
+        "renatoreggiani/optv-linear-model",
+        "xquantum/pytorch-dnn"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "The fill value is consistently `1` rather than `0`, so it needs its own canonical action instead of being merged with the `far_price` default.",
+      "evidence_snippets": [
+        "df_train['near_price'].fillna(1, inplace=True)",
+        "df_train_feats['near_price'].fillna(1, inplace=True)"
+      ],
+      "rareness": "common",
+      "confidence": 0.9,
+      "action_id": "CA-000020"
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "for each pair of price columns in [reference_price, far_price, near_price, ask_price, bid_price, wap], compute abs(<price_a> - <price_b>) / (<price_a> + <price_b>)",
+        "output_columns": [
+          "reference_price_far_price_imb",
+          "reference_price_near_price_imb",
+          "reference_price_ask_price_imb",
+          "reference_price_bid_price_imb",
+          "reference_price_wap_imb",
+          "far_price_near_price_imb",
+          "far_price_ask_price_imb",
+          "far_price_bid_price_imb",
+          "far_price_wap_imb",
+          "near_price_ask_price_imb",
+          "near_price_bid_price_imb",
+          "near_price_wap_imb",
+          "ask_price_bid_price_imb",
+          "ask_price_wap_imb",
+          "bid_price_wap_imb"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Takes absolute pairwise differences and destroys directionality, removing the sign information that distinguishes buy-side versus sell-side dislocations.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of CA-000043: replaces signed relative differences with absolute values, throwing away the directional microstructure signal.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000021",
+      "derived_from_action_ids": [
+        "CA-000043"
+      ]
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "volume = abs(ask_size - bid_size); mid_price = ask_price + bid_price; liquidity_imbalance = (bid_size + ask_size) / max(abs(bid_size - ask_size), 1); matched_imbalance = imbalance_size / max(matched_size, 1); size_imbalance = ask_size / max(bid_size, 1)",
+        "output_columns": [
+          "volume",
+          "mid_price",
+          "liquidity_imbalance",
+          "matched_imbalance",
+          "size_imbalance"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Rewrites the core microstructure block with wrong arithmetic throughout: it turns total depth into a gap, doubles the mid price, inverts size imbalance, and destabilizes the liquidity ratios.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of CA-000001: keeps the same feature names but replaces the core formulas with unstable or inverted versions.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000022",
+      "derived_from_action_ids": [
+        "CA-000001"
+      ]
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "fill far_price and near_price with 0, then compute row-wise summary statistics over prices = [reference_price, far_price, near_price, ask_price, bid_price, wap] and sizes = [matched_size, bid_size, ask_size, imbalance_size] using mean, std, skew, and kurtosis",
+        "output_columns": [
+          "all_prices_mean",
+          "all_prices_std",
+          "all_prices_skew",
+          "all_prices_kurt",
+          "all_sizes_mean",
+          "all_sizes_std",
+          "all_sizes_skew",
+          "all_sizes_kurt"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Injects artificial zero prices into the moment features before the summary block is computed, compressing the very auction-price variation the feature family is meant to preserve.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of CA-000045: computes the same summary block only after zero-filling indicative auction prices, which distorts the resulting moments.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000023",
+      "derived_from_action_ids": [
+        "CA-000045"
+      ]
+    },
+    {
+      "action_type": "ROLLING_WINDOW_FEATURE",
+      "canonical_params": {
+        "group_by_columns": [
+          "stock_id"
+        ],
+        "target_columns": [
+          "reference_price",
+          "far_price",
+          "near_price",
+          "bid_price",
+          "ask_price",
+          "wap"
+        ],
+        "window_sizes": [
+          6
+        ],
+        "agg_functions": [
+          "std"
+        ],
+        "min_periods": 1,
+        "order_by_columns": [
+          "date_id",
+          "seconds_in_bucket"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Compute stock-level rolling standard deviations over the recent six time steps for the main price columns to capture local price volatility.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "ruihaokaggle/simple-transformer-optiver-trading-at-the-close",
+        "zhangqubai/simple-transformer-optiver-trading-at-the-close"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Rare transformer-specific feature block. The notebooks first complete missing stock rows per auction slice, then roll within each stock ordered by date_id and seconds_in_bucket. The first undefined rolling-std rows are zero-filled after the rolling calculation.",
+      "evidence_snippets": [
+        "rolled = df[['stock_id'] + price_ftrs].groupby('stock_id').rolling(window=6, min_periods=1).std().fillna(0)",
+        "df[f'{col}_rolled_std'] = rolled[col]"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.6,
+      "action_id": "CA-000024"
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "dow = date_id % 7; seconds = seconds_in_bucket // 60; minute = date_id % 60",
+        "output_columns": [
+          "dow",
+          "seconds",
+          "minute"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Mixes date- and time-derived units incorrectly, so the resulting clock features no longer correspond to weekday or minute-of-auction semantics.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of CA-000051: uses the same raw integer keys but maps them into mismatched calendar features.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000025",
+      "derived_from_action_ids": [
+        "CA-000051"
+      ]
+    },
+    {
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "seconds_in_bucket"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Removes the intraday temporal ordering column needed to define lag/diff/rolling windows within each stock's auction sequence.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "fault_actions.json#FA-000002"
+      ],
+      "derivation_reasoning": "Migrated legacy fault action FA-000002 into the action-bank benchmark.",
+      "challenge_type": "legacy_fault",
+      "action_id": "CA-000026"
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "within each stock_id ordered by [date_id, seconds_in_bucket], compute pct_change(window) for matched_size, imbalance_size, reference_price, and imbalance_buy_sell_flag at windows [10, 20, 50] and clip each result to [-0.05, 0.05]",
+        "output_columns": [
+          "matched_size_ret_1",
+          "matched_size_ret_2",
+          "matched_size_ret_3",
+          "matched_size_ret_10",
+          "imbalance_size_ret_1",
+          "imbalance_size_ret_2",
+          "imbalance_size_ret_3",
+          "imbalance_size_ret_10",
+          "reference_price_ret_1",
+          "reference_price_ret_2",
+          "reference_price_ret_3",
+          "reference_price_ret_10",
+          "imbalance_buy_sell_flag_ret_1",
+          "imbalance_buy_sell_flag_ret_2",
+          "imbalance_buy_sell_flag_ret_3",
+          "imbalance_buy_sell_flag_ret_10"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Replaces the short-horizon windows with much coarser horizons and then clips the results, suppressing the abrupt microstructure moves that make the feature block useful.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of CA-000008: uses the same idea but pushes the windows far too wide and clips the resulting changes into a nearly flat signal.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000027",
+      "derived_from_action_ids": [
+        "CA-000008"
+      ]
+    },
+    {
+      "action_type": "DIFF_FEATURE",
+      "canonical_params": {
+        "group_by_columns": [
+          "stock_id"
+        ],
+        "target_columns": [
+          "ask_price",
+          "bid_price",
+          "ask_size",
+          "bid_size"
+        ],
+        "periods": [
+          1,
+          2,
+          3
+        ],
+        "order_by_columns": [
+          "date_id",
+          "seconds_in_bucket"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Observed legacy output suggestion that was not part of the rewarded legacy action set.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "human_baseline/manual_selection_worksheet.md#legacy-draft-false-positives"
+      ],
+      "derivation_reasoning": "Preserves a legacy false-positive suggestion as an explicit distractor in the new action bank.",
+      "challenge_type": "legacy_output_false_positive",
+      "action_id": "CA-000028"
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "imbalance_momentum = diff(imbalance_size, periods=1) within stock_id ordered by [date_id, seconds_in_bucket] / max(matched_size + ask_size + bid_size, 1); price_spread = ask_price + bid_price; spread_intensity = diff(price_spread, periods=1) within stock_id ordered by [date_id, seconds_in_bucket]; price_pressure = imbalance_size / max(ask_price - bid_price, 1e-6); market_urgency = liquidity_imbalance / max(price_spread, 1e-6); depth_pressure = (ask_size + bid_size) * (far_price + near_price)",
+        "output_columns": [
+          "imbalance_momentum",
+          "price_spread",
+          "spread_intensity",
+          "price_pressure",
+          "market_urgency",
+          "depth_pressure"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Breaks the interaction block with the wrong spread formula, wrong pressure denominator, and additive depth terms that no longer reflect market imbalance geometry.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of CA-000063: retains the same feature family but rewrites the core formulas so the resulting interactions lose their intended microstructure meaning.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000029",
+      "derived_from_action_ids": [
+        "CA-000063"
+      ]
+    },
+    {
+      "action_type": "DIFF_FEATURE",
+      "canonical_params": {
+        "group_by_columns": [
+          "stock_id",
+          "date_id"
+        ],
+        "target_columns": [
+          "ask_price",
+          "bid_price",
+          "ask_size",
+          "bid_size"
+        ],
+        "periods": 6,
+        "order_by_columns": [
+          "date_id",
+          "seconds_in_bucket"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Computes differencing over an ill-suited grouping or lag period, weakening the intended temporal signal.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000010: Computes differencing over an ill-suited grouping or lag period, weakening the intended temporal signal.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000030",
+      "derived_from_action_ids": [
+        "CA-000046"
+      ]
+    },
+    {
+      "action_type": "LAG_FEATURE",
+      "canonical_params": {
+        "group_by_columns": [
+          "stock_id"
+        ],
+        "target_columns": [
+          "matched_size",
+          "imbalance_size",
+          "reference_price",
+          "imbalance_buy_sell_flag"
+        ],
+        "lag_periods": [
+          1,
+          2,
+          3,
+          10
+        ],
+        "order_by_columns": [
+          "date_id",
+          "seconds_in_bucket"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Shift key size, reference-price, and imbalance-direction columns within each stock\u2019s intraday sequence to expose short-horizon autoregressive signal.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "chinzorigtganbat/feature-generation-technical-analysis-functions",
+        "jirkaborovec/optiver-feature-eng-optuna-lightgbm-gpu",
+        "jirkaborovec/optiver-gpu-speedsup-feature-eng-torch-dnn",
+        "rickpack/multiple-linear-regression-forward-selection",
+        "rickpack/time-series-xgboost-cross-validation"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "The notebooks usually rely on the raw row order, but the competition timeline is defined by `date_id` then `seconds_in_bucket`, so those columns are encoded as the canonical sort order.",
+      "evidence_snippets": [
+        "for col in ['matched_size', 'imbalance_size', 'reference_price', 'imbalance_buy_sell_flag']:",
+        "df[f\"{col}_shift_{window}\"] = df.groupby('stock_id')[col].shift(window)"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.9,
+      "action_id": "CA-000031"
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "volume = imbalance_size + matched_size; mid_price = reference_price; liquidity_imbalance = bid_size / max(ask_size, 1); matched_imbalance = (imbalance_size + matched_size) / max(abs(imbalance_size - matched_size), 1); size_imbalance = (ask_size + bid_size) / max(imbalance_size, 1)",
+        "output_columns": [
+          "volume",
+          "mid_price",
+          "liquidity_imbalance",
+          "matched_imbalance",
+          "size_imbalance"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Swaps in unrelated totals and one-sided ratios, so the resulting block no longer represents spread, depth, and buy/sell pressure in a consistent way.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of CA-000001: substitutes proxy totals and one-sided ratios for the intended normalized microstructure features.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000032",
+      "derived_from_action_ids": [
+        "CA-000001"
+      ]
+    },
+    {
+      "action_type": "CAST_DTYPE",
+      "canonical_params": {
+        "columns": "all numeric feature columns after feature generation",
+        "dtype": "int8"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Casts the same columns into a lossy or poorly aligned dtype choice.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000009: Casts the same columns into a lossy or poorly aligned dtype choice.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000033",
+      "derived_from_action_ids": [
+        "CA-000054"
+      ]
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "for each pair of price columns in [reference_price, far_price, near_price, ask_price, bid_price, wap], compute (<price_a> + <price_b>) / max(abs(<price_a> - <price_b>), 1e-6)",
+        "output_columns": [
+          "reference_price_far_price_imb",
+          "reference_price_near_price_imb",
+          "reference_price_ask_price_imb",
+          "reference_price_bid_price_imb",
+          "reference_price_wap_imb",
+          "far_price_near_price_imb",
+          "far_price_ask_price_imb",
+          "far_price_bid_price_imb",
+          "far_price_wap_imb",
+          "near_price_ask_price_imb",
+          "near_price_bid_price_imb",
+          "near_price_wap_imb",
+          "ask_price_bid_price_imb",
+          "ask_price_wap_imb",
+          "bid_price_wap_imb"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Inverts the intended ratio and explodes whenever two prices are close, producing numerically unstable features that are dominated by tiny denominator noise.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of CA-000043: turns the relative-difference block into an inverted spread ratio that blows up when the two prices nearly match.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000034",
+      "derived_from_action_ids": [
+        "CA-000043"
+      ]
+    },
+    {
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "date_id"
+        ],
+        "target_columns": [
+          "bid_size",
+          "ask_size",
+          "bid_price",
+          "ask_price"
+        ],
+        "agg_functions": [
+          "median",
+          "std",
+          "min",
+          "max"
+        ],
+        "join_back": true
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Groups by date_id instead of stock_id for aggregation features, mixing all 200 stocks together and destroying entity-level quote behavior semantics.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "fault_actions.json#FA-000006"
+      ],
+      "derivation_reasoning": "Migrated legacy fault action FA-000006 into the action-bank benchmark.",
+      "challenge_type": "legacy_fault",
+      "action_id": "CA-000035"
+    },
+    {
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "columns": "all remaining feature columns with missing values",
+        "strategy": "constant",
+        "fill_value": 0
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Observed legacy output suggestion that was not part of the rewarded legacy action set.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "outputs/tc1_from_scratch_rule_based_try1.json#predicted_add_action_ids[3]"
+      ],
+      "derivation_reasoning": "Preserves a legacy false-positive suggestion as an explicit distractor in the new action bank.",
+      "challenge_type": "legacy_output_false_positive",
+      "action_id": "CA-000036"
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "imbalance_momentum = diff(imbalance_size, periods=1) within stock_id ordered by [date_id, seconds_in_bucket] / matched_size; price_spread = ask_price - bid_price; price_pressure = imbalance_size * (ask_price - bid_price); market_urgency = price_spread * liquidity_imbalance",
+        "output_columns": [
+          "imbalance_momentum",
+          "price_spread",
+          "price_pressure",
+          "market_urgency"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Observed legacy output suggestion that was not part of the rewarded legacy action set.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "human_baseline/manual_selection_worksheet.md#legacy-draft-false-positives"
+      ],
+      "derivation_reasoning": "Preserves a legacy false-positive suggestion as an explicit distractor in the new action bank.",
+      "challenge_type": "legacy_output_false_positive",
+      "action_id": "CA-000037"
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "within each stock_id ordered by [seconds_in_bucket], compute pct_change(window) for matched_size, imbalance_size, reference_price, and imbalance_buy_sell_flag at windows [1, 2, 3, 10]",
+        "output_columns": [
+          "matched_size_ret_1",
+          "matched_size_ret_2",
+          "matched_size_ret_3",
+          "matched_size_ret_10",
+          "imbalance_size_ret_1",
+          "imbalance_size_ret_2",
+          "imbalance_size_ret_3",
+          "imbalance_size_ret_10",
+          "reference_price_ret_1",
+          "reference_price_ret_2",
+          "reference_price_ret_3",
+          "reference_price_ret_10",
+          "imbalance_buy_sell_flag_ret_1",
+          "imbalance_buy_sell_flag_ret_2",
+          "imbalance_buy_sell_flag_ret_3",
+          "imbalance_buy_sell_flag_ret_10"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Drops date_id from the ordering key, so the sequence silently stitches together repeated auction-second buckets across different days as if they were contiguous.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of CA-000008: preserves the feature template but removes date_id from the ordering, creating cross-day continuity errors.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000038",
+      "derived_from_action_ids": [
+        "CA-000008"
+      ]
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "dow = seconds_in_bucket % 5; seconds = date_id % 60; minute = seconds_in_bucket / 60",
+        "output_columns": [
+          "dow",
+          "seconds",
+          "minute"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Swaps the sources for date and time features, producing pseudo-calendar values that are really just recycled auction-second counters.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of CA-000051: keeps the compact time-feature idea but derives weekday and second fields from the wrong source columns.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000039",
+      "derived_from_action_ids": [
+        "CA-000051"
+      ]
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "imbalance_momentum = abs(diff(imbalance_size, periods=1) within stock_id ordered by [date_id, seconds_in_bucket]) / max(matched_size, 1); price_spread = abs(ask_price - bid_price); spread_intensity = abs(diff(price_spread, periods=1) within stock_id ordered by [date_id, seconds_in_bucket]); price_pressure = abs(imbalance_size * (ask_price - bid_price)); market_urgency = abs(price_spread * liquidity_imbalance); depth_pressure = abs((ask_size - bid_size) * (far_price - near_price))",
+        "output_columns": [
+          "imbalance_momentum",
+          "price_spread",
+          "spread_intensity",
+          "price_pressure",
+          "market_urgency",
+          "depth_pressure"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Takes absolute values across the whole interaction block, erasing the buy-versus-sell directionality that makes these features informative.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of CA-000063: converts the whole interaction block into unsigned magnitudes and loses the sign of every pressure feature.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000040",
+      "derived_from_action_ids": [
+        "CA-000063"
+      ]
+    },
+    {
+      "action_type": "DIFF_FEATURE",
+      "canonical_params": {
+        "group_by_columns": [
+          "date_id",
+          "stock_id"
+        ],
+        "target_columns": [
+          "ask_price",
+          "bid_price",
+          "ask_size",
+          "bid_size"
+        ],
+        "periods": 3,
+        "order_by_columns": [
+          "date_id",
+          "seconds_in_bucket"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Computes differencing over an ill-suited grouping or lag period, weakening the intended temporal signal.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000010: Computes differencing over an ill-suited grouping or lag period, weakening the intended temporal signal.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000041",
+      "derived_from_action_ids": [
+        "CA-000046"
+      ]
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "dow = date_id // 5; seconds = seconds_in_bucket / 600; minute = seconds_in_bucket % 10",
+        "output_columns": [
+          "dow",
+          "seconds",
+          "minute"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Over-compresses both calendar and clock signals into coarse buckets that erase the fine auction timing patterns the good feature block is meant to expose.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of CA-000051: replaces the intended modulo/floor transforms with coarse bucketizations that smear out the auction clock.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000042",
+      "derived_from_action_ids": [
+        "CA-000051"
+      ]
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "for each pair of price columns in [reference_price, far_price, near_price, ask_price, bid_price, wap], compute (<price_a> - <price_b>) / (<price_a> + <price_b>)",
+        "output_columns": [
+          "reference_price_far_price_imb",
+          "reference_price_near_price_imb",
+          "reference_price_ask_price_imb",
+          "reference_price_bid_price_imb",
+          "reference_price_wap_imb",
+          "far_price_near_price_imb",
+          "far_price_ask_price_imb",
+          "far_price_bid_price_imb",
+          "far_price_wap_imb",
+          "near_price_ask_price_imb",
+          "near_price_bid_price_imb",
+          "near_price_wap_imb",
+          "ask_price_bid_price_imb",
+          "ask_price_wap_imb",
+          "bid_price_wap_imb"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Generate pairwise relative-difference features across the main quoted price columns to capture microstructure dislocations beyond the best bid/ask spread alone.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "chinzorigtganbat/feature-generation-technical-analysis-functions",
+        "dangnguyen97/ensemble-try-to-parameters",
+        "eishkaran/optiver-lgbm-optuna",
+        "jirkaborovec/optiver-feature-eng-optuna-lightgbm-gpu",
+        "jirkaborovec/optiver-gpu-speedsup-feature-eng-torch-dnn",
+        "leehomhuang/lgb-baseline-train",
+        "masterray/lgb-baseline",
+        "meli19/lgb-kf-baseline",
+        "miteshadake/lgb-baseline",
+        "otugrul/optiver-lgbm-feature-engineering-and-optuna",
+        "renatoreggiani/optv-lightgbm",
+        "renatoreggiani/optv-linear-model",
+        "rickpack/multiple-linear-regression-forward-selection",
+        "rickpack/time-series-xgboost-cross-validation",
+        "ylinzh/optv-lightgbm-rolling-feature"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "This pattern is extremely common in the stronger Optiver notebooks. The exact price list is stable: reference, far, near, ask, bid, and WAP.",
+      "evidence_snippets": [
+        "for c in combinations(prices, 2):",
+        "df[f\"{c[0]}_{c[1]}_imb\"] = df.eval(f\"({c[0]} - {c[1]})/({c[0]} + {c[1]})\")"
+      ],
+      "rareness": "common",
+      "confidence": 0.9,
+      "action_id": "CA-000043"
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "combine stock-level quote aggregates into priors: global_median_size = bid_size_median - ask_size_median; global_std_size = bid_size_std - ask_size_std; global_ptp_size = bid_size_max + bid_size_min; global_median_price = bid_price_median - ask_price_median; global_std_price = bid_price_std - ask_price_std; global_ptp_price = bid_price_max + ask_price_min",
+        "output_columns": [
+          "global_median_size",
+          "global_std_size",
+          "global_ptp_size",
+          "global_median_price",
+          "global_std_price",
+          "global_ptp_price"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Uses subtraction and additive extrema where the good block uses combined magnitude summaries, so the resulting priors are dominated by cancellation and sign artifacts.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of CA-000049: keeps the same composite-prior feature names but uses the wrong arithmetic for each stock-level summary.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000044",
+      "derived_from_action_ids": [
+        "CA-000049"
+      ]
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "compute row-wise summary statistics over prices = [reference_price, far_price, near_price, ask_price, bid_price, wap] and sizes = [matched_size, bid_size, ask_size, imbalance_size] using mean, std, skew, and kurtosis",
+        "output_columns": [
+          "all_prices_mean",
+          "all_prices_std",
+          "all_prices_skew",
+          "all_prices_kurt",
+          "all_sizes_mean",
+          "all_sizes_std",
+          "all_sizes_skew",
+          "all_sizes_kurt"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Summarize the per-row price vector and size vector with first four distribution moments to give the model a compact view of book shape.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "chinzorigtganbat/feature-generation-technical-analysis-functions",
+        "jirkaborovec/optiver-feature-eng-optuna-lightgbm-gpu",
+        "jirkaborovec/optiver-gpu-speedsup-feature-eng-torch-dnn",
+        "rickpack/multiple-linear-regression-forward-selection",
+        "rickpack/time-series-xgboost-cross-validation"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "This pattern appears in the stronger copied feature blocks, but it is still narrower than the core imbalance formulas, so confidence is slightly lower.",
+      "evidence_snippets": [
+        "for func in [\"mean\", \"std\", \"skew\", \"kurt\"]:",
+        "df[f\"all_prices_{func}\"] = df[prices].agg(func, axis=1)",
+        "df[f\"all_sizes_{func}\"] = df[sizes].agg(func, axis=1)"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.75,
+      "action_id": "CA-000045"
+    },
+    {
+      "action_type": "DIFF_FEATURE",
+      "canonical_params": {
+        "group_by_columns": [
+          "stock_id"
+        ],
+        "target_columns": [
+          "ask_price",
+          "bid_price",
+          "ask_size",
+          "bid_size"
+        ],
+        "periods": [
+          1,
+          2,
+          3,
+          10
+        ],
+        "order_by_columns": [
+          "date_id",
+          "seconds_in_bucket"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Take stock-level temporal differences of the main quote-price and quote-size columns over several short windows to capture local trend and order-flow changes.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "chinzorigtganbat/feature-generation-technical-analysis-functions",
+        "jirkaborovec/optiver-feature-eng-optuna-lightgbm-gpu",
+        "jirkaborovec/optiver-gpu-speedsup-feature-eng-torch-dnn",
+        "rickpack/multiple-linear-regression-forward-selection",
+        "rickpack/time-series-xgboost-cross-validation"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Some notebooks expand this diff block to additional derived columns such as `market_urgency`, but the four base quote columns are the stable shared core.",
+      "evidence_snippets": [
+        "for col in ['ask_price', 'bid_price', 'ask_size', 'bid_size']:",
+        "df[f\"{col}_diff_{window}\"] = df.groupby(\"stock_id\")[col].diff(window)"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.9,
+      "action_id": "CA-000046"
+    },
+    {
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "stock_id"
+        ],
+        "target_columns": [
+          "bid_size",
+          "ask_size",
+          "bid_price",
+          "ask_price"
+        ],
+        "agg_functions": [
+          "median",
+          "std"
+        ],
+        "join_back": true
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Observed legacy output suggestion that was not part of the rewarded legacy action set.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "human_baseline/manual_selection_worksheet.md#legacy-draft-false-positives"
+      ],
+      "derivation_reasoning": "Preserves a legacy false-positive suggestion as an explicit distractor in the new action bank.",
+      "challenge_type": "legacy_output_false_positive",
+      "action_id": "CA-000047"
+    },
+    {
+      "action_type": "CAST_DTYPE",
+      "canonical_params": {
+        "columns": "all numeric feature columns after feature generation",
+        "dtype": "float32"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Casts the same columns into a lossy or poorly aligned dtype choice.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000009: Casts the same columns into a lossy or poorly aligned dtype choice.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000048",
+      "derived_from_action_ids": [
+        "CA-000054"
+      ]
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "combine stock-level quote aggregates into priors: global_median_size = bid_size_median + ask_size_median; global_std_size = bid_size_std + ask_size_std; global_ptp_size = bid_size_max - bid_size_min; global_median_price = bid_price_median + ask_price_median; global_std_price = bid_price_std + ask_price_std; global_ptp_price = bid_price_max - ask_price_min",
+        "output_columns": [
+          "global_median_size",
+          "global_std_size",
+          "global_ptp_size",
+          "global_median_price",
+          "global_std_price",
+          "global_ptp_price"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Build composite stock-prior features by combining per-stock bid/ask quote aggregates into compact range and depth summaries.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "chinzorigtganbat/feature-generation-technical-analysis-functions",
+        "jirkaborovec/optiver-feature-eng-optuna-lightgbm-gpu",
+        "rickpack/multiple-linear-regression-forward-selection",
+        "rickpack/time-series-xgboost-cross-validation"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Alternative stock-prior strategy to CA-000011. Instead of keeping the joined bid/ask aggregate table directly, these notebooks collapse the per-stock summaries into a smaller composite prior block.",
+      "evidence_snippets": [
+        "global_stock_id_feats = {",
+        "\"median_size\": df_train.groupby(\"stock_id\")[\"bid_size\"].median() + df_train.groupby(\"stock_id\")[\"ask_size\"].median()",
+        "\"std_price\": df_train.groupby(\"stock_id\")[\"bid_price\"].std() + df_train.groupby(\"stock_id\")[\"ask_price\"].std()"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.75,
+      "action_id": "CA-000049",
+      "equivalence_group": "optiver_stock_prior_strategy"
+    },
+    {
+      "action_type": "ROLLING_WINDOW_FEATURE",
+      "canonical_params": {
+        "group_by_columns": [
+          "stock_id"
+        ],
+        "target_columns": [
+          "imbalance_size",
+          "matched_size",
+          "bid_size",
+          "ask_size"
+        ],
+        "window_sizes": [
+          6
+        ],
+        "agg_functions": [
+          "sum"
+        ],
+        "min_periods": 1,
+        "order_by_columns": [
+          "date_id",
+          "seconds_in_bucket"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Compute stock-level rolling sums over the recent six time steps for the main size columns to feed sequence models with short-horizon volume context.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "ruihaokaggle/simple-transformer-optiver-trading-at-the-close",
+        "zhangqubai/simple-transformer-optiver-trading-at-the-close"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Rare transformer-specific feature block. These notebooks complete missing stock rows per auction slice and then order each stock sequence by date_id and seconds_in_bucket before building short rolling size totals.",
+      "evidence_snippets": [
+        "rolled = df[['stock_id'] + size_ftrs].groupby('stock_id').rolling(window=6, min_periods=1).sum()",
+        "df[f'{col}_rolled_sum'] = rolled[col]"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.6,
+      "action_id": "CA-000050"
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "dow = date_id % 5; seconds = seconds_in_bucket % 60; minute = seconds_in_bucket // 60",
+        "output_columns": [
+          "dow",
+          "seconds",
+          "minute"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Derive compact intraday calendar features from the competition\u2019s integer time columns.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "chinzorigtganbat/feature-generation-technical-analysis-functions",
+        "jirkaborovec/optiver-feature-eng-optuna-lightgbm-gpu",
+        "jirkaborovec/optiver-gpu-speedsup-feature-eng-torch-dnn"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Optiver does not expose a true timestamp column in most pipelines, so notebooks usually keep this as integer arithmetic rather than converting to datetime first.",
+      "evidence_snippets": [
+        "df[\"dow\"] = df[\"date_id\"] % 5",
+        "df[\"seconds\"] = df[\"seconds_in_bucket\"] % 60",
+        "df[\"minute\"] = df[\"seconds_in_bucket\"] // 60"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.75,
+      "action_id": "CA-000051"
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "volume = ask_size + bid_size; mid_price = (ask_price + bid_price) / 2; liquidity_imbalance = abs(bid_size - ask_size) / (bid_size + ask_size); matched_imbalance = abs(imbalance_size - matched_size) / (imbalance_size + matched_size); size_imbalance = min(bid_size, ask_size) / max(bid_size, ask_size)",
+        "output_columns": [
+          "volume",
+          "mid_price",
+          "liquidity_imbalance",
+          "matched_imbalance",
+          "size_imbalance"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Uses absolute or min/max ratios everywhere, which removes directional order-pressure information and collapses the signal into unsigned magnitude features.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of CA-000001: preserves the scale of the block but strips directionality by replacing signed ratios with absolute-value or min/max forms.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000052",
+      "derived_from_action_ids": [
+        "CA-000001"
+      ]
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "combine date-level quote aggregates into priors: global_median_size = bid_size_median + ask_size_median; global_std_size = bid_size_std + ask_size_std; global_ptp_size = bid_size_max - bid_size_min; global_median_price = bid_price_median + ask_price_median; global_std_price = bid_price_std + ask_price_std; global_ptp_price = bid_price_max - ask_price_min",
+        "output_columns": [
+          "global_median_size",
+          "global_std_size",
+          "global_ptp_size",
+          "global_median_price",
+          "global_std_price",
+          "global_ptp_price"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Builds priors from date-level aggregates rather than stock-level aggregates, mixing all stocks together and erasing the entity-specific behavior the priors are supposed to encode.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of CA-000049: preserves the composite-prior formulas but collapses over the wrong grouping level.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000053",
+      "derived_from_action_ids": [
+        "CA-000049"
+      ]
+    },
+    {
+      "action_type": "CAST_DTYPE",
+      "canonical_params": {
+        "columns": "all numeric feature columns after feature generation",
+        "dtype": "float"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Downcast engineered numeric features to reduced-precision float types for memory control before model fitting.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "dangnguyen97/ensemble-try-to-parameters",
+        "eishkaran/optiver-lgbm-optuna",
+        "jirkaborovec/optiver-feature-eng-optuna-lightgbm-gpu",
+        "jirkaborovec/optiver-gpu-speedsup-feature-eng-torch-dnn",
+        "leehomhuang/lgb-baseline-train",
+        "masterray/lgb-baseline",
+        "meli19/lgb-kf-baseline",
+        "miteshadake/lgb-baseline",
+        "otugrul/optiver-lgbm-feature-engineering-and-optuna",
+        "peizhengwang/optiv-try-an-simple-neural-network-with-keras",
+        "renatoreggiani/optv-lightgbm",
+        "renatoreggiani/optv-linear-model",
+        "rickpack/multiple-linear-regression-forward-selection",
+        "rickpack/time-series-xgboost-cross-validation",
+        "ylinzh/optv-lightgbm-rolling-feature"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Optiver feature sets expand quickly after imbalance, lag, and rolling features. Exact numpy width varies by notebook, but the canonical action is numeric float downcasting for memory efficiency.",
+      "evidence_snippets": [
+        "def reduce_mem_usage(df, verbose=0):",
+        ".astype(np.float32)",
+        ".astype(np.float16)"
+      ],
+      "rareness": "common",
+      "confidence": 0.9,
+      "action_id": "CA-000054"
+    },
+    {
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "stock_id"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Drops the entity grouping key before stock-level lag, diff, rolling, and GROUP_AGG features can be built, destroying all temporal and cross-sectional entity structure.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "fault_actions.json#FA-000001"
+      ],
+      "derivation_reasoning": "Migrated legacy fault action FA-000001 into the action-bank benchmark.",
+      "challenge_type": "legacy_fault",
+      "action_id": "CA-000055"
+    },
+    {
+      "action_type": "SCALE_NUMERIC",
+      "canonical_params": {
+        "columns": [
+          "reference_price",
+          "far_price",
+          "near_price",
+          "ask_price",
+          "bid_price",
+          "wap"
+        ],
+        "method": "standard",
+        "fit_scope": "train_only"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Applies standard scaling to raw price columns before lag/diff temporal features are computed, distorting the time-series structure and making temporal differences meaningless.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "fault_actions.json#FA-000004"
+      ],
+      "derivation_reasoning": "Migrated legacy fault action FA-000004 into the action-bank benchmark.",
+      "challenge_type": "legacy_fault",
+      "action_id": "CA-000056"
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "imbalance_momentum = diff(imbalance_size, periods=1) within date_id ordered by [stock_id, seconds_in_bucket] / max(matched_size, 1); price_spread = ask_price - bid_price; spread_intensity = diff(price_spread, periods=1) within date_id ordered by [stock_id, seconds_in_bucket]; price_pressure = imbalance_size * (ask_price - bid_price); market_urgency = price_spread * liquidity_imbalance; depth_pressure = (ask_size - bid_size) * (far_price - near_price)",
+        "output_columns": [
+          "imbalance_momentum",
+          "price_spread",
+          "spread_intensity",
+          "price_pressure",
+          "market_urgency",
+          "depth_pressure"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Computes the temporal pieces across different stocks inside the same day, so the momentum-style features no longer track a single stock through the auction.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of CA-000063: keeps the feature formulas but applies the sequence operations over date-level groups instead of stock-level groups.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000057",
+      "derived_from_action_ids": [
+        "CA-000063"
+      ]
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "imbalance_ratio = matched_size / max(imbalance_size, 1)",
+        "output_columns": [
+          "imbalance_ratio"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Inverts the intended pressure ratio, so rows with weak imbalance and large matched volume are incorrectly treated as the strongest signals.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of CA-000065: flips the numerator and denominator and therefore reverses the interpretation of auction pressure.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000058",
+      "derived_from_action_ids": [
+        "CA-000065"
+      ]
+    },
+    {
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "columns": "remaining numeric feature columns after fixed far_price/near_price defaults",
+        "strategy": "median",
+        "group_by_columns": [
+          "date_id",
+          "seconds_in_bucket"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Impute the remaining missing numeric values with the median of rows that share the same auction time bucket across days.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "jirkaborovec/optiver-eda-baseline-xgb-regressor-gpu",
+        "jirkaborovec/optiver-eda-pytorch-auto-regression"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "This is one of two observed Optiver median-imputation variants. It assumes the strongest missingness structure is tied to the shared auction second across dates. The grouped median step is only coherent after the Optiver-specific far_price=0 and near_price=1 defaults are already in place.",
+      "evidence_snippets": [
+        "cols_group_by = ['date_id', 'seconds_in_bucket']",
+        "train_grouped_median = df_train.groupby(cols_group_by)[cols_fill_nan].transform('median')",
+        "df_train[cols_fill_nan] = df_train[cols_fill_nan].fillna(train_grouped_median)"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.75,
+      "equivalence_group": "optiver_remaining_nan_strategy",
+      "action_id": "CA-000059",
+      "must_follow_action_ids": [
+        "CA-000061",
+        "CA-000020"
+      ]
+    },
+    {
+      "action_type": "DIFF_FEATURE",
+      "canonical_params": {
+        "group_by_columns": [
+          "date_id",
+          "seconds_in_bucket",
+          "stock_id"
+        ],
+        "target_columns": [
+          "ask_price",
+          "bid_price",
+          "ask_size",
+          "bid_size"
+        ],
+        "periods": 12,
+        "order_by_columns": [
+          "date_id",
+          "seconds_in_bucket"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Computes differencing over an ill-suited grouping or lag period, weakening the intended temporal signal.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000010: Computes differencing over an ill-suited grouping or lag period, weakening the intended temporal signal.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000060",
+      "derived_from_action_ids": [
+        "CA-000046"
+      ]
+    },
+    {
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "columns": [
+          "far_price"
+        ],
+        "strategy": "constant",
+        "fill_value": 0
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Fill missing `far_price` with zero before downstream modeling or additional median imputation.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "jirkaborovec/optiver-eda-baseline-xgb-regressor-gpu",
+        "jirkaborovec/optiver-eda-pytorch-auto-regression",
+        "jirkaborovec/optiver-gpu-speedsup-feature-eng-torch-dnn",
+        "renatoreggiani/optv-lightgbm",
+        "renatoreggiani/optv-linear-model",
+        "theodorospsarras/pytorch-nn-purgedgrouptimeseriessplit",
+        "xquantum/pytorch-dnn"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "This default appears in a wide range of Optiver notebooks, including simple baselines and NN pipelines.",
+      "evidence_snippets": [
+        "df_train['far_price'].fillna(0, inplace=True)",
+        "df_train_feats['far_price'].fillna(0, inplace=True)"
+      ],
+      "rareness": "common",
+      "confidence": 0.9,
+      "action_id": "CA-000061"
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "combine stock-level quote aggregates into priors: global_median_size = (bid_size_median + ask_size_median) / max(bid_size_std + ask_size_std, 1e-6); global_std_size = bid_size_std + ask_size_std; global_ptp_size = bid_size_max - bid_size_min; global_median_price = (bid_price_median + ask_price_median) / max(bid_price_std + ask_price_std, 1e-6); global_std_price = bid_price_std + ask_price_std; global_ptp_price = bid_price_max - ask_price_min",
+        "output_columns": [
+          "global_median_size",
+          "global_std_size",
+          "global_ptp_size",
+          "global_median_price",
+          "global_std_price",
+          "global_ptp_price"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Normalizes the median-based priors by per-stock standard deviations, creating unstable ratio features that explode for quiet stocks and no longer represent typical size or price levels.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of CA-000049: keeps the stock-prior idea but turns the level features into variance-sensitive ratios that are unstable for calm stocks.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000062",
+      "derived_from_action_ids": [
+        "CA-000049"
+      ]
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "imbalance_momentum = diff(imbalance_size, periods=1) within stock_id ordered by [date_id, seconds_in_bucket] / matched_size; price_spread = ask_price - bid_price; spread_intensity = diff(price_spread, periods=1) within stock_id ordered by [date_id, seconds_in_bucket]; price_pressure = imbalance_size * (ask_price - bid_price); market_urgency = price_spread * liquidity_imbalance; depth_pressure = (ask_size - bid_size) * (far_price - near_price)",
+        "output_columns": [
+          "imbalance_momentum",
+          "price_spread",
+          "spread_intensity",
+          "price_pressure",
+          "market_urgency",
+          "depth_pressure"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Add second-order microstructure interaction features that combine imbalance, spread, and depth into stronger short-horizon pressure signals.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "chinzorigtganbat/feature-generation-technical-analysis-functions",
+        "jirkaborovec/optiver-feature-eng-optuna-lightgbm-gpu",
+        "jirkaborovec/optiver-gpu-speedsup-feature-eng-torch-dnn",
+        "nhsmith/ns-histgb-optimized-v1",
+        "renatoreggiani/optv-linear-model",
+        "rickpack/multiple-linear-regression-forward-selection",
+        "rickpack/time-series-xgboost-cross-validation"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Several notebooks lift this feature block nearly verbatim. `spread_intensity` and `imbalance_momentum` both rely on stock-level time ordering, which the canonical expression spells out explicitly.",
+      "evidence_snippets": [
+        "df[\"imbalance_momentum\"] = df.groupby(['stock_id'])['imbalance_size'].diff(periods=1) / df['matched_size']",
+        "df[\"price_spread\"] = df[\"ask_price\"] - df[\"bid_price\"]",
+        "df[\"spread_intensity\"] = df.groupby(['stock_id'])['price_spread'].diff()",
+        "df['price_pressure'] = df['imbalance_size'] * (df['ask_price'] - df['bid_price'])",
+        "df['market_urgency'] = df['price_spread'] * df['liquidity_imbalance']",
+        "df['depth_pressure'] = (df['ask_size'] - df['bid_size']) * (df['far_price'] - df['near_price'])"
+      ],
+      "rareness": "common",
+      "confidence": 0.9,
+      "action_id": "CA-000063"
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "imbalance_ratio = abs(imbalance_size - matched_size) / max(matched_size, 1)",
+        "output_columns": [
+          "imbalance_ratio"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Collapses the signed imbalance relationship into an absolute gap, removing whether the book is tilted toward buy or sell pressure.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of CA-000065: keeps the scale but discards the sign of the imbalance relationship by taking an absolute gap.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000064",
+      "derived_from_action_ids": [
+        "CA-000065"
+      ]
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "imbalance_ratio = imbalance_size / matched_size",
+        "output_columns": [
+          "imbalance_ratio"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Compute the ratio of auction imbalance size to matched size as a direct measure of unmatched order pressure.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "dangnguyen97/ensemble-try-to-parameters",
+        "dangnguyen97/lgb-kf-with-optuna",
+        "eishkaran/optiver-lgbm-optuna",
+        "junjitakeshima/optiver-simple-lgbm-for-beginner-eng",
+        "leehomhuang/lgb-baseline-train",
+        "masterray/lgb-baseline",
+        "meli19/lgb-kf-baseline",
+        "miteshadake/lgb-baseline",
+        "otugrul/optiver-lgbm-feature-engineering-and-optuna",
+        "peizhengwang/optiv-try-an-simple-neural-network-with-keras",
+        "renatoreggiani/optv-lightgbm",
+        "rickpack/multiple-linear-regression-forward-selection",
+        "rickpack/time-series-xgboost-cross-validation",
+        "vinitkp/optiver-simple-lgbm-for-beginner",
+        "ylinzh/optv-lightgbm-rolling-feature"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "This simpler ratio feature appears across a wide swath of baseline LightGBM/XGBoost notebooks and complements the symmetric `matched_imbalance` ratio already captured elsewhere. Some notebooks later replace infinite values produced by zero denominators.",
+      "evidence_snippets": [
+        "df['imbalance_ratio'] = df['imbalance_size'] / df['matched_size']"
+      ],
+      "rareness": "common",
+      "confidence": 0.9,
+      "action_id": "CA-000065"
+    },
+    {
+      "action_id": "CA-000066",
+      "action_type": "DROP_HIGH_NULL_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "near_price"
+        ],
+        "null_ratio_threshold": 0.45
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Drops near_price by itself because it is roughly half missing, but near_price is one of the core indicative auction-price signals and is especially important for spread- and depth-style expressions.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000020"
+      ],
+      "derivation_reasoning": "Extended the high-null-family coverage with a narrower Optiver-specific variant that drops only one of the two indicative auction price columns.",
+      "challenge_type": "legacy_fault"
+    },
+    {
+      "action_id": "CA-000067",
+      "action_type": "CLIP_OUTLIERS",
+      "canonical_params": {
+        "columns": [
+          "matched_size",
+          "imbalance_size",
+          "ask_size",
+          "bid_size"
+        ],
+        "method": "winsorize",
+        "lower_quantile": 0.05,
+        "upper_quantile": 0.95
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Aggressively clips the size columns at the 5th/95th percentiles and erases the large depth spikes that are often the whole point of the Optiver auction state.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000001"
+      ],
+      "derivation_reasoning": "Adds a second explicit clipping fault by over-winsorizing the auction depth columns rather than the price columns.",
+      "challenge_type": "destructive_pruning"
+    },
+    {
+      "action_id": "CA-000068",
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "imbalance_buy_sell_flag == 1"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Keeps only buy-pressure rows and throws away the sell-pressure half of the auction history, creating a strongly biased training distribution.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000001"
+      ],
+      "derivation_reasoning": "Adds a row-filtering distractor that conditions the training set on one imbalance direction instead of modeling both sides of the order book.",
+      "challenge_type": "destructive_filter"
+    },
+    {
+      "action_id": "CA-000069",
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "seconds_in_bucket >= 480"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Drops the first two-thirds of the closing-auction sequence and leaves the model to learn only from the final minute, discarding most temporal context.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000051"
+      ],
+      "derivation_reasoning": "Adds a time-based row filter that mistakes late-auction concentration for a legitimate preprocessing step.",
+      "challenge_type": "destructive_filter"
+    },
+    {
+      "action_id": "CA-000070",
+      "action_type": "CREATE_MISSING_INDICATOR",
+      "canonical_params": {
+        "columns": [
+          "stock_id",
+          "date_id",
+          "seconds_in_bucket",
+          "imbalance_buy_sell_flag"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Creates missing-value flags for identifier and sign columns that do not have genuine missingness, producing constant-zero features with no information content.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000059"
+      ],
+      "derivation_reasoning": "Broadens missingness distractors with an Optiver-specific variant that adds indicators to fully observed ID-style columns.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000071",
+      "action_type": "CREATE_MISSING_INDICATOR",
+      "canonical_params": {
+        "columns": [
+          "reference_price",
+          "bid_price",
+          "ask_price",
+          "wap"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Creates missing indicators for the fully observed core quote-price columns, adding dead-weight features that only increase dimensionality.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000059"
+      ],
+      "derivation_reasoning": "Adds a second missing-indicator distractor for fully observed price columns that never need null flags.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000072",
+      "action_type": "DROP_ROWS_WITH_MISSING",
+      "canonical_params": {
+        "subset_columns": [
+          "far_price",
+          "near_price"
+        ],
+        "how": "any"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Drops every row where either indicative auction price is missing, which removes a large fraction of the train set and guarantees the model never learns from the missingness pattern itself.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000061",
+        "CA-000020"
+      ],
+      "derivation_reasoning": "Expands the missing-data branch with an explicitly destructive alternative that drops missing auction-price rows instead of filling them.",
+      "challenge_type": "destructive_pruning"
+    },
+    {
+      "action_id": "CA-000073",
+      "action_type": "DROP_ROWS_WITH_MISSING",
+      "canonical_params": {
+        "subset_columns": [
+          "far_price",
+          "near_price",
+          "imbalance_size",
+          "matched_size"
+        ],
+        "how": "any"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Drops rows whenever any major auction-size or indicative-price field is missing, wiping out a broad slice of the market states that the benchmark is explicitly supposed to handle.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000059"
+      ],
+      "derivation_reasoning": "Adds a broader row-dropping fault that compounds the indicative-price issue with the main auction-size columns.",
+      "challenge_type": "destructive_pruning"
+    }
+  ]
+}

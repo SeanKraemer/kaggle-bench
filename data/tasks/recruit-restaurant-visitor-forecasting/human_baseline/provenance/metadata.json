@@ -1,0 +1,16 @@
+{
+  "competition_slug": "recruit-restaurant-visitor-forecasting",
+  "testcase_id": "tc1_from_scratch",
+  "artifact_type": "eval_human_baseline_provenance",
+  "author": "annotator_a",
+  "created_at": "2026-03-31T00:00:00-05:00",
+  "source_mode": "draft_placeholder_notebook_scaffold",
+  "related_output": "../tc1_human.json",
+  "source_notebook_artifacts": [
+    "../work.ipynb"
+  ],
+  "time_spent_minutes": 30,
+  "consulted_candidate_bank": true,
+  "consulted_legacy_human_output": false,
+  "notes": "This artifact records the current in-progress Recruit TC1 human selection aligned to the current bank ids. It is synchronized with tc1_human.json but is still not presented as a finalized notebook-first manual run."
+}

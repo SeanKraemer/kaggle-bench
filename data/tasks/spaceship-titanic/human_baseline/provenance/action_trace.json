@@ -1,0 +1,84 @@
+{
+  "competition_slug": "spaceship-titanic",
+  "testcase_id": "tc1_from_scratch",
+  "artifact_type": "eval_human_baseline_action_trace",
+  "related_output": "../tc1_human.json",
+  "traces": [
+    {
+      "predicted_action_id": "CA-000021",
+      "artifact": "../work.ipynb",
+      "section": "Split Cabin Into Structured Parts",
+      "mapping_rationale": "Direct bank match for deriving deck, cabin number, and ship side from the raw Cabin string."
+    },
+    {
+      "predicted_action_id": "CA-000019",
+      "artifact": "../work.ipynb",
+      "section": "Split PassengerId Into Group Features",
+      "mapping_rationale": "Direct bank match for extracting PassengerGroup and PassengerNumber from PassengerId."
+    },
+    {
+      "predicted_action_id": "CA-000006",
+      "artifact": "../work.ipynb",
+      "section": "Align Spending With CryoSleep",
+      "mapping_rationale": "Selected because the notebook applies the CryoSleep zero-spend consistency rule to the amenity spending columns."
+    },
+    {
+      "predicted_action_id": "CA-000007",
+      "artifact": "../work.ipynb",
+      "section": "Fill Spending Columns With Zero",
+      "mapping_rationale": "Selected because the notebook zero-imputes missing amenity spend values before deriving total-spend features."
+    },
+    {
+      "predicted_action_id": "CA-000033",
+      "artifact": "../work.ipynb",
+      "section": "Create TotalSpend And NoSpending",
+      "mapping_rationale": "Direct bank match for aggregating the five amenity spending columns into TotalSpend."
+    },
+    {
+      "predicted_action_id": "CA-000003",
+      "artifact": "../work.ipynb",
+      "section": "Create TotalSpend And NoSpending",
+      "mapping_rationale": "Selected because the notebook derives a binary no-spending indicator from the TotalSpend feature."
+    },
+    {
+      "predicted_action_id": "CA-000020",
+      "artifact": "../work.ipynb",
+      "section": "Impute Age",
+      "mapping_rationale": "Selected as the notebook-backed global median Age imputation used in the reference baseline."
+    },
+    {
+      "predicted_action_id": "CA-000013",
+      "artifact": "../work.ipynb",
+      "section": "Impute Categorical Flags",
+      "mapping_rationale": "Selected because the notebook mode-imputes the main categorical and boolean fields."
+    },
+    {
+      "predicted_action_id": "CA-000037",
+      "artifact": "../work.ipynb",
+      "section": "Create GroupSize",
+      "mapping_rationale": "Direct bank match for counting passengers per PassengerGroup and joining the result back as GroupSize."
+    },
+    {
+      "predicted_action_id": "CA-000043",
+      "artifact": "../work.ipynb",
+      "section": "Encode Nominal Columns",
+      "mapping_rationale": "Selected because the notebook label-encodes the main nominal columns for the lightweight reference baseline."
+    },
+    {
+      "predicted_action_id": "CA-000010",
+      "artifact": "../work.ipynb",
+      "section": "Drop Raw Identifier Columns",
+      "mapping_rationale": "Selected because the notebook drops PassengerId, Name, and Cabin after their structured features have been extracted."
+    }
+  ],
+  "omitted_notebook_steps": [
+    {
+      "section": "Model Fit And Prediction",
+      "note": "Model training and prediction are part of the notebook workflow but are outside the action-bank preprocessing output."
+    },
+    {
+      "section": "Submission File Creation",
+      "note": "Submission writing is not represented as a candidate bank action for this benchmark task."
+    }
+  ]
+}

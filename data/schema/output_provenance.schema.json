@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "data/schema/output_provenance.schema.json",
+  "title": "OutputRunProvenance",
+  "description": "Schema for data/tasks/<competition_slug>/outputs/provenance/*.meta.json",
+  "type": "object",
+  "required": [
+    "competition_slug",
+    "testcase_id",
+    "agent_name",
+    "run_id",
+    "run_by",
+    "artifact_type",
+    "status",
+    "api_call_count",
+    "tool_call_count",
+    "cost_usd",
+    "error_message",
+    "notes"
+  ],
+  "properties": {
+    "competition_slug": {
+      "type": "string",
+      "minLength": 1
+    },
+    "testcase_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "agent_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_by": {
+      "type": "string",
+      "minLength": 1
+    },
+    "artifact_type": {
+      "type": "string",
+      "const": "output_run_metadata"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "success",
+        "partial_success",
+        "error"
+      ]
+    },
+    "model_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "api_provider": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "api_call_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "tool_call_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "cost_usd": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "error_message": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

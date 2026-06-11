@@ -1,0 +1,3013 @@
+{
+  "competition_slug": "zillow-prize-1",
+  "generated_at": "2026-03-30T00:00:00-05:00",
+  "actions": [
+    {
+      "action_id": "CA-000001",
+      "action_type": "FEATURE_SELECTION",
+      "canonical_params": {
+        "method": "variance_threshold",
+        "feature_columns": [
+          "taxvaluedollarcnt",
+          "structuretaxvaluedollarcnt",
+          "landtaxvaluedollarcnt",
+          "taxamount"
+        ],
+        "threshold": 0.0
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Explicit feature-selection passes are common, but this benchmark does not reward a separate selection stage for the Zillow task slice.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "wangsg/ensemble-stacking-lb-0-6436"
+      ],
+      "derivation_reasoning": "Synthetic feature-selection branch added for broader canonical coverage.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000002",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "label",
+        "columns": [
+          "regionidzip",
+          "regionidcity",
+          "regionidcounty"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Label-encoding large region identifiers injects an arbitrary ordinal structure into geographic IDs that the benchmark does not consider a preferred Zillow action.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000017"
+      ],
+      "derivation_reasoning": "Synthetic high-cardinality encoding distractor derived from the curated region-id count-encoding action.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000003",
+      "action_type": "RATIO_FEATURE",
+      "canonical_params": {
+        "left_columns": [
+          "taxvaluedollarcnt"
+        ],
+        "right_columns": [
+          "calculatedfinishedsquarefeet"
+        ],
+        "epsilon": 1.0,
+        "new_feature_name": "taxvalue_per_sqft"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Tax-value-per-square-foot ratios are plausible feature engineering, but they belong to a broader handcrafted-feature branch than this benchmark is meant to reward.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000050"
+      ],
+      "derivation_reasoning": "Synthetic ratio-feature branch derived from the dense numeric-property family.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000004",
+      "action_type": "ROLLING_WINDOW_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "taxamount"
+        ],
+        "window_sizes": [
+          2,
+          3
+        ],
+        "agg_functions": [
+          "mean"
+        ],
+        "order_by_columns": [
+          "transactiondate"
+        ],
+        "group_by_columns": [
+          "parcelid"
+        ],
+        "min_periods": 2
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Rolling parcel-level statistics are mechanically possible, but they create a heavy sequential branch that is outside the curated benchmark scope.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "aharless/xgboost-using-4th-quarter-for-validation"
+      ],
+      "derivation_reasoning": "Synthetic rolling-window branch added for broader temporal action-space coverage.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000005",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "properties_2017",
+        "left_on": "parcelid",
+        "right_on": "parcelid",
+        "how": "outer",
+        "fit_scope": "none",
+        "mode": "transform"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "This looks superficially reasonable, but it mixes the wrong yearly property snapshot with an outer join that can pull in unlabeled rows.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000107"
+      ],
+      "derivation_reasoning": "Compound near-miss join variant derived from the core property lookup action.",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000006",
+      "action_type": "TEXT_VECTORIZATION",
+      "canonical_params": {
+        "method": "tfidf",
+        "text_columns": [
+          "propertyzoningdesc",
+          "propertycountylandusecode"
+        ],
+        "ngram_range": [
+          1,
+          2
+        ],
+        "max_features": 500
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Vectorizing sparse property text columns is mechanically possible, but it is a much heavier text branch than the benchmark intends to reward for Zillow.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000029"
+      ],
+      "derivation_reasoning": "Synthetic text-feature branch derived from the sparse string-column family.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000007",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "constant",
+        "columns": [
+          "hashottuborspa",
+          "fireplaceflag"
+        ],
+        "fill_value": "FALSE"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Boolean-like string flags are imputed with explicit FALSE tokens.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "cuongvn08/xgboost-cross-validation-clean-coding-lb-0-64x"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Alternative (OR) to numeric sentinel imputation for sparse categorical flags.",
+      "evidence_snippets": [
+        "df['hashottuborspa'] = df['hashottuborspa'].fillna(\"FALSE\")",
+        "df['fireplaceflag'] = df['fireplaceflag'].fillna(\"FALSE\")"
+      ],
+      "rareness": "rare",
+      "confidence": 0.9
+    },
+    {
+      "action_id": "CA-000008",
+      "action_type": "EXPANDING_WINDOW_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "taxvaluedollarcnt"
+        ],
+        "agg_functions": [
+          "median"
+        ],
+        "order_by_columns": [
+          "transactiondate"
+        ],
+        "group_by_columns": [
+          "regionidzip"
+        ],
+        "min_periods": 3
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Zip-level expanding medians are mechanically possible, but they add another heavy temporal aggregation branch outside the benchmark target.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "wangsg/ensemble-stacking-lb-0-6436"
+      ],
+      "derivation_reasoning": "Second expanding-window variant added so cumulative window features are not singleton.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000009",
+      "action_type": "DROP_HIGH_NULL_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "architecturalstyletypeid",
+          "storytypeid",
+          "basementsqft",
+          "yardbuildingsqft26"
+        ],
+        "null_ratio_threshold": 0.95
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Null-ratio pruning is a classic tabular heuristic, but here it removes columns that stronger Zillow workflows often preserve via imputation or encoding.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000108",
+        "CA-000050"
+      ],
+      "derivation_reasoning": "Synthetic sparse-column pruning branch derived from the existing drop/impute families.",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000010",
+      "action_type": "DATE_PART_FEATURE",
+      "canonical_params": {
+        "date_columns": [
+          "transactiondate"
+        ],
+        "parts": [
+          "year",
+          "month",
+          "quarter",
+          "day"
+        ],
+        "drop_original": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Multiple kernels expand transactiondate into explicit calendar components for model input.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "abhisheksharma26jan/zillowabhishek",
+        "aharless/keras-neural-network-lb-06492",
+        "aharless/keras-nn-with-q4-validation",
+        "aharless/xgboost-lightgbm-and-ols",
+        "aharless/xgboost-lightgbm-and-ols-and-nn",
+        "csmohamedayman/tsf-numc-zillow-prize-zillow-s-home-value",
+        "danieleewww/xgboost-lightgbm-and-olsv37",
+        "davidfumo/boosted-trees-lb-0-0643707",
+        "sifar12/boosted-trees-lb-0-0643707",
+        "valadi/xgboost-lightgbm-and-ols-tune-1",
+        "zusmani/boosted-trees-lb-0-0643707"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Common time-derived FE block in top Zillow baselines.",
+      "evidence_snippets": [
+        "df[feature + '_year']         = df[feature].dt.year.astype('int64')",
+        "df_train[\"transactiondate_year\"] = df_train[\"transactiondate\"].dt.year",
+        "df_train['transactiondate_quarter'] = df_train['transactiondate'].dt.quarter",
+        "df[\"transactiondate_year\"] = df[\"transactiondate\"].dt.year"
+      ],
+      "rareness": "common",
+      "confidence": 0.9,
+      "equivalence_group": "zillow_date_feature_strategy",
+      "must_follow_action_ids": [
+        "CA-000045"
+      ]
+    },
+    {
+      "action_id": "CA-000011",
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "(logerror > percentile(logerror, 5)) and (logerror < percentile(logerror, 95))"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "This keeps the same percentile-trimming pattern but removes an implausibly large share of the training target distribution.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000069"
+      ],
+      "derivation_reasoning": "Hard negative percentile-trimming variant derived from the legitimate percentile-based outlier family.",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000012",
+      "action_type": "PARSE_DATETIME",
+      "canonical_params": {
+        "columns": [
+          "transactiondate"
+        ],
+        "format": "%Y/%m/%d",
+        "errors": "coerce"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "A slash-delimited year-first parser looks almost right, but it still mismatches the actual Zillow date strings and risks turning usable timestamps into nulls.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000045"
+      ],
+      "derivation_reasoning": "Synthetic parse-datetime near-miss derived from the canonical transactiondate parsing action by preserving the year-first shape but using the wrong separator convention.",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000013",
+      "action_type": "BIN_NUMERIC",
+      "canonical_params": {
+        "columns": [
+          "taxamount",
+          "lotsizesquarefeet"
+        ],
+        "method": "uniform",
+        "bins": 8
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Uniform-width binning on skewed tax and lot-size features is plausible, but it introduces a coarse discretization branch that this benchmark does not reward.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000050"
+      ],
+      "derivation_reasoning": "Second numeric-binning variant added so binning is not represented by a singleton coverage row.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000014",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "count",
+        "columns": [
+          "heatingorsystemtypeid",
+          "propertylandusetypeid",
+          "storytypeid",
+          "airconditioningtypeid",
+          "architecturalstyletypeid",
+          "buildingclasstypeid",
+          "buildingqualitytypeid",
+          "typeconstructiontypeid"
+        ],
+        "output_columns": [
+          "N-heatingorsystemtypeid_count",
+          "N-propertylandusetypeid_count",
+          "N-storytypeid_count",
+          "N-airconditioningtypeid_count",
+          "N-architecturalstyletypeid_count",
+          "N-buildingclasstypeid_count",
+          "N-buildingqualitytypeid_count",
+          "N-typeconstructiontypeid_count"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Count encoding low-cardinality system and building-type identifiers is a plausible alternative, but it discards their small explicit category structure and is not part of the benchmark target set.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000059",
+        "CA-000029"
+      ],
+      "derivation_reasoning": "Synthetic categorical-encoding distractor derived from the curated encoding families.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000015",
+      "action_type": "PCA_REDUCTION",
+      "canonical_params": {
+        "feature_columns": [
+          "taxvaluedollarcnt",
+          "structuretaxvaluedollarcnt",
+          "landtaxvaluedollarcnt",
+          "taxamount"
+        ],
+        "n_components": 2,
+        "method": "svd",
+        "whiten": false
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "A second PCA-style reduction over dense numeric features is plausible, but it still adds a dimensionality reduction branch outside the benchmark target.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000050"
+      ],
+      "derivation_reasoning": "Second PCA reduction variant added so this family is not singleton.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000016",
+      "action_type": "CLIP_OUTLIERS",
+      "canonical_params": {
+        "columns": [
+          "taxvaluedollarcnt",
+          "structuretaxvaluedollarcnt",
+          "taxamount"
+        ],
+        "method": "winsorize",
+        "lower_quantile": 0.01,
+        "upper_quantile": 0.99
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Winsorizing core valuation features is a plausible robustification step, but it changes the feature distribution in a way that is outside the benchmarked Zillow preprocessing path.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "aharless/xgb-w-o-outliers-lgb-with-outliers-combined",
+        "aharless/xgboost-lightgbm-and-ols"
+      ],
+      "derivation_reasoning": "Synthetic numeric-clipping distractor anchored to notebooks that already perform other outlier handling, but applied to feature columns rather than the curated target-trim actions.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000017",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "count",
+        "columns": [
+          "regionidzip",
+          "regionidcity",
+          "regionidcounty"
+        ],
+        "output_columns": [
+          "N-zip_count",
+          "N-city_count",
+          "N-county_count"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "hard",
+      "reasoning": "Region id columns are mapped to occurrence counts to form dense numeric proxy features.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "wangsg/ensemble-stacking-lb-0-6436"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Count-style encoding generated via `value_counts().to_dict()` and `map`.",
+      "evidence_snippets": [
+        "zip_count = properties['regionidzip'].value_counts().to_dict()"
+      ],
+      "rareness": "rare",
+      "confidence": 0.9
+    },
+    {
+      "action_id": "CA-000018",
+      "action_type": "ORDINAL_ENCODE",
+      "canonical_params": {
+        "columns": [
+          "heatingorsystemtypeid"
+        ],
+        "order": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "unknown_value": -1
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Ordered encoding of heating-system ids is another plausible but still non-preferred ordinal branch for this benchmark.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000059"
+      ],
+      "derivation_reasoning": "Second ordinal-encode variant added so this family is not singleton.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000019",
+      "action_type": "CLIP_OUTLIERS",
+      "canonical_params": {
+        "columns": [
+          "garagecarcnt",
+          "bathroomcnt",
+          "bedroomcnt"
+        ],
+        "method": "iqr",
+        "iqr_k": 1.5
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "IQR clipping on room-count style columns is plausible, but it imposes an outlier policy the benchmark does not reward for this Zillow slice.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000050"
+      ],
+      "derivation_reasoning": "Synthetic count-feature clipping distractor derived from the numeric-property handling family by introducing an unnecessary robust-clipping step.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000020",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "constant",
+        "columns": [
+          "lotsizesquarefeet",
+          "calculatedfinishedsquarefeet",
+          "taxvaluedollarcnt"
+        ],
+        "fill_value": 0
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Zero-filling core size and valuation features is a common blunt shortcut, but here it conflates missingness with impossible property values and distorts scale-sensitive signal.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000050"
+      ],
+      "derivation_reasoning": "Synthetic blunt-imputation variant that applies a convenient zero fill to important continuous features instead of the more task-appropriate missing-value strategies.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000021",
+      "action_type": "LOG_TRANSFORM",
+      "canonical_params": {
+        "columns": [
+          "taxvaluedollarcnt",
+          "structuretaxvaluedollarcnt",
+          "landtaxvaluedollarcnt"
+        ],
+        "offset": 1.0,
+        "base": "e",
+        "handle_nonpositive": "clip"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Log-transforming skewed dollar columns is a standard idea, but it is not one of the curated target actions for this Zillow benchmark slice.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000050"
+      ],
+      "derivation_reasoning": "Synthetic numeric-transform branch derived from the broad property-value handling family.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000022",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "label",
+        "columns": [
+          "heatingorsystemtypeid",
+          "propertylandusetypeid",
+          "storytypeid",
+          "airconditioningtypeid",
+          "architecturalstyletypeid",
+          "buildingclasstypeid",
+          "buildingqualitytypeid",
+          "typeconstructiontypeid"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Label-encoding these low-cardinality building and system IDs is a plausible alternative, but it injects arbitrary ordinality where the benchmarked one-hot path keeps explicit category separation.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000059"
+      ],
+      "derivation_reasoning": "Synthetic categorical-encoding near-miss derived from the low-cardinality one-hot action by replacing explicit indicator expansion with ordinal label codes.",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000023",
+      "action_type": "RARE_CATEGORY_BUCKETIZE",
+      "canonical_params": {
+        "columns": [
+          "propertycountylandusecode",
+          "propertyzoningdesc"
+        ],
+        "min_count": 100,
+        "other_label": "__RARE__"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Rare-category bucketization on sparse string columns is a sensible idea, but it is not part of the curated Zillow preprocessing target.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000029"
+      ],
+      "derivation_reasoning": "Synthetic rare-category branch derived from the string-column encoding family.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000024",
+      "action_type": "MAP_CATEGORIES",
+      "canonical_params": {
+        "columns": [
+          "heatingorsystemtypeid"
+        ],
+        "mapping": {
+          "1": "central",
+          "13": "none"
+        },
+        "default_value": "other"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Category remapping on low-cardinality heating types is plausible, but it still introduces a lossy domain collapse outside the curated benchmark path.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000029",
+        "CA-000059"
+      ],
+      "derivation_reasoning": "Second category-mapping variant added so this family is not singleton.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000025",
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "(logerror > -0.05) and (logerror < 0.05)"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "This is an overly aggressive outlier filter that throws away too much valid target variation and would likely underfit the residual-error task.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000093",
+        "CA-000069"
+      ],
+      "derivation_reasoning": "Synthetic over-aggressive trimming variant derived from the legitimate Zillow outlier-removal family.",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000026",
+      "action_type": "MAP_CATEGORIES",
+      "canonical_params": {
+        "columns": [
+          "propertycountylandusecode"
+        ],
+        "mapping": {
+          "0100": "single_family",
+          "122": "condo"
+        },
+        "default_value": "other"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Hand-mapping land-use codes into a smaller label set is plausible, but it imposes a lossy domain taxonomy that the benchmark does not reward.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000029"
+      ],
+      "derivation_reasoning": "Synthetic category-mapping branch derived from the string-column handling family.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000027",
+      "action_type": "CREATE_MISSING_INDICATOR",
+      "canonical_params": {
+        "columns": [
+          "fireplacecnt",
+          "poolcnt",
+          "hashottuborspa",
+          "fireplaceflag"
+        ],
+        "indicator_suffix": "_missing"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Missingness indicators for sparse pool and fireplace fields are plausible, but they duplicate the intended absence semantics instead of following the benchmarked fill strategy.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000073",
+        "CA-000007"
+      ],
+      "derivation_reasoning": "Synthetic missingness-feature distractor derived from the sparse-absence imputation families by replacing direct fills with additional flag columns.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000028",
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "(logerror > -0.1) and (logerror < 0.1)"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "This trims far more of the valid target distribution than the usual Zillow outlier filters and is likely to underfit the residual target.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000093",
+        "CA-000069"
+      ],
+      "derivation_reasoning": "Hard negative derived by tightening the legitimate outlier-trimming families too aggressively.",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000029",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "label",
+        "columns": [
+          "hashottuborspa",
+          "propertycountylandusecode",
+          "propertyzoningdesc",
+          "fireplaceflag",
+          "taxdelinquencyflag"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Exact object-typed property columns are label-encoded after property-level missing-value handling.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "abhisheksharma26jan/zillowabhishek",
+        "aharless/keras-neural-network-lb-06492",
+        "aharless/keras-nn-with-q4-validation",
+        "aharless/xgb-w-o-outliers-lgb-with-outliers-combined",
+        "aharless/xgboost-lightgbm-and-ols",
+        "aharless/xgboost-lightgbm-and-ols-and-nn",
+        "aharless/xgboost-using-4th-quarter-for-validation",
+        "aharless/xgboost-without-outliers-tweak",
+        "cjansen/xgboost-without-outliers-edited-lb-0-0646300",
+        "csmohamedayman/tsf-numc-zillow-prize-zillow-s-home-value",
+        "cuongvn08/xgboost-cross-validation-clean-coding-lb-0-64x",
+        "danieleewww/xgboost-lightgbm-and-olsv37",
+        "danieleewww/xgboost-without-outliers-lb-0-06463",
+        "davidfumo/boosted-trees-lb-0-0643707",
+        "fmfkfd/xgboost-lightgbm-nn-ols",
+        "gw00207/catboost-xgboost-lightgbm-and-ols-0-0644060",
+        "hyunhp/xgboost-lightgbm-and-ols-and-nn-by-andy",
+        "salmanurrehman/zillow-prize-zillow-s-home-value-prediction",
+        "sifar12/boosted-trees-lb-0-0643707",
+        "tomgrek/dumb-keras-starter",
+        "valadi/xgb-w-o-outliers-lgb-with-outliers-combo-tune6",
+        "valadi/xgb-with-lgb-w-o-outliers-combo-tune1",
+        "valadi/xgboost-lightgbm-and-ols-tune-1",
+        "youhouhou/xgboost-lightgbm-ols-nn",
+        "zusmani/baseline-lb-0-0648950",
+        "zusmani/boosted-trees-lb-0-0643707",
+        "zusmani/scrpt"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Rewritten from the earlier estimated subset to the exact five string/object columns observed in properties_2016.",
+      "evidence_snippets": [
+        "for c in properties.columns:",
+        "if properties[c].dtype == 'object':",
+        "lbl = LabelEncoder()"
+      ],
+      "rareness": "common",
+      "confidence": 0.9
+    },
+    {
+      "action_id": "CA-000030",
+      "action_type": "DROP_ROWS_WITH_MISSING",
+      "canonical_params": {
+        "subset_columns": [
+          "poolcnt",
+          "fireplacecnt",
+          "hashottuborspa"
+        ],
+        "how": "all"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Dropping rows when all sparse amenity fields are missing is plausible, but it still throws away useful training rows instead of handling absence in-feature.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000073",
+        "CA-000007"
+      ],
+      "derivation_reasoning": "Second row-drop-on-missing variant added so this family is not singleton.",
+      "challenge_type": "obvious"
+    },
+    {
+      "action_id": "CA-000031",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "constant",
+        "columns": [
+          "lotsizesquarefeet",
+          "calculatedfinishedsquarefeet",
+          "taxvaluedollarcnt"
+        ],
+        "fill_value": -1
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Using a blanket -1 sentinel for core size and valuation features injects an artificial extreme value into scale-sensitive continuous columns.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000050"
+      ],
+      "derivation_reasoning": "Near-miss continuous-feature imputation variant derived from the main Zillow missing-value families.",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000032",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "onehot",
+        "columns": [
+          "regionidzip",
+          "regionidcity",
+          "regionidcounty"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "One-hot encoding high-cardinality region identifiers is plausible, but it would create a very wide sparse block and is not the preferred representation in this benchmark.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000017"
+      ],
+      "derivation_reasoning": "Synthetic high-cardinality encoding distractor derived from the curated region-id count-encoding action.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000033",
+      "action_type": "REPLACE_INF",
+      "canonical_params": {
+        "columns": [
+          "taxvalue_per_sqft"
+        ],
+        "strategy": "clip",
+        "clip_min": 0,
+        "clip_max": 100000
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Infinity sanitization is a plausible follow-up after aggressive ratio features, but it indicates a feature-engineering branch that the benchmark does not reward.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "wangsg/ensemble-stacking-lb-0-6436"
+      ],
+      "derivation_reasoning": "Synthetic inf-replacement branch added to cover follow-on cleanup actions that agents may still propose.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000034",
+      "action_type": "CAST_DTYPE",
+      "canonical_params": {
+        "columns": [
+          "propertycountylandusecode",
+          "propertyzoningdesc"
+        ],
+        "dtype": "category",
+        "errors": "ignore"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Casting sparse string land-use columns to categorical dtype is mechanically valid, but by itself it is not the curated preprocessing target for this benchmark.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000029"
+      ],
+      "derivation_reasoning": "Synthetic dtype-casting branch derived from the string-column handling family.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000035",
+      "action_type": "SAMPLE_ROWS",
+      "canonical_params": {
+        "method": "random",
+        "n": 50000,
+        "random_state": 7
+      },
+      "eval_stage": "validation_protocol",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Fixed-size random subsampling is another common quick experiment, but it still shrinks supervision and is not part of the benchmark-preferred path.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "aharless/xgboost-using-4th-quarter-for-validation"
+      ],
+      "derivation_reasoning": "Second row-sampling variant added so this family is not singleton.",
+      "challenge_type": "obvious"
+    },
+    {
+      "action_id": "CA-000036",
+      "action_type": "DROP_HIGH_NULL_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "architecturalstyletypeid",
+          "storytypeid",
+          "fireplaceflag"
+        ],
+        "null_ratio_threshold": 0.98
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "More aggressive sparse-column pruning is plausible, but it removes fields that the benchmark expects an agent to consider preserving or imputing.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000108",
+        "CA-000050",
+        "CA-000007"
+      ],
+      "derivation_reasoning": "Second high-null drop variant added so this family is not singleton.",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000037",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "seasonal_day_of_year = dayofyear(transactiondate)",
+        "output_columns": [
+          "seasonal_day_of_year"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "A raw day-of-year feature is plausible, but it keeps a linear seasonal axis and drops the cyclical representation that the stronger Zillow seasonal kernels used.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000038"
+      ],
+      "derivation_reasoning": "Synthetic temporal-feature distractor derived from the sinusoidal seasonality action by replacing the cyclic pair with a single linear ordinal feature.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000038",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "seasonal_day_of_year = toordinal(transactiondate) - toordinal('2015-11-15'); cos_season = cos(seasonal_day_of_year * 2*pi/365.25); sin_season = sin(seasonal_day_of_year * 2*pi/365.25)",
+        "output_columns": [
+          "cos_season",
+          "sin_season"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "hard",
+      "reasoning": "Seasonality is encoded with sinusoidal transforms of transactiondate ordinal offsets.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "aharless/keras-nn-with-q4-validation",
+        "aharless/xgboost-using-4th-quarter-for-validation"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Adds cyclical temporal signal beyond simple date parts.",
+      "evidence_snippets": [
+        "df_train['cos_season'] = \\",
+        "df['cos_season'] = ( (pd.to_datetime(df['transactiondate']).apply(lambda x: x.toordinal()-basedate)) * \\"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.9,
+      "must_follow_action_ids": [
+        "CA-000045"
+      ]
+    },
+    {
+      "action_id": "CA-000039",
+      "action_type": "SAMPLE_ROWS",
+      "canonical_params": {
+        "method": "random",
+        "frac": 0.2,
+        "random_state": 42
+      },
+      "eval_stage": "validation_protocol",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Random row subsampling is a common quick experiment, but it is not part of the benchmark-preferred Zillow preprocessing and would only shrink already limited supervision.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "aharless/xgboost-using-4th-quarter-for-validation"
+      ],
+      "derivation_reasoning": "Synthetic row-sampling branch added to keep low-quality but plausible action families visible in the bank.",
+      "challenge_type": "obvious"
+    },
+    {
+      "action_id": "CA-000040",
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "(logerror > -0.2) and (logerror < 0.2)"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "This still looks like a plausible outlier filter, but it removes too much valid target variation compared with the benchmark-preferred trimming strategies.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000093",
+        "CA-000069"
+      ],
+      "derivation_reasoning": "Near-miss fixed-threshold variant derived from the legitimate Zillow outlier filters.",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000041",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "properties_2016",
+        "left_on": "parcelid",
+        "right_on": "parcelid",
+        "how": "right",
+        "fit_scope": "none",
+        "mode": "transform"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "A right join looks close to the intended property lookup, but it can keep unlabeled property rows while dropping labeled training rows and break supervised row semantics.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000107"
+      ],
+      "derivation_reasoning": "Near-miss join variant derived from the core property lookup action by swapping the row-preserving left join for a right join.",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000042",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "transactiondate"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Removes the only raw transaction time signal before datetime parsing or date-based feature engineering can happen.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000045",
+        "CA-000010",
+        "CA-000079",
+        "CA-000108"
+      ],
+      "derivation_reasoning": "Synthetic premature-drop variant that removes transactiondate before temporal parsing or feature derivation can use it.",
+      "challenge_type": "obvious"
+    },
+    {
+      "action_id": "CA-000043",
+      "action_type": "CYCLICAL_ENCODE",
+      "canonical_params": {
+        "columns": [
+          "transactiondate"
+        ],
+        "period": 365.25,
+        "method": "sin_cos"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Direct cyclical encoding of transactiondate is a reasonable idea, but this benchmark treats the observed Zillow seasonality implementation as a separate feature-engineering branch.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000038"
+      ],
+      "derivation_reasoning": "Synthetic canonicalized cyclic-date branch derived from the existing seasonal expression family.",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000044",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "constant",
+        "columns": [
+          "airconditioningtypeid",
+          "architecturalstyletypeid",
+          "basementsqft",
+          "bathroomcnt",
+          "bedroomcnt",
+          "buildingclasstypeid",
+          "buildingqualitytypeid",
+          "calculatedbathnbr",
+          "decktypeid",
+          "finishedfloor1squarefeet",
+          "calculatedfinishedsquarefeet",
+          "finishedsquarefeet12",
+          "finishedsquarefeet13",
+          "finishedsquarefeet15",
+          "finishedsquarefeet50",
+          "finishedsquarefeet6",
+          "fips",
+          "fireplacecnt",
+          "fullbathcnt",
+          "garagecarcnt",
+          "garagetotalsqft",
+          "heatingorsystemtypeid",
+          "latitude",
+          "longitude",
+          "lotsizesquarefeet",
+          "poolcnt",
+          "poolsizesum",
+          "pooltypeid10",
+          "pooltypeid2",
+          "pooltypeid7",
+          "propertylandusetypeid",
+          "rawcensustractandblock",
+          "regionidcity",
+          "regionidcounty",
+          "regionidneighborhood",
+          "regionidzip",
+          "roomcnt",
+          "storytypeid",
+          "threequarterbathnbr",
+          "typeconstructiontypeid",
+          "unitcnt",
+          "yardbuildingsqft17",
+          "yardbuildingsqft26",
+          "yearbuilt",
+          "numberofstories",
+          "structuretaxvaluedollarcnt",
+          "taxvaluedollarcnt",
+          "assessmentyear",
+          "landtaxvaluedollarcnt",
+          "taxamount",
+          "taxdelinquencyyear",
+          "censustractandblock"
+        ],
+        "fill_value": 0
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "A blanket zero fill across all numeric columns is operationally convenient, but it collapses missingness into valid magnitudes across many heterogeneous property features.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000050"
+      ],
+      "derivation_reasoning": "Synthetic blanket-fill hard negative derived from the broad numeric median-imputation action.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000045",
+      "action_type": "PARSE_DATETIME",
+      "canonical_params": {
+        "columns": [
+          "transactiondate"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Raw transaction date strings are parsed into datetime values for downstream temporal features.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "abhisheksharma26jan/zillowabhishek",
+        "aharless/keras-neural-network-lb-06492",
+        "aharless/keras-nn-with-q4-validation",
+        "aharless/xgboost-lightgbm-and-ols",
+        "aharless/xgboost-lightgbm-and-ols-and-nn",
+        "csmohamedayman/tsf-numc-zillow-prize-zillow-s-home-value",
+        "danieleewww/xgboost-lightgbm-and-olsv107-w-month-features",
+        "danieleewww/xgboost-lightgbm-and-olsv37",
+        "davidfumo/boosted-trees-lb-0-0643707",
+        "sifar12/boosted-trees-lb-0-0643707",
+        "valadi/xgboost-lightgbm-and-ols-tune-1",
+        "wangsg/ensemble-stacking-lb-0-6436",
+        "zusmani/boosted-trees-lb-0-0643707"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Applied before date-part derivation and date-based validation splits.",
+      "evidence_snippets": [
+        "df[feature] = pd.to_datetime(df[feature], errors='coerce')",
+        "df_train[\"transactiondate\"] = pd.to_datetime(df_train[\"transactiondate\"])",
+        "df[\"transactiondate\"] = pd.to_datetime(df[\"transactiondate\"])",
+        "train[\"transactiondate\"] = pd.to_datetime(train[\"transactiondate\"])"
+      ],
+      "rareness": "common",
+      "confidence": 0.9
+    },
+    {
+      "action_id": "CA-000046",
+      "action_type": "CLIP_OUTLIERS",
+      "canonical_params": {
+        "columns": [
+          "lotsizesquarefeet",
+          "calculatedfinishedsquarefeet"
+        ],
+        "method": "clip",
+        "lower_value": 0,
+        "upper_value": 5000
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Hard clipping major size features to a narrow upper bound is a believable preprocessing shortcut, but it throws away meaningful scale variation and is not part of the curated Zillow bank target.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000050"
+      ],
+      "derivation_reasoning": "Synthetic feature-clipping distractor derived from the broad numeric-property handling family by replacing imputation with aggressive bounded clipping.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000047",
+      "action_type": "DROP_ROWS_WITH_MISSING",
+      "canonical_params": {
+        "subset_columns": [
+          "taxvaluedollarcnt",
+          "calculatedfinishedsquarefeet",
+          "lotsizesquarefeet"
+        ],
+        "how": "any"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Dropping rows with missing core property features is plausible, but it throws away too much data for this already noisy Zillow regression task.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000050",
+        "CA-000073",
+        "CA-000007"
+      ],
+      "derivation_reasoning": "Synthetic row-drop missingness branch derived from the curated imputation families.",
+      "challenge_type": "obvious"
+    },
+    {
+      "action_id": "CA-000048",
+      "action_type": "DIFF_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "taxvaluedollarcnt"
+        ],
+        "periods": [
+          1
+        ],
+        "order_by_columns": [
+          "transactiondate"
+        ],
+        "group_by_columns": [
+          "parcelid"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Parcel-level temporal difference features are mechanically possible, but they are a weak and noisy branch for this Zillow slice and not part of the benchmark target set.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "wangsg/ensemble-stacking-lb-0-6436"
+      ],
+      "derivation_reasoning": "Synthetic temporal-delta branch added to broaden canonical action-space coverage.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000049",
+      "action_type": "POWER_TRANSFORM",
+      "canonical_params": {
+        "columns": [
+          "taxvaluedollarcnt",
+          "structuretaxvaluedollarcnt",
+          "landtaxvaluedollarcnt"
+        ],
+        "method": "yeo-johnson",
+        "standardize": true
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Power transforms on skewed tax-value columns are plausible, but they create a different feature-scaling branch than the benchmark is trying to score.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000050"
+      ],
+      "derivation_reasoning": "Synthetic power-transform branch derived from the numeric-property handling family.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000050",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "median",
+        "columns": [
+          "airconditioningtypeid",
+          "architecturalstyletypeid",
+          "basementsqft",
+          "bathroomcnt",
+          "bedroomcnt",
+          "buildingclasstypeid",
+          "buildingqualitytypeid",
+          "calculatedbathnbr",
+          "decktypeid",
+          "finishedfloor1squarefeet",
+          "calculatedfinishedsquarefeet",
+          "finishedsquarefeet12",
+          "finishedsquarefeet13",
+          "finishedsquarefeet15",
+          "finishedsquarefeet50",
+          "finishedsquarefeet6",
+          "fips",
+          "fullbathcnt",
+          "garagecarcnt",
+          "garagetotalsqft",
+          "heatingorsystemtypeid",
+          "latitude",
+          "longitude",
+          "lotsizesquarefeet",
+          "poolsizesum",
+          "pooltypeid10",
+          "propertylandusetypeid",
+          "rawcensustractandblock",
+          "regionidcity",
+          "regionidcounty",
+          "regionidneighborhood",
+          "regionidzip",
+          "roomcnt",
+          "storytypeid",
+          "threequarterbathnbr",
+          "typeconstructiontypeid",
+          "unitcnt",
+          "yardbuildingsqft17",
+          "yardbuildingsqft26",
+          "yearbuilt",
+          "numberofstories",
+          "structuretaxvaluedollarcnt",
+          "taxvaluedollarcnt",
+          "assessmentyear",
+          "landtaxvaluedollarcnt",
+          "taxamount",
+          "taxdelinquencyyear",
+          "censustractandblock"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Median imputation is applied to the remaining numeric joined-train columns after explicit absence-style sparse count handling is carved out.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "abhisheksharma26jan/zillowabhishek",
+        "aharless/xgb-w-o-outliers-lgb-with-outliers-combined",
+        "aharless/xgboost-lightgbm-and-ols",
+        "aharless/xgboost-lightgbm-and-ols-and-nn",
+        "danieleewww/xgboost-lightgbm-and-olsv37",
+        "davidfumo/boosted-trees-lb-0-0643707",
+        "fmfkfd/xgboost-lightgbm-nn-ols",
+        "gw00207/catboost-xgboost-lightgbm-and-ols-0-0644060",
+        "hyunhp/xgboost-lightgbm-and-ols-and-nn-by-andy",
+        "sifar12/boosted-trees-lb-0-0643707",
+        "valadi/xgb-w-o-outliers-lgb-with-outliers-combo-tune6",
+        "valadi/xgboost-lightgbm-and-ols-tune-1",
+        "youhouhou/xgboost-lightgbm-ols-nn",
+        "zusmani/boosted-trees-lb-0-0643707"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Rewritten to the remaining numeric columns with missing values in train_2016_v2 left-joined with properties_2016 after separating the sparse pool/fireplace count family.",
+      "evidence_snippets": [
+        "df_train.fillna(df_train.median(), inplace = True)",
+        "df_train.fillna(df_train.median(),inplace = True)"
+      ],
+      "rareness": "common",
+      "confidence": 0.85
+    },
+    {
+      "action_id": "CA-000051",
+      "action_type": "REPLACE_INF",
+      "canonical_params": {
+        "columns": [
+          "lot_per_bathroom"
+        ],
+        "strategy": "nan"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "A second infinity-replacement cleanup step is plausible after fragile handcrafted ratios, but still indicates a feature branch outside the target benchmark path.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "wangsg/ensemble-stacking-lb-0-6436"
+      ],
+      "derivation_reasoning": "Second replace-inf variant added so this family is not singleton.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000052",
+      "action_type": "SCALE_NUMERIC",
+      "canonical_params": {
+        "method": "standard",
+        "columns": [
+          "taxvaluedollarcnt",
+          "calculatedfinishedsquarefeet",
+          "taxamount"
+        ],
+        "with_mean": true,
+        "with_std": true
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Standard scaling is a generic tabular move, but it is not a rewarded step for the curated Zillow benchmark path.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000050",
+        "CA-000017"
+      ],
+      "derivation_reasoning": "Synthetic numeric-scaling branch derived from the dense numeric and geographic feature families.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000053",
+      "action_type": "CREATE_MISSING_INDICATOR",
+      "canonical_params": {
+        "columns": [
+          "taxvaluedollarcnt",
+          "calculatedfinishedsquarefeet",
+          "lotsizesquarefeet"
+        ],
+        "indicator_suffix": "_missing"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Adding missingness flags for the main valuation and size features is plausible, but this benchmark does not reward expanding the feature matrix with indicator columns for this Zillow slice.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000050"
+      ],
+      "derivation_reasoning": "Synthetic missingness-feature distractor derived from the core numeric imputation family by converting missing-value handling into explicit indicator columns.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000054",
+      "action_type": "POWER_TRANSFORM",
+      "canonical_params": {
+        "columns": [
+          "taxamount",
+          "lotsizesquarefeet"
+        ],
+        "method": "box-cox",
+        "standardize": false
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "A second power-transform branch with Box-Cox is also plausible, but still outside the intended benchmark target set.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000050"
+      ],
+      "derivation_reasoning": "Second power-transform variant added so this family is not singleton.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000055",
+      "action_type": "ORDINAL_ENCODE",
+      "canonical_params": {
+        "columns": [
+          "buildingqualitytypeid"
+        ],
+        "order": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ],
+        "unknown_value": 0
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Ordered encoding of building quality looks defensible, but this benchmark does not treat it as part of the preferred Zillow action set.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000059"
+      ],
+      "derivation_reasoning": "Synthetic ordered-encoding branch derived from the categorical-encoding family.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000056",
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "transactiondate >= '2017-01-01'"
+      },
+      "eval_stage": "validation_protocol",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "This looks like a date-based validation split, but it uses a cutoff outside the relevant 2016 training period and does not match the benchmark scenario.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000092"
+      ],
+      "derivation_reasoning": "Synthetic validation-split distractor derived from the legitimate temporal holdout action.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000057",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "properties_2017",
+        "left_on": "parcelid",
+        "right_on": "parcelid",
+        "how": "inner",
+        "fit_scope": "none",
+        "mode": "transform"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "This combines the wrong yearly property snapshot with a row-dropping join type, making the lookup both temporally mismatched and structurally risky.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000107"
+      ],
+      "derivation_reasoning": "Compound near-miss join variant derived from the core property lookup action.",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000058",
+      "action_type": "DIFF_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "taxamount"
+        ],
+        "periods": [
+          2
+        ],
+        "order_by_columns": [
+          "transactiondate"
+        ],
+        "group_by_columns": [
+          "parcelid"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Two-step parcel-level differences are mechanically possible, but they lean even further into a sequential modeling branch that the benchmark is not targeting.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "aharless/xgboost-using-4th-quarter-for-validation"
+      ],
+      "derivation_reasoning": "Second diff-feature variant added so temporal delta features are not singleton hints.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000059",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "onehot",
+        "columns": [
+          "heatingorsystemtypeid",
+          "propertylandusetypeid",
+          "storytypeid",
+          "airconditioningtypeid",
+          "architecturalstyletypeid",
+          "buildingclasstypeid",
+          "buildingqualitytypeid",
+          "typeconstructiontypeid"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "hard",
+      "reasoning": "Low/medium-cardinality id-like categorical columns are expanded with one-hot vectors.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "wangsg/ensemble-stacking-lb-0-6436"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Alternative (OR) to label encoding at the same categorical encoding step.",
+      "evidence_snippets": [
+        "dum_df = pd.get_dummies(properties[c])"
+      ],
+      "rareness": "rare",
+      "confidence": 0.9
+    },
+    {
+      "action_id": "CA-000060",
+      "action_type": "DROP_DUPLICATES",
+      "canonical_params": {
+        "subset_columns": [
+          "parcelid",
+          "transactiondate"
+        ],
+        "keep": "last"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Deduplicating parcel/date pairs is another tempting cleanup move, but it can still discard supervised examples the task expects to retain.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000107",
+        "CA-000045"
+      ],
+      "derivation_reasoning": "Second duplicate-dropping variant added so row-deduplication is not represented by a singleton hint.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000061",
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "(logerror > percentile(logerror, 1)) and (logerror < percentile(logerror, 99))"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "This percentile trim is plausible, but it is still materially more aggressive than the benchmark-approved percentile strategy.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000069"
+      ],
+      "derivation_reasoning": "Synthetic percentile-trimming distractor derived from the legitimate percentile-based outlier family.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000062",
+      "action_type": "FEATURE_SELECTION",
+      "canonical_params": {
+        "method": "mutual_info",
+        "feature_columns": [
+          "taxvaluedollarcnt",
+          "calculatedfinishedsquarefeet",
+          "taxamount",
+          "landtaxvaluedollarcnt"
+        ],
+        "k": 3
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "A mutual-information filter is a perfectly plausible modeling move, but it is still outside the curated preprocessing target for this benchmark.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "wangsg/ensemble-stacking-lb-0-6436"
+      ],
+      "derivation_reasoning": "Second feature-selection variant added so this family is not singleton.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000063",
+      "action_type": "SCALE_NUMERIC",
+      "canonical_params": {
+        "method": "minmax",
+        "columns": [
+          "taxvaluedollarcnt",
+          "structuretaxvaluedollarcnt",
+          "taxamount"
+        ],
+        "with_mean": false,
+        "with_std": false
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Min-max scaling is another plausible generic numeric transform, but it is still outside the curated benchmark target for Zillow.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000050",
+        "CA-000017"
+      ],
+      "derivation_reasoning": "Second numeric-scaling variant added so this family is not singleton.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000064",
+      "action_type": "NORMALIZE_STRING",
+      "canonical_params": {
+        "columns": [
+          "propertyzoningdesc"
+        ],
+        "case": "upper",
+        "strip": true,
+        "unicode_normalize": "NFKC",
+        "empty_to_null": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "A second string-normalization variant remains mechanically valid but still serves mostly as a low-value text-cleaning branch for this benchmark.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000029"
+      ],
+      "derivation_reasoning": "Second string-normalization variant added so this family is not singleton.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000065",
+      "action_type": "DROP_CONSTANT_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "fips"
+        ],
+        "min_unique_values": 2,
+        "include_nan_as_value": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Dropping an almost constant regional code is an understandable cleanup instinct, but it is not a rewarded branch in this benchmark.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000108"
+      ],
+      "derivation_reasoning": "Second constant-column pruning variant added so this family is not singleton.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000066",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "properties_2016",
+        "left_on": "parcelid",
+        "right_on": "parcelid",
+        "how": "outer",
+        "fit_scope": "none",
+        "mode": "transform"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "An outer join is a plausible implementation mistake, but it can pull in unlabeled property rows and break the row semantics of the supervised training table.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000107"
+      ],
+      "derivation_reasoning": "Near-miss join variant that keeps the same tables and keys as the good lookup action but uses an outer join that breaks labeled-row semantics.",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000067",
+      "action_type": "LAG_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "logerror"
+        ],
+        "lag_periods": [
+          1
+        ],
+        "order_by_columns": [
+          "transactiondate"
+        ],
+        "group_by_columns": [
+          "parcelid"
+        ],
+        "fill_value": 0
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Lagging the target itself is a plausible but clearly problematic temporal idea that the benchmark does not want to reward.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "aharless/xgboost-using-4th-quarter-for-validation"
+      ],
+      "derivation_reasoning": "Second lag-feature variant added so temporal lag actions are not singleton.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000068",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "constant",
+        "columns": [
+          "regionidzip",
+          "regionidcity",
+          "regionidcounty"
+        ],
+        "fill_value": 0
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Filling location identifier columns with zero is a tempting shortcut, but it overloads a numeric code with missingness and can distort downstream geographic signal.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000050"
+      ],
+      "derivation_reasoning": "Synthetic location-id fill distractor derived from the broader Zillow missing-value families.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000069",
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "(logerror > percentile(logerror, 0.5)) and (logerror < percentile(logerror, 99.5))"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "hard",
+      "reasoning": "Some explanatory kernels remove tails using percentile-based clipping rather than fixed constants.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "salmanurrehman/zillow-prize-zillow-s-home-value-prediction",
+        "zusmani/baseline-lb-0-0648950",
+        "zusmani/scrpt"
+      ],
+      "source_profile": "explanatory_style",
+      "context_notes": "Alternative (OR) outlier handling strategy.",
+      "evidence_snippets": [
+        "df_train = df_train[df_train.logerror < np.percentile(log_errors, 99.5)]"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.9,
+      "equivalence_group": "zillow_outlier_trim_strategy"
+    },
+    {
+      "action_id": "CA-000070",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "parcelid"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Drops the parcel identifier before the common properties lookup join can be applied.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000107",
+        "CA-000108"
+      ],
+      "derivation_reasoning": "Synthetic premature-drop variant of the broader drop-columns step that blocks the parcelid lookup join.",
+      "challenge_type": "obvious"
+    },
+    {
+      "action_id": "CA-000071",
+      "action_type": "BIN_NUMERIC",
+      "canonical_params": {
+        "columns": [
+          "taxvaluedollarcnt",
+          "calculatedfinishedsquarefeet"
+        ],
+        "method": "quantile",
+        "bins": 10
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Quantile-binning large continuous valuation features is a plausible tabular move, but it coarsens signal that this benchmark does not treat as part of the preferred Zillow path.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000050"
+      ],
+      "derivation_reasoning": "Synthetic numeric-bucketing branch derived from the broad numeric-property handling family.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000072",
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "regionidcity"
+        ],
+        "target_columns": [
+          "taxvaluedollarcnt",
+          "lotsizesquarefeet"
+        ],
+        "agg_functions": [
+          "max",
+          "min"
+        ],
+        "join_back": true,
+        "how": "left"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "City-level aggregate features are another plausible handcrafted branch, but they are still beyond the intended benchmark target set.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000017"
+      ],
+      "derivation_reasoning": "Second grouped-aggregation variant added so this family is not singleton.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000073",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "constant",
+        "columns": [
+          "fireplacecnt",
+          "pooltypeid2",
+          "pooltypeid7",
+          "poolcnt"
+        ],
+        "fill_value": 0
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Missing sparse count/pool fields are replaced with zero-equivalent values.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "cuongvn08/xgboost-cross-validation-clean-coding-lb-0-64x",
+        "salmanurrehman/zillow-prize-zillow-s-home-value-prediction",
+        "tomgrek/dumb-keras-starter",
+        "zusmani/baseline-lb-0-0648950",
+        "zusmani/scrpt"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Explicit absence-style handling for sparse pool/fireplace count fields, kept separate from the broader median-imputation block.",
+      "evidence_snippets": [
+        "df_train.loc[index,'fireplacecnt'] = 0",
+        "df[feature] = df[feature].fillna(0)",
+        "temp = temp.fillna(0)"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.75
+    },
+    {
+      "action_id": "CA-000074",
+      "action_type": "POLYNOMIAL_FEATURE",
+      "canonical_params": {
+        "feature_columns": [
+          "taxvaluedollarcnt",
+          "calculatedfinishedsquarefeet"
+        ],
+        "degree": 2,
+        "interaction_only": false,
+        "include_bias": false
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Polynomial expansion of valuation and size columns is plausible, but it is a model-specific feature branch outside the benchmark target.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000050"
+      ],
+      "derivation_reasoning": "Synthetic polynomial-feature branch derived from the dense numeric-property family.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000075",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "properties_2017",
+        "left_on": "parcelid",
+        "right_on": "parcelid",
+        "how": "left",
+        "fit_scope": "none",
+        "mode": "transform"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Looks like a reasonable parcel-level join, but it uses the 2017 property snapshot for the benchmark's 2016 training context and introduces a temporal mismatch.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000107"
+      ],
+      "derivation_reasoning": "Near-miss join variant that keeps the same join keys and mode as the good lookup action but swaps in the wrong yearly property snapshot.",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000076",
+      "action_type": "CYCLICAL_ENCODE",
+      "canonical_params": {
+        "columns": [
+          "transactiondate"
+        ],
+        "period": 12,
+        "method": "sin_only"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "A one-sided cyclic month encoding looks close to the intended seasonal branch, but it keeps only half of the circular signal.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000038"
+      ],
+      "derivation_reasoning": "Second cyclical-encoding variant added so cyclic temporal features are not represented by a singleton row.",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000077",
+      "action_type": "INTERACTION_FEATURE",
+      "canonical_params": {
+        "feature_columns": [
+          "taxamount",
+          "lotsizesquarefeet"
+        ],
+        "operator": "multiply",
+        "degree": 2,
+        "include_bias": false
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "A second numeric interaction branch remains plausible feature engineering, but still lies outside the intended benchmark scope.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000050"
+      ],
+      "derivation_reasoning": "Second interaction-feature variant added so this family is not singleton.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000078",
+      "action_type": "TEXT_VECTORIZATION",
+      "canonical_params": {
+        "method": "bag_of_words",
+        "text_columns": [
+          "propertyzoningdesc"
+        ],
+        "max_features": 1000
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "A second text-feature branch over property zoning descriptions is mechanically possible, but still far heavier than the benchmark wants to reward.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000029"
+      ],
+      "derivation_reasoning": "Second text-vectorization variant added so this family is not singleton.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000079",
+      "action_type": "DATE_PART_FEATURE",
+      "canonical_params": {
+        "date_columns": [
+          "transactiondate"
+        ],
+        "parts": [
+          "month"
+        ],
+        "drop_original": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "hard",
+      "reasoning": "Some variants keep only a compact month indicator instead of the richer calendar expansion block.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "danieleewww/xgboost-lightgbm-and-olsv107-w-month-features",
+        "wangsg/ensemble-stacking-lb-0-6436"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Alternative (OR) to richer year/month/day/quarter expansions.",
+      "evidence_snippets": [
+        "##add month feature",
+        "train[\"Month\"] = train[\"transactiondate\"].dt.month"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.75,
+      "equivalence_group": "zillow_date_feature_strategy",
+      "must_follow_action_ids": [
+        "CA-000045"
+      ]
+    },
+    {
+      "action_id": "CA-000080",
+      "action_type": "POLYNOMIAL_FEATURE",
+      "canonical_params": {
+        "feature_columns": [
+          "taxamount",
+          "lotsizesquarefeet"
+        ],
+        "degree": 3,
+        "interaction_only": true,
+        "include_bias": false
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "A second polynomial expansion branch with interaction-only features is still plausible, but remains outside the curated benchmark path.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000050"
+      ],
+      "derivation_reasoning": "Second polynomial-feature variant added so this family is not singleton.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000081",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "properties_2016",
+        "left_on": "parcelid",
+        "right_on": "parcelid",
+        "how": "inner",
+        "fit_scope": "none",
+        "mode": "transform"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "An inner join looks close to the intended property lookup, but it can silently drop training rows when property metadata is missing.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000107"
+      ],
+      "derivation_reasoning": "Near-miss join variant that keeps the correct tables and keys but uses a row-dropping join type.",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000082",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "constant",
+        "columns": [
+          "fireplacecnt",
+          "pooltypeid2",
+          "pooltypeid7",
+          "poolcnt"
+        ],
+        "fill_value": -1
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Using -1 for sparse pool and fireplace counts is a tempting sentinel shortcut, but it changes the zero-like absence semantics that the stronger Zillow pipelines preserved.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000073"
+      ],
+      "derivation_reasoning": "Synthetic sparse-count imputation variant derived from the curated zero-fill action by swapping the absence-preserving constant for a sentinel code.",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000083",
+      "action_type": "HASH_CROSS",
+      "canonical_params": {
+        "columns": [
+          "regionidcity",
+          "buildingqualitytypeid"
+        ],
+        "n_buckets": 512,
+        "seed": 7
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "A second hashed cross over city and building quality is plausible, but it is still outside the benchmark-preferred path.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000059",
+        "CA-000017"
+      ],
+      "derivation_reasoning": "Second hash-cross variant added so this family is not singleton.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000084",
+      "action_type": "CREATE_MISSING_INDICATOR",
+      "canonical_params": {
+        "columns": [
+          "regionidzip",
+          "regionidcity",
+          "regionidcounty"
+        ],
+        "indicator_suffix": "_missing"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Adding missingness flags on top of geographic id handling is a realistic branch, but it is not part of the curated Zillow target behavior for this benchmark.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000017"
+      ],
+      "derivation_reasoning": "Synthetic geographic-missingness distractor derived from the curated region-id encoding family by adding extra indicator features instead of keeping the representation dense.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000085",
+      "action_type": "HASH_CROSS",
+      "canonical_params": {
+        "columns": [
+          "regionidzip",
+          "propertylandusetypeid"
+        ],
+        "n_buckets": 256,
+        "seed": 42
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Feature-hash crosses are plausible on mixed geographic and land-use categories, but they are not part of the benchmark-preferred Zillow preprocessing path.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000059",
+        "CA-000017"
+      ],
+      "derivation_reasoning": "Synthetic crossed-feature branch derived from the categorical and region-id encoding families.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000086",
+      "action_type": "DATE_PART_FEATURE",
+      "canonical_params": {
+        "date_columns": [
+          "transactiondate"
+        ],
+        "parts": [
+          "weekofyear",
+          "dayofweek"
+        ],
+        "drop_original": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Week-of-year and day-of-week extraction is plausible temporal feature work, but it does not match the benchmarked Zillow date-part families and can miss the calendar granularity the task expects.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000010",
+        "CA-000079"
+      ],
+      "derivation_reasoning": "Synthetic temporal-feature distractor derived from the curated date-part actions by swapping in a different compact calendar decomposition.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000087",
+      "action_type": "DROP_DUPLICATES",
+      "canonical_params": {
+        "subset_columns": [
+          "parcelid"
+        ],
+        "keep": "first"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Deduplicating on parcelid is an easy idea to reach for, but it can discard repeated transactions that matter to the supervised Zillow setup.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000107"
+      ],
+      "derivation_reasoning": "Synthetic row-pruning branch derived from the parcel-level join setup.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000088",
+      "action_type": "PCA_REDUCTION",
+      "canonical_params": {
+        "feature_columns": [
+          "N-zip_count",
+          "N-city_count",
+          "N-county_count"
+        ],
+        "n_components": 2,
+        "method": "svd",
+        "whiten": false
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "A small PCA reduction over engineered geographic features is plausible, but it adds a dimensionality-reduction branch that the benchmark does not reward.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000017"
+      ],
+      "derivation_reasoning": "Synthetic dimensionality-reduction branch derived from the dense geographic encoding family.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000089",
+      "action_type": "LOG_TRANSFORM",
+      "canonical_params": {
+        "columns": [
+          "taxamount",
+          "lotsizesquarefeet"
+        ],
+        "offset": 1.0,
+        "base": "e",
+        "handle_nonpositive": "clip"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "A second log-transform branch over different skewed columns is equally plausible, but still outside the curated target action set.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000050"
+      ],
+      "derivation_reasoning": "Second log-transform variant added so this family is not singleton.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000090",
+      "action_type": "TIME_SINCE_REFERENCE",
+      "canonical_params": {
+        "columns": [
+          "transactiondate"
+        ],
+        "reference": "2016-09-15",
+        "unit": "weeks"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "A second elapsed-time reference feature is equally plausible temporal engineering, but still outside the benchmark's curated target set.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000045",
+        "CA-000038"
+      ],
+      "derivation_reasoning": "Second elapsed-time variant added so this family is not singleton.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000091",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "constant",
+        "columns": [
+          "hashottuborspa",
+          "fireplaceflag",
+          "taxdelinquencyflag"
+        ],
+        "fill_value": "MISSING"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "This string fill is plausible, but it creates a new synthetic category across sparse flags that the benchmark does not treat as part of the preferred Zillow workflow.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000007"
+      ],
+      "derivation_reasoning": "Synthetic categorical-flag fill distractor derived from the explicit FALSE-imputation action.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000092",
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "transactiondate >= '2016-09-15'"
+      },
+      "eval_stage": "validation_protocol",
+      "role": "good",
+      "difficulty": "hard",
+      "reasoning": "Temporal holdout split reserves late-2016 transactions as a validation set.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "aharless/xgboost-using-4th-quarter-for-validation",
+        "cuongvn08/xgboost-cross-validation-clean-coding-lb-0-64x"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Canonicalized temporal validation-holdout action with an explicit cutoff date; absorbs the month-based Q4 split variant.",
+      "evidence_snippets": [
+        "select_qtr4 = pd.to_datetime(train_df[\"transactiondate\"]) >= VAL_SPLIT_DATE",
+        "VAL_SPLIT_DATE = '2016-09-15'",
+        "select_qtr4 = pd.to_datetime(train_df[\"transactiondate\"]).dt.month > 9"
+      ],
+      "rareness": "rare",
+      "confidence": 0.85,
+      "must_follow_action_ids": [
+        "CA-000045"
+      ]
+    },
+    {
+      "action_id": "CA-000093",
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "(logerror > -0.4) and (logerror < 0.419)"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Common canonical outlier filter trims logerror to the standard fixed bound range used by many strong baselines.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "abhisheksharma26jan/zillowabhishek",
+        "aharless/xgb-w-o-outliers-lgb-with-outliers-combined",
+        "aharless/xgboost-lightgbm-and-ols",
+        "aharless/xgboost-lightgbm-and-ols-and-nn",
+        "aharless/xgboost-without-outliers-tweak",
+        "cjansen/xgboost-without-outliers-edited-lb-0-0646300",
+        "cuongvn08/xgboost-cross-validation-clean-coding-lb-0-64x",
+        "danieleewww/xgboost-lightgbm-and-olsv37",
+        "davidfumo/boosted-trees-lb-0-0643707",
+        "fmfkfd/xgboost-lightgbm-nn-ols",
+        "gw00207/catboost-xgboost-lightgbm-and-ols-0-0644060",
+        "hyunhp/xgboost-lightgbm-and-ols-and-nn-by-andy",
+        "sifar12/boosted-trees-lb-0-0643707",
+        "valadi/xgb-w-o-outliers-lgb-with-outliers-combo-tune6",
+        "valadi/xgb-with-lgb-w-o-outliers-combo-tune1",
+        "wangsg/ensemble-stacking-lb-0-6436",
+        "youhouhou/xgboost-lightgbm-ols-nn",
+        "zusmani/boosted-trees-lb-0-0643707"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Canonicalized fixed-threshold outlier trimming action; absorbs the near-duplicate 0.418 upper-bound variant.",
+      "evidence_snippets": [
+        "train_df=train_df[ train_df.logerror > -0.4 ]",
+        "train_df=train_df[ train_df.logerror < 0.419 ]",
+        "train = train[train.logerror < 0.418]"
+      ],
+      "rareness": "common",
+      "confidence": 0.95,
+      "equivalence_group": "zillow_outlier_trim_strategy"
+    },
+    {
+      "action_id": "CA-000094",
+      "action_type": "ROLLING_WINDOW_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "taxvaluedollarcnt"
+        ],
+        "window_sizes": [
+          2,
+          5
+        ],
+        "agg_functions": [
+          "max"
+        ],
+        "order_by_columns": [
+          "transactiondate"
+        ],
+        "group_by_columns": [
+          "regionidzip"
+        ],
+        "min_periods": 2
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "A second rolling-window branch over grouped tax values is also mechanically possible but still beyond the intended benchmark scope.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "aharless/xgboost-using-4th-quarter-for-validation"
+      ],
+      "derivation_reasoning": "Second rolling-window variant added so this family is not singleton.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000095",
+      "action_type": "DROP_CONSTANT_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "assessmentyear"
+        ],
+        "min_unique_values": 2,
+        "include_nan_as_value": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Dropping near-constant columns like assessmentyear is plausible, but it is not one of the curated target actions for this benchmark.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000108"
+      ],
+      "derivation_reasoning": "Synthetic pruning branch derived from the broader column-drop family.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000096",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "onehot",
+        "columns": [
+          "hashottuborspa",
+          "propertycountylandusecode",
+          "propertyzoningdesc",
+          "fireplaceflag",
+          "taxdelinquencyflag"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "A broad one-hot expansion of these sparse flag and text-like columns is plausible, but it is not the benchmark-preferred treatment for the Zillow workflow.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000029"
+      ],
+      "derivation_reasoning": "Synthetic encoding distractor derived from the curated string-column label-encoding action.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000097",
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "transactiondate >= '2016-10-01'"
+      },
+      "eval_stage": "validation_protocol",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "This resembles a holdout split, but the cutoff is different from the benchmarked temporal validation protocol and changes the train-validation balance.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000092"
+      ],
+      "derivation_reasoning": "Synthetic validation-split near-miss derived from the legitimate temporal holdout action.",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000098",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "constant",
+        "columns": [
+          "hashottuborspa",
+          "fireplaceflag",
+          "taxdelinquencyflag"
+        ],
+        "fill_value": 0
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Zero-filling sparse flag-like columns is a convenient shortcut, but it invents a numeric state instead of a clearer categorical or boolean-style missing-value treatment.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000007"
+      ],
+      "derivation_reasoning": "Synthetic sparse-flag fill distractor derived from the benchmarked flag and sentinel imputation families.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000099",
+      "action_type": "CAST_DTYPE",
+      "canonical_params": {
+        "columns": [
+          "hashottuborspa",
+          "fireplaceflag"
+        ],
+        "dtype": "int64",
+        "errors": "coerce"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Forcing sparse flag columns into integer dtype is plausible after imputation, but it does not reflect a meaningful benchmark target action on this task.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000007"
+      ],
+      "derivation_reasoning": "Second dtype-casting variant added so dtype-cast actions are not singleton hints.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000100",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "median",
+        "columns": [
+          "fireplacecnt",
+          "pooltypeid2",
+          "pooltypeid7",
+          "poolcnt"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Median-filling sparse count and pool-indicator columns is plausible, but it weakens the intended zero-like absence semantics used in the stronger Zillow workflows.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000073"
+      ],
+      "derivation_reasoning": "Near-miss sparse-count imputation variant derived from the zero-fill alternative used in Zillow notebooks.",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000101",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "constant",
+        "columns": [
+          "hashottuborspa",
+          "fireplaceflag"
+        ],
+        "fill_value": -1
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Blindly applying a numeric sentinel to sparse string-like flags is a plausible blanket-fill mistake, but it mixes data types and invents a category with no domain meaning.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000007"
+      ],
+      "derivation_reasoning": "Synthetic mixed-type fill variant that looks like a blanket sentinel policy but mis-handles sparse boolean-like flags.",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000102",
+      "action_type": "EXPANDING_WINDOW_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "taxamount"
+        ],
+        "agg_functions": [
+          "mean"
+        ],
+        "order_by_columns": [
+          "transactiondate"
+        ],
+        "group_by_columns": [
+          "parcelid"
+        ],
+        "min_periods": 2
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Parcel-level expanding statistics are mechanically possible, but they create a heavy temporal feature branch that is far outside the curated Zillow preprocessing target.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "aharless/xgboost-using-4th-quarter-for-validation"
+      ],
+      "derivation_reasoning": "Synthetic cumulative-window branch added to broaden temporal canonical action coverage.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000103",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "seasonal_day_of_year = toordinal(transactiondate) - toordinal('2016-01-01'); sin_season = sin(seasonal_day_of_year * 2*pi/12)",
+        "output_columns": [
+          "sin_season"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "This keeps the idea of seasonality features, but it uses an incompatible period and drops the paired cosine feature, so it no longer matches the intended cyclical encoding.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000038"
+      ],
+      "derivation_reasoning": "Synthetic seasonality near-miss derived from the sinusoidal date-expression action by changing both the anchor/period semantics and the feature pair shape.",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000104",
+      "action_type": "RARE_CATEGORY_BUCKETIZE",
+      "canonical_params": {
+        "columns": [
+          "regionidcity"
+        ],
+        "min_freq": 0.01,
+        "other_label": "__OTHER__"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Bucketing rare city identifiers is plausible, but it is still a lossy branch outside the curated target behavior.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000017"
+      ],
+      "derivation_reasoning": "Second rare-category bucketization variant added so this family is not singleton.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000105",
+      "action_type": "TIME_SINCE_REFERENCE",
+      "canonical_params": {
+        "columns": [
+          "transactiondate"
+        ],
+        "reference": "2016-01-01",
+        "unit": "days"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Elapsed-time-since-reference features are perfectly plausible, but they represent a broader temporal engineering branch than the benchmark is currently targeting.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000045",
+        "CA-000038"
+      ],
+      "derivation_reasoning": "Synthetic elapsed-time branch derived from the transactiondate parsing and seasonality families.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000106",
+      "action_type": "TARGET_ENCODE_OOF",
+      "canonical_params": {
+        "columns": [
+          "regionidcity"
+        ],
+        "target_column": "logerror",
+        "cv_strategy": "kfold",
+        "n_splits": 5,
+        "shuffle": true,
+        "random_state": 7,
+        "smoothing": 10
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "A second target-encoding branch over city identifiers is also plausible, but it still points to a different feature-learning regime than this benchmark is meant to score.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "wangsg/ensemble-stacking-lb-0-6436"
+      ],
+      "derivation_reasoning": "Second target-encoding variant added so this family is not singleton.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000107",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "properties_2016",
+        "left_on": "parcelid",
+        "right_on": "parcelid",
+        "how": "left",
+        "fit_scope": "none",
+        "mode": "transform"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Notebook joins property metadata onto train/test rows by parcel identifier before modeling.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "abhisheksharma26jan/zillowabhishek",
+        "aharless/keras-neural-network-lb-06492",
+        "aharless/keras-nn-with-q4-validation",
+        "aharless/xgb-w-o-outliers-lgb-with-outliers-combined",
+        "aharless/xgboost-lightgbm-and-ols",
+        "aharless/xgboost-lightgbm-and-ols-and-nn",
+        "aharless/xgboost-using-4th-quarter-for-validation",
+        "aharless/xgboost-without-outliers-tweak",
+        "cjansen/xgboost-without-outliers-edited-lb-0-0646300",
+        "csmohamedayman/tsf-numc-zillow-prize-zillow-s-home-value",
+        "cuongvn08/xgboost-cross-validation-clean-coding-lb-0-64x",
+        "danieleewww/xgboost-lightgbm-and-olsv107-w-month-features",
+        "danieleewww/xgboost-lightgbm-and-olsv37",
+        "danieleewww/xgboost-without-outliers-lb-0-06463",
+        "davidfumo/boosted-trees-lb-0-0643707",
+        "fmfkfd/xgboost-lightgbm-nn-ols",
+        "gw00207/catboost-xgboost-lightgbm-and-ols-0-0644060",
+        "hyunhp/xgboost-lightgbm-and-ols-and-nn-by-andy",
+        "mickaelfayeulle/zillow-xgboost-and-hyperparameter-tuning",
+        "salmanurrehman/zillow-prize-zillow-s-home-value-prediction",
+        "sifar12/boosted-trees-lb-0-0643707",
+        "valadi/xgb-w-o-outliers-lgb-with-outliers-combo-tune6",
+        "valadi/xgb-with-lgb-w-o-outliers-combo-tune1",
+        "valadi/xgboost-lightgbm-and-ols-tune-1",
+        "wangsg/ensemble-stacking-lb-0-6436",
+        "youhouhou/xgboost-lightgbm-ols-nn",
+        "zusmani/baseline-lb-0-0648950",
+        "zusmani/boosted-trees-lb-0-0643707",
+        "zusmani/scrpt"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Core Zillow preprocessing step: lookup join by parcelid.",
+      "evidence_snippets": [
+        "df_train_2016 = train_2016.merge(properties_2016, how='left', on='parcelid')",
+        "df16  = pd.merge(train_16, prop_16, how='left', on='parcelid')",
+        "df_train = train.merge(prop, how='left', on='parcelid')",
+        "df_train = train.merge(properties, how='left', on='parcelid')",
+        "train_df = train.merge(properties, how='left', on='parcelid')",
+        "train_x = train_df.merge(prop_df, how='left', on='parcelid')",
+        "df_train = train.merge(prop, how = 'left', on = 'parcelid')",
+        "train_df = train.merge(properties16, how='left', on='parcelid')",
+        "train = train.merge(properties, on='parcelid', how='left')"
+      ],
+      "rareness": "common",
+      "confidence": 0.9
+    },
+    {
+      "action_id": "CA-000108",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "parcelid",
+          "logerror",
+          "transactiondate",
+          "propertyzoningdesc",
+          "propertycountylandusecode"
+        ],
+        "reason": "drop_id_target_date_and_high_missing_text"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "hard",
+      "reasoning": "Modeling matrix drops identifier/target/date and two high-missing text-like columns (without fireplace drops).",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "valadi/xgb-with-lgb-w-o-outliers-combo-tune1",
+        "wangsg/ensemble-stacking-lb-0-6436"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Alternative (OR) at same preprocessing step: variant that keeps fireplace columns.",
+      "evidence_snippets": [
+        "x_train = df_train.drop(['parcelid', 'logerror', 'transactiondate', 'propertyzoningdesc', 'propertycountylandusecode'], axis=1)",
+        "x_train = train.drop(['parcelid', 'logerror','transactiondate', 'propertyzoningdesc', 'propertycountylandusecode'], axis=1)"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.9,
+      "invalidates_action_ids": [
+        "CA-000038",
+        "CA-000010",
+        "CA-000079",
+        "CA-000093",
+        "CA-000069",
+        "CA-000107",
+        "CA-000045",
+        "CA-000092"
+      ]
+    },
+    {
+      "action_id": "CA-000109",
+      "action_type": "INTERACTION_FEATURE",
+      "canonical_params": {
+        "feature_columns": [
+          "taxvaluedollarcnt",
+          "calculatedfinishedsquarefeet"
+        ],
+        "operator": "multiply",
+        "degree": 2,
+        "include_bias": false
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Hand-built interactions between valuation and size features are plausible, but they introduce a model-specific feature branch outside the benchmark target.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000050"
+      ],
+      "derivation_reasoning": "Synthetic interaction-feature branch derived from the dense numeric-property family.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000110",
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "regionidzip"
+        ],
+        "target_columns": [
+          "taxamount",
+          "calculatedfinishedsquarefeet"
+        ],
+        "agg_functions": [
+          "mean",
+          "median"
+        ],
+        "join_back": true,
+        "how": "left"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Zip-level aggregate features are plausible, but they change the task into a heavier feature-augmentation branch than this benchmark is targeting.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000017"
+      ],
+      "derivation_reasoning": "Synthetic grouped-aggregation branch derived from the geographic feature family.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000111",
+      "action_type": "NORMALIZE_STRING",
+      "canonical_params": {
+        "columns": [
+          "propertyzoningdesc",
+          "propertycountylandusecode"
+        ],
+        "case": "lower",
+        "strip": true,
+        "unicode_normalize": "NFKC",
+        "empty_to_null": true
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "String normalization is mechanically valid on the Zillow text-like columns, but it is not a rewarded part of this benchmark path.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000029"
+      ],
+      "derivation_reasoning": "Synthetic string-cleaning branch derived from the object-column handling family.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000112",
+      "action_type": "LAG_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "taxamount"
+        ],
+        "lag_periods": [
+          1
+        ],
+        "order_by_columns": [
+          "transactiondate"
+        ],
+        "group_by_columns": [
+          "parcelid"
+        ],
+        "fill_value": 0
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Parcel-level lag features are mechanically possible, but they assume a cleaner transaction sequence than the benchmark is meant to require.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "aharless/xgboost-using-4th-quarter-for-validation"
+      ],
+      "derivation_reasoning": "Synthetic lag-feature branch added to widen temporal action-space coverage.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000113",
+      "action_type": "TARGET_ENCODE_OOF",
+      "canonical_params": {
+        "columns": [
+          "regionidzip",
+          "propertycountylandusecode"
+        ],
+        "target_column": "logerror",
+        "cv_strategy": "kfold",
+        "n_splits": 5,
+        "shuffle": true,
+        "random_state": 42,
+        "smoothing": 20
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Leakage-safe target encoding is a strong modeling idea, but it pushes the bank toward a different feature-learning regime than this benchmark is trying to score.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "wangsg/ensemble-stacking-lb-0-6436"
+      ],
+      "derivation_reasoning": "Synthetic target-encoding branch added because agents may plausibly propose it on this regression task even when it is not in the curated target set.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000114",
+      "action_type": "RATIO_FEATURE",
+      "canonical_params": {
+        "left_columns": [
+          "lotsizesquarefeet"
+        ],
+        "right_columns": [
+          "bathroomcnt"
+        ],
+        "epsilon": 1.0,
+        "new_feature_name": "lot_per_bathroom"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "A second handcrafted ratio branch is plausible feature engineering, but still sits outside the intended benchmark scope.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000050"
+      ],
+      "derivation_reasoning": "Second ratio-feature variant added so this family is not singleton.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000115",
+      "action_type": "PARSE_DATETIME",
+      "canonical_params": {
+        "columns": [
+          "transactiondate"
+        ],
+        "format": "%m/%d/%Y",
+        "errors": "coerce"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Parsing Zillow transaction dates with a month-first format is a close-looking mistake, but it mismatches the observed YYYY-MM-DD strings and can collapse valid dates into missing values.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000045"
+      ],
+      "derivation_reasoning": "Synthetic parse-datetime near-miss derived from the canonical transactiondate parsing action by swapping in an incompatible month-first format.",
+      "challenge_type": "near_miss"
+    }
+  ]
+}

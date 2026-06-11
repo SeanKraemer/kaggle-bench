@@ -1,0 +1,83 @@
+{
+  "competition_slug": "porto-seguro-safe-driver-prediction",
+  "dataset": {
+    "provider": "kaggle",
+    "competition": "porto-seguro-safe-driver-prediction",
+    "train_files": [
+      "train.csv"
+    ],
+    "test_files": [
+      "test.csv"
+    ],
+    "lookup_files": [],
+    "sample_submission_files": [
+      "sample_submission.csv"
+    ],
+    "data_dictionary_files": [],
+    "target_column": "target",
+    "primary_key": "id"
+  },
+  "goal": "Suggest preprocessing and feature-engineering actions for predicting the probability that a driver will initiate an auto insurance claim.",
+  "task_characteristics": {
+    "ml_domain": "insurance_tabular",
+    "problem_type": "binary_classification",
+    "table_structure": "single_table",
+    "dataset_size_bucket": "large",
+    "dataset_size_raw": 595212,
+    "feature_dimensionality_bucket": "medium",
+    "feature_dimensionality_raw": 57,
+    "preprocessing_complexity_bucket": "low",
+    "preprocessing_complexity_raw": 7,
+    "analysis_notes": "Large single-table insurance classification task with anonymized features. 595,212 training rows and 892,816 test rows. 57 features (excluding id and target): 14 categorical (_cat suffix), 17 binary (_bin suffix), 26 continuous/ordinal. Missing values encoded as -1 sentinel (not NaN). Strong class imbalance (~3.6% positive). The calc feature family (20 columns) has near-zero predictive importance and is universally dropped. Two categorical columns (ps_car_03_cat, ps_car_05_cat) have extreme missingness (69% and 44%). preprocessing_complexity_raw = 7 reflects the 7 primary effective good units in core_preprocessing."
+  },
+  "overview": {
+    "title": "Porto Seguro's Safe Driver Prediction",
+    "summary": "Predict if a driver will file an insurance claim next year using anonymized driver features.",
+    "raw_text": "In this competition, you're challenged to build a model that predicts the probability that a driver will initiate an auto insurance claim in the next year. While Porto Seguro has used machine learning for the past 20 years, they're looking to Kaggle's machine learning community to explore new, more powerful methods. A more accurate prediction will allow them to further tailor their prices, and hopefully make auto insurance coverage more accessible to more drivers.",
+    "host": "Porto Seguro",
+    "category": "Featured",
+    "reward": "$25,000",
+    "team_count": 5169,
+    "enabled_date": "2017-09-30T00:00:00.000Z",
+    "deadline": "2017-11-29T23:59:00.000Z",
+    "url": "https://www.kaggle.com/competitions/porto-seguro-safe-driver-prediction"
+  },
+  "dataset_description": {
+    "summary": "Anonymized driver features grouped by tags (ind, reg, car, calc). Categorical features end in _cat, binary in _bin. Missing values are universally encoded as -1. The target is binary (claim filed or not). Strong class imbalance: ~3.6% positive rate.",
+    "raw_text": "In this dataset, you are provided with a large number of anonymized features relating to auto insurance. The target column indicates whether or not a claim was filed for that policy holder. Features that belong to similar groupings are tagged as such in the feature names (e.g., ind, reg, car, calc). In addition, feature names include the postfix bin to indicate binary features and cat to indicate categorical features. Features without these designations are either continuous or ordinal. Values of -1 indicate that the feature was missing from the observation.",
+    "file_summary": {
+      "total_file_count": 3,
+      "file_types": [
+        {
+          "extension": ".csv",
+          "file_count": 3,
+          "total_size_bytes": 300584782
+        }
+      ]
+    },
+    "column_summary": {
+      "total_column_count": 59,
+      "column_types": [
+        {
+          "column_type": "Numeric",
+          "column_count": 26
+        },
+        {
+          "column_type": "Categorical",
+          "column_count": 14
+        },
+        {
+          "column_type": "Binary",
+          "column_count": 18
+        },
+        {
+          "column_type": "Id",
+          "column_count": 1
+        }
+      ]
+    }
+  },
+  "metric": {
+    "name": "NormalizedGini"
+  }
+}

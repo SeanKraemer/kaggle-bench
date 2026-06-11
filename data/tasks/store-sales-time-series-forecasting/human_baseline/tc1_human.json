@@ -1,0 +1,48 @@
+{
+  "competition_slug": "store-sales-time-series-forecasting",
+  "testcase_id": "tc1_from_scratch",
+  "agent_name": "human",
+  "run_by": "annotator_b",
+  "run_id": "human_tc1_v1",
+  "artifact_refs": [
+    {
+      "kind": "notebook",
+      "path": "work.ipynb",
+      "description": "manually reproduce the preprocessing pipeline using the candidate action bank."
+    },
+    {
+      "kind": "metadata",
+      "path": "provenance/metadata.json",
+      "description": "Run-level metadata for the human baseline."
+    },
+    {
+      "kind": "trace",
+      "path": "provenance/action_trace.json",
+      "description": "Per-action mapping from CA-IDs to notebook evidence and selection rationale."
+    },
+    {
+      "kind": "notes",
+      "path": "notes.md",
+      "description": "notes"
+    }
+  ],
+  "predicted_add_action_ids": [
+    "CA-000002",
+    "CA-000004",
+    "CA-000007",
+    "CA-000011",
+    "CA-000018",
+    "CA-000024",
+    "CA-000031",
+    "CA-000044",
+    "CA-000052"
+  ],
+  "predicted_remove_action_ids": [],
+  "time_spent_seconds": 2700,
+  "token_usage": {
+    "input_tokens": null,
+    "output_tokens": null,
+    "total_tokens": null
+  },
+  "notes": "First-pass human selection includes the main date, lookup, oil interpolation, transferred-holiday filtering, calendar, family encoding, and id-drop steps, but omits the transactions join, oil rolling feature, Work Day holiday cleanup, and grouped sales lag features."
+}

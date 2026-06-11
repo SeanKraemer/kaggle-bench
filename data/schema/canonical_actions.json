@@ -1,0 +1,2216 @@
+{
+  "title": "Canonical Actions",
+  "description": "General-purpose canonical preprocessing/feature-engineering actions for tabular supervised ML.",
+  "common_runtime_fields": {
+    "mode": {
+      "allowed_values": [
+        "fit",
+        "transform",
+        "fit_transform"
+      ]
+    },
+    "fit_scope": {
+      "allowed_values": [
+        "train_only",
+        "full_data",
+        "none"
+      ]
+    },
+    "artifact_id": {
+      "description": "fitted artifact identifier for reuse"
+    },
+    "random_state": {
+      "description": "reproducibility seed (when relevant)"
+    },
+    "output_columns": {
+      "description": "explicit output feature names"
+    },
+    "handle_missing_input_columns": {
+      "allowed_values": [
+        "strict",
+        "skip",
+        "create_default"
+      ]
+    },
+    "on_error": {
+      "allowed_values": [
+        "raise",
+        "warn",
+        "skip"
+      ]
+    }
+  },
+  "actions": {
+    "APPLY_EXPRESSION": {
+      "aliases": [
+        "custom_feature_expression",
+        "formula_feature"
+      ],
+      "required_args": [
+        "expression",
+        "output_columns"
+      ],
+      "optional_args": [
+        "engine",
+        "mode",
+        "fit_scope",
+        "artifact_id",
+        "random_state",
+        "handle_missing_input_columns",
+        "on_error"
+      ],
+      "preconditions": [
+        "columns_exist"
+      ],
+      "validation_rules": {
+        "fit_scope": [
+          "train_only",
+          "full_data",
+          "none"
+        ],
+        "handle_missing_input_columns": [
+          "strict",
+          "skip",
+          "create_default"
+        ],
+        "mode": [
+          "fit",
+          "transform",
+          "fit_transform"
+        ],
+        "on_error": [
+          "raise",
+          "warn",
+          "skip"
+        ]
+      }
+    },
+    "BIN_NUMERIC": {
+      "aliases": [
+        "bucketize",
+        "quantile_binning"
+      ],
+      "scoring": {
+        "granularity": "per_column",
+        "unit_arg": "columns"
+      },
+      "required_args": [
+        "columns",
+        "method",
+        "bins"
+      ],
+      "optional_args": [
+        "labels",
+        "custom_bin_edges",
+        "mode",
+        "fit_scope",
+        "artifact_id",
+        "random_state",
+        "output_columns",
+        "handle_missing_input_columns",
+        "on_error"
+      ],
+      "preconditions": [
+        "numeric_columns_exist"
+      ],
+      "validation_rules": {
+        "fit_scope": [
+          "train_only",
+          "none"
+        ],
+        "handle_missing_input_columns": [
+          "strict",
+          "skip",
+          "create_default"
+        ],
+        "method": [
+          "quantile",
+          "uniform",
+          "custom"
+        ],
+        "mode": [
+          "fit",
+          "transform",
+          "fit_transform"
+        ],
+        "on_error": [
+          "raise",
+          "warn",
+          "skip"
+        ]
+      }
+    },
+    "CAST_DTYPE": {
+      "aliases": [
+        "astype",
+        "convert_dtype"
+      ],
+      "scoring": {
+        "granularity": "per_column",
+        "unit_arg": "columns"
+      },
+      "required_args": [
+        "columns",
+        "dtype"
+      ],
+      "optional_args": [
+        "errors",
+        "mode",
+        "fit_scope",
+        "artifact_id",
+        "random_state",
+        "output_columns",
+        "handle_missing_input_columns",
+        "on_error"
+      ],
+      "preconditions": [
+        "columns_exist"
+      ],
+      "validation_rules": {
+        "dtype": [
+          "int",
+          "float",
+          "bool",
+          "category",
+          "string",
+          "datetime"
+        ],
+        "fit_scope": [
+          "train_only",
+          "full_data",
+          "none"
+        ],
+        "handle_missing_input_columns": [
+          "strict",
+          "skip",
+          "create_default"
+        ],
+        "mode": [
+          "fit",
+          "transform",
+          "fit_transform"
+        ],
+        "on_error": [
+          "raise",
+          "warn",
+          "skip"
+        ]
+      }
+    },
+    "CLIP_OUTLIERS": {
+      "aliases": [
+        "winsorize",
+        "outlier_clip"
+      ],
+      "scoring": {
+        "granularity": "per_column",
+        "unit_arg": "columns"
+      },
+      "required_args": [
+        "columns",
+        "method"
+      ],
+      "optional_args": [
+        "lower_quantile",
+        "upper_quantile",
+        "lower_value",
+        "upper_value",
+        "iqr_k",
+        "mode",
+        "fit_scope",
+        "artifact_id",
+        "random_state",
+        "output_columns",
+        "handle_missing_input_columns",
+        "on_error"
+      ],
+      "preconditions": [
+        "numeric_columns_exist"
+      ],
+      "validation_rules": {
+        "fit_scope": [
+          "train_only",
+          "none"
+        ],
+        "handle_missing_input_columns": [
+          "strict",
+          "skip",
+          "create_default"
+        ],
+        "method": [
+          "winsorize",
+          "clip",
+          "iqr"
+        ],
+        "mode": [
+          "fit",
+          "transform",
+          "fit_transform"
+        ],
+        "on_error": [
+          "raise",
+          "warn",
+          "skip"
+        ]
+      }
+    },
+    "CREATE_MISSING_INDICATOR": {
+      "aliases": [
+        "missing_indicator",
+        "na_flag_feature"
+      ],
+      "scoring": {
+        "granularity": "per_column",
+        "unit_arg": "columns"
+      },
+      "required_args": [
+        "columns"
+      ],
+      "optional_args": [
+        "indicator_suffix",
+        "mode",
+        "fit_scope",
+        "artifact_id",
+        "random_state",
+        "output_columns",
+        "handle_missing_input_columns",
+        "on_error"
+      ],
+      "preconditions": [
+        "columns_exist"
+      ],
+      "validation_rules": {
+        "fit_scope": [
+          "train_only",
+          "full_data",
+          "none"
+        ],
+        "handle_missing_input_columns": [
+          "strict",
+          "skip",
+          "create_default"
+        ],
+        "mode": [
+          "fit",
+          "transform",
+          "fit_transform"
+        ],
+        "on_error": [
+          "raise",
+          "warn",
+          "skip"
+        ]
+      }
+    },
+    "CYCLICAL_ENCODE": {
+      "aliases": [
+        "sin_cos_encode",
+        "cyclic_features"
+      ],
+      "scoring": {
+        "granularity": "per_column",
+        "unit_arg": "columns"
+      },
+      "required_args": [
+        "columns",
+        "period"
+      ],
+      "optional_args": [
+        "method",
+        "mode",
+        "fit_scope",
+        "artifact_id",
+        "random_state",
+        "output_columns",
+        "handle_missing_input_columns",
+        "on_error"
+      ],
+      "preconditions": [
+        "numeric_or_datetime_columns_exist"
+      ],
+      "validation_rules": {
+        "fit_scope": [
+          "train_only",
+          "full_data",
+          "none"
+        ],
+        "handle_missing_input_columns": [
+          "strict",
+          "skip",
+          "create_default"
+        ],
+        "method": [
+          "sin_cos"
+        ],
+        "mode": [
+          "fit",
+          "transform",
+          "fit_transform"
+        ],
+        "on_error": [
+          "raise",
+          "warn",
+          "skip"
+        ]
+      }
+    },
+    "DATE_PART_FEATURE": {
+      "aliases": [
+        "datetime_component",
+        "date_features"
+      ],
+      "scoring": {
+        "granularity": "per_column",
+        "unit_arg": "date_columns"
+      },
+      "required_args": [
+        "date_columns",
+        "parts"
+      ],
+      "optional_args": [
+        "drop_original",
+        "mode",
+        "fit_scope",
+        "artifact_id",
+        "random_state",
+        "output_columns",
+        "handle_missing_input_columns",
+        "on_error"
+      ],
+      "preconditions": [
+        "datetime_columns_exist"
+      ],
+      "validation_rules": {
+        "fit_scope": [
+          "train_only",
+          "full_data",
+          "none"
+        ],
+        "handle_missing_input_columns": [
+          "strict",
+          "skip",
+          "create_default"
+        ],
+        "mode": [
+          "fit",
+          "transform",
+          "fit_transform"
+        ],
+        "on_error": [
+          "raise",
+          "warn",
+          "skip"
+        ],
+        "parts": [
+          "year",
+          "month",
+          "day",
+          "dayofweek",
+          "week",
+          "hour",
+          "minute",
+          "quarter",
+          "is_month_start",
+          "is_month_end"
+        ]
+      }
+    },
+    "DIFF_FEATURE": {
+      "aliases": [
+        "delta_feature",
+        "pct_diff_feature"
+      ],
+      "scoring": {
+        "granularity": "per_column",
+        "unit_arg": "target_columns"
+      },
+      "required_args": [
+        "target_columns",
+        "periods",
+        "order_by_columns"
+      ],
+      "optional_args": [
+        "group_by_columns",
+        "mode",
+        "fit_scope",
+        "artifact_id",
+        "random_state",
+        "output_columns",
+        "handle_missing_input_columns",
+        "on_error"
+      ],
+      "preconditions": [
+        "ordered_data_available"
+      ],
+      "validation_rules": {
+        "fit_scope": [
+          "train_only",
+          "none"
+        ],
+        "handle_missing_input_columns": [
+          "strict",
+          "skip",
+          "create_default"
+        ],
+        "mode": [
+          "fit",
+          "transform",
+          "fit_transform"
+        ],
+        "on_error": [
+          "raise",
+          "warn",
+          "skip"
+        ]
+      }
+    },
+    "DROP_COLUMNS": {
+      "aliases": [
+        "remove_columns",
+        "feature_drop"
+      ],
+      "scoring": {
+        "granularity": "per_column",
+        "unit_arg": "columns"
+      },
+      "required_args": [
+        "columns"
+      ],
+      "optional_args": [
+        "reason",
+        "mode",
+        "fit_scope",
+        "artifact_id",
+        "random_state",
+        "output_columns",
+        "handle_missing_input_columns",
+        "on_error"
+      ],
+      "preconditions": [
+        "columns_exist"
+      ],
+      "validation_rules": {
+        "fit_scope": [
+          "train_only",
+          "full_data",
+          "none"
+        ],
+        "handle_missing_input_columns": [
+          "strict",
+          "skip",
+          "create_default"
+        ],
+        "mode": [
+          "fit",
+          "transform",
+          "fit_transform"
+        ],
+        "on_error": [
+          "raise",
+          "warn",
+          "skip"
+        ]
+      }
+    },
+    "DROP_CONSTANT_COLUMNS": {
+      "aliases": [
+        "drop_single_value_columns",
+        "remove_constant_features"
+      ],
+      "scoring": {
+        "granularity": "per_column",
+        "unit_arg": "columns"
+      },
+      "required_args": [
+        "columns"
+      ],
+      "optional_args": [
+        "min_unique_values",
+        "include_nan_as_value",
+        "mode",
+        "fit_scope",
+        "artifact_id",
+        "random_state",
+        "output_columns",
+        "handle_missing_input_columns",
+        "on_error"
+      ],
+      "preconditions": [
+        "columns_exist"
+      ],
+      "validation_rules": {
+        "fit_scope": [
+          "train_only",
+          "none"
+        ],
+        "handle_missing_input_columns": [
+          "strict",
+          "skip",
+          "create_default"
+        ],
+        "include_nan_as_value": [
+          true,
+          false
+        ],
+        "mode": [
+          "fit",
+          "transform",
+          "fit_transform"
+        ],
+        "on_error": [
+          "raise",
+          "warn",
+          "skip"
+        ]
+      }
+    },
+    "DROP_HIGH_NULL_COLUMNS": {
+      "aliases": [
+        "drop_sparse_columns",
+        "null_ratio_pruning"
+      ],
+      "scoring": {
+        "granularity": "per_column",
+        "unit_arg": "columns"
+      },
+      "required_args": [
+        "columns",
+        "null_ratio_threshold"
+      ],
+      "optional_args": [
+        "mode",
+        "fit_scope",
+        "artifact_id",
+        "random_state",
+        "output_columns",
+        "handle_missing_input_columns",
+        "on_error"
+      ],
+      "preconditions": [
+        "columns_exist"
+      ],
+      "validation_rules": {
+        "fit_scope": [
+          "train_only",
+          "none"
+        ],
+        "handle_missing_input_columns": [
+          "strict",
+          "skip",
+          "create_default"
+        ],
+        "mode": [
+          "fit",
+          "transform",
+          "fit_transform"
+        ],
+        "null_ratio_threshold_range": [
+          0.0,
+          1.0
+        ],
+        "on_error": [
+          "raise",
+          "warn",
+          "skip"
+        ]
+      }
+    },
+    "DROP_DUPLICATES": {
+      "aliases": [
+        "deduplicate_rows"
+      ],
+      "required_args": [
+        "subset_columns"
+      ],
+      "optional_args": [
+        "keep",
+        "mode",
+        "fit_scope",
+        "artifact_id",
+        "random_state",
+        "output_columns",
+        "handle_missing_input_columns",
+        "on_error"
+      ],
+      "preconditions": [
+        "columns_exist"
+      ],
+      "validation_rules": {
+        "fit_scope": [
+          "train_only",
+          "full_data",
+          "none"
+        ],
+        "handle_missing_input_columns": [
+          "strict",
+          "skip",
+          "create_default"
+        ],
+        "keep": [
+          "first",
+          "last",
+          "none"
+        ],
+        "mode": [
+          "fit",
+          "transform",
+          "fit_transform"
+        ],
+        "on_error": [
+          "raise",
+          "warn",
+          "skip"
+        ]
+      }
+    },
+    "DROP_ROWS_WITH_MISSING": {
+      "aliases": [
+        "dropna_rows",
+        "filter_missing_rows"
+      ],
+      "required_args": [
+        "subset_columns"
+      ],
+      "optional_args": [
+        "how",
+        "mode",
+        "fit_scope",
+        "artifact_id",
+        "random_state",
+        "output_columns",
+        "handle_missing_input_columns",
+        "on_error"
+      ],
+      "preconditions": [
+        "columns_exist"
+      ],
+      "validation_rules": {
+        "fit_scope": [
+          "none"
+        ],
+        "handle_missing_input_columns": [
+          "strict",
+          "skip",
+          "create_default"
+        ],
+        "how": [
+          "any",
+          "all"
+        ],
+        "mode": [
+          "transform",
+          "fit_transform"
+        ],
+        "on_error": [
+          "raise",
+          "warn",
+          "skip"
+        ]
+      }
+    },
+    "ENCODE_CATEGORICAL": {
+      "aliases": [
+        "categorical_encoding",
+        "encode_cat"
+      ],
+      "scoring": {
+        "granularity": "per_column",
+        "unit_arg": "columns"
+      },
+      "required_args": [
+        "method",
+        "columns"
+      ],
+      "optional_args": [
+        "handle_unknown",
+        "smoothing",
+        "min_samples_leaf",
+        "mode",
+        "fit_scope",
+        "artifact_id",
+        "random_state",
+        "output_columns",
+        "handle_missing_input_columns",
+        "on_error"
+      ],
+      "preconditions": [
+        "categorical_columns_exist"
+      ],
+      "validation_rules": {
+        "fit_scope": [
+          "train_only",
+          "none"
+        ],
+        "handle_missing_input_columns": [
+          "strict",
+          "skip",
+          "create_default"
+        ],
+        "method": [
+          "onehot",
+          "label",
+          "freq",
+          "count",
+          "hash"
+        ],
+        "mode": [
+          "fit",
+          "transform",
+          "fit_transform"
+        ],
+        "on_error": [
+          "raise",
+          "warn",
+          "skip"
+        ]
+      }
+    },
+    "EXPANDING_WINDOW_FEATURE": {
+      "aliases": [
+        "expanding_stats",
+        "cumulative_window_feature"
+      ],
+      "required_args": [
+        "target_columns",
+        "agg_functions",
+        "order_by_columns"
+      ],
+      "optional_args": [
+        "group_by_columns",
+        "min_periods",
+        "mode",
+        "fit_scope",
+        "artifact_id",
+        "random_state",
+        "output_columns",
+        "handle_missing_input_columns",
+        "on_error"
+      ],
+      "preconditions": [
+        "ordered_data_available"
+      ],
+      "validation_rules": {
+        "agg_functions": [
+          "mean",
+          "sum",
+          "min",
+          "max",
+          "std",
+          "median"
+        ],
+        "fit_scope": [
+          "train_only",
+          "none"
+        ],
+        "handle_missing_input_columns": [
+          "strict",
+          "skip",
+          "create_default"
+        ],
+        "mode": [
+          "fit",
+          "transform",
+          "fit_transform"
+        ],
+        "on_error": [
+          "raise",
+          "warn",
+          "skip"
+        ]
+      }
+    },
+    "FEATURE_SELECTION": {
+      "aliases": [
+        "select_features",
+        "filter_features"
+      ],
+      "required_args": [
+        "method",
+        "feature_columns"
+      ],
+      "optional_args": [
+        "k",
+        "threshold",
+        "estimator",
+        "scoring",
+        "mode",
+        "fit_scope",
+        "artifact_id",
+        "random_state",
+        "output_columns",
+        "handle_missing_input_columns",
+        "on_error"
+      ],
+      "preconditions": [
+        "feature_columns_exist"
+      ],
+      "validation_rules": {
+        "fit_scope": [
+          "train_only",
+          "none"
+        ],
+        "handle_missing_input_columns": [
+          "strict",
+          "skip",
+          "create_default"
+        ],
+        "method": [
+          "variance",
+          "mutual_info",
+          "model_importance",
+          "rfe",
+          "l1"
+        ],
+        "mode": [
+          "fit",
+          "transform",
+          "fit_transform"
+        ],
+        "on_error": [
+          "raise",
+          "warn",
+          "skip"
+        ]
+      }
+    },
+    "FILTER_ROWS": {
+      "aliases": [
+        "row_filter",
+        "where_clause"
+      ],
+      "required_args": [
+        "predicate"
+      ],
+      "optional_args": [
+        "engine",
+        "mode",
+        "fit_scope",
+        "artifact_id",
+        "random_state",
+        "output_columns",
+        "handle_missing_input_columns",
+        "on_error"
+      ],
+      "preconditions": [],
+      "validation_rules": {
+        "fit_scope": [
+          "train_only",
+          "full_data",
+          "none"
+        ],
+        "handle_missing_input_columns": [
+          "strict",
+          "skip",
+          "create_default"
+        ],
+        "mode": [
+          "fit",
+          "transform",
+          "fit_transform"
+        ],
+        "on_error": [
+          "raise",
+          "warn",
+          "skip"
+        ]
+      }
+    },
+    "GROUP_AGG": {
+      "aliases": [
+        "groupby_agg",
+        "aggregate_features",
+        "groupby_agg_join"
+      ],
+      "required_args": [
+        "group_by_columns",
+        "target_columns",
+        "agg_functions"
+      ],
+      "optional_args": [
+        "join_back",
+        "how",
+        "prefix",
+        "fill_value_for_missing_group",
+        "mode",
+        "fit_scope",
+        "artifact_id",
+        "random_state",
+        "output_columns",
+        "handle_missing_input_columns",
+        "on_error"
+      ],
+      "preconditions": [
+        "columns_exist"
+      ],
+      "validation_rules": {
+        "agg_functions": [
+          "mean",
+          "sum",
+          "min",
+          "max",
+          "std",
+          "median",
+          "count",
+          "nunique",
+          "last",
+          "first"
+        ],
+        "fit_scope": [
+          "train_only",
+          "none"
+        ],
+        "handle_missing_input_columns": [
+          "strict",
+          "skip",
+          "create_default"
+        ],
+        "how": [
+          "left",
+          "right",
+          "inner",
+          "outer"
+        ],
+        "join_back": [
+          true,
+          false
+        ],
+        "mode": [
+          "fit",
+          "transform",
+          "fit_transform"
+        ],
+        "on_error": [
+          "raise",
+          "warn",
+          "skip"
+        ]
+      }
+    },
+    "HASH_CROSS": {
+      "aliases": [
+        "hashing_trick_cross",
+        "feature_hash_cross"
+      ],
+      "required_args": [
+        "columns"
+      ],
+      "optional_args": [
+        "n_buckets",
+        "seed",
+        "mode",
+        "fit_scope",
+        "artifact_id",
+        "random_state",
+        "output_columns",
+        "handle_missing_input_columns",
+        "on_error"
+      ],
+      "preconditions": [
+        "categorical_columns_exist"
+      ],
+      "validation_rules": {
+        "fit_scope": [
+          "train_only",
+          "full_data",
+          "none"
+        ],
+        "handle_missing_input_columns": [
+          "strict",
+          "skip",
+          "create_default"
+        ],
+        "mode": [
+          "fit",
+          "transform",
+          "fit_transform"
+        ],
+        "on_error": [
+          "raise",
+          "warn",
+          "skip"
+        ]
+      }
+    },
+    "IMPUTE_MISSING": {
+      "aliases": [
+        "fill_missing",
+        "missing_value_imputation"
+      ],
+      "scoring": {
+        "granularity": "per_column",
+        "unit_arg": "columns"
+      },
+      "required_args": [
+        "strategy",
+        "columns"
+      ],
+      "optional_args": [
+        "fill_value",
+        "group_by_columns",
+        "mode",
+        "fit_scope",
+        "artifact_id",
+        "random_state",
+        "output_columns",
+        "handle_missing_input_columns",
+        "on_error"
+      ],
+      "preconditions": [
+        "columns_exist"
+      ],
+      "validation_rules": {
+        "fit_scope": [
+          "train_only",
+          "none"
+        ],
+        "handle_missing_input_columns": [
+          "strict",
+          "skip",
+          "create_default"
+        ],
+        "mode": [
+          "fit",
+          "transform",
+          "fit_transform"
+        ],
+        "on_error": [
+          "raise",
+          "warn",
+          "skip"
+        ],
+        "strategy": [
+          "mean",
+          "median",
+          "most_frequent",
+          "constant"
+        ]
+      }
+    },
+    "INTERACTION_FEATURE": {
+      "aliases": [
+        "cross_feature",
+        "pairwise_interaction"
+      ],
+      "required_args": [
+        "feature_columns",
+        "operator"
+      ],
+      "optional_args": [
+        "degree",
+        "include_bias",
+        "mode",
+        "fit_scope",
+        "artifact_id",
+        "random_state",
+        "output_columns",
+        "handle_missing_input_columns",
+        "on_error"
+      ],
+      "preconditions": [
+        "numeric_columns_exist"
+      ],
+      "validation_rules": {
+        "fit_scope": [
+          "train_only",
+          "full_data",
+          "none"
+        ],
+        "handle_missing_input_columns": [
+          "strict",
+          "skip",
+          "create_default"
+        ],
+        "mode": [
+          "fit",
+          "transform",
+          "fit_transform"
+        ],
+        "on_error": [
+          "raise",
+          "warn",
+          "skip"
+        ],
+        "operator": [
+          "add",
+          "subtract",
+          "multiply",
+          "divide"
+        ]
+      }
+    },
+    "JOIN_LOOKUP": {
+      "aliases": [
+        "merge_lookup",
+        "table_join"
+      ],
+      "required_args": [
+        "right_table_id",
+        "left_on",
+        "right_on",
+        "how"
+      ],
+      "optional_args": [
+        "select_columns",
+        "suffixes",
+        "mode",
+        "fit_scope",
+        "artifact_id",
+        "random_state",
+        "output_columns",
+        "handle_missing_input_columns",
+        "on_error"
+      ],
+      "preconditions": [
+        "join_keys_exist"
+      ],
+      "validation_rules": {
+        "fit_scope": [
+          "train_only",
+          "full_data",
+          "none"
+        ],
+        "handle_missing_input_columns": [
+          "strict",
+          "skip",
+          "create_default"
+        ],
+        "how": [
+          "left",
+          "right",
+          "inner",
+          "outer"
+        ],
+        "mode": [
+          "fit",
+          "transform",
+          "fit_transform"
+        ],
+        "on_error": [
+          "raise",
+          "warn",
+          "skip"
+        ]
+      }
+    },
+    "LAG_FEATURE": {
+      "aliases": [
+        "shift_feature",
+        "time_lag_feature"
+      ],
+      "scoring": {
+        "granularity": "per_column",
+        "unit_arg": "target_columns"
+      },
+      "required_args": [
+        "target_columns",
+        "lag_periods",
+        "order_by_columns"
+      ],
+      "optional_args": [
+        "group_by_columns",
+        "fill_value",
+        "mode",
+        "fit_scope",
+        "artifact_id",
+        "random_state",
+        "output_columns",
+        "handle_missing_input_columns",
+        "on_error"
+      ],
+      "preconditions": [
+        "ordered_data_available"
+      ],
+      "validation_rules": {
+        "fit_scope": [
+          "train_only",
+          "none"
+        ],
+        "handle_missing_input_columns": [
+          "strict",
+          "skip",
+          "create_default"
+        ],
+        "mode": [
+          "fit",
+          "transform",
+          "fit_transform"
+        ],
+        "on_error": [
+          "raise",
+          "warn",
+          "skip"
+        ]
+      }
+    },
+    "LOG_TRANSFORM": {
+      "aliases": [
+        "log1p_transform",
+        "log_scale"
+      ],
+      "scoring": {
+        "granularity": "per_column",
+        "unit_arg": "columns"
+      },
+      "required_args": [
+        "columns"
+      ],
+      "optional_args": [
+        "offset",
+        "base",
+        "handle_nonpositive",
+        "mode",
+        "fit_scope",
+        "artifact_id",
+        "random_state",
+        "output_columns",
+        "handle_missing_input_columns",
+        "on_error"
+      ],
+      "preconditions": [
+        "numeric_columns_exist"
+      ],
+      "validation_rules": {
+        "fit_scope": [
+          "train_only",
+          "full_data",
+          "none"
+        ],
+        "handle_missing_input_columns": [
+          "strict",
+          "skip",
+          "create_default"
+        ],
+        "handle_nonpositive": [
+          "error",
+          "shift",
+          "signed_log1p"
+        ],
+        "mode": [
+          "fit",
+          "transform",
+          "fit_transform"
+        ],
+        "on_error": [
+          "raise",
+          "warn",
+          "skip"
+        ]
+      }
+    },
+    "MAP_CATEGORIES": {
+      "aliases": [
+        "category_mapping",
+        "synonym_mapping"
+      ],
+      "scoring": {
+        "granularity": "per_column",
+        "unit_arg": "columns"
+      },
+      "required_args": [
+        "columns",
+        "mapping"
+      ],
+      "optional_args": [
+        "default_value",
+        "mode",
+        "fit_scope",
+        "artifact_id",
+        "random_state",
+        "output_columns",
+        "handle_missing_input_columns",
+        "on_error"
+      ],
+      "preconditions": [
+        "categorical_columns_exist"
+      ],
+      "validation_rules": {
+        "fit_scope": [
+          "train_only",
+          "full_data",
+          "none"
+        ],
+        "handle_missing_input_columns": [
+          "strict",
+          "skip",
+          "create_default"
+        ],
+        "mode": [
+          "fit",
+          "transform",
+          "fit_transform"
+        ],
+        "on_error": [
+          "raise",
+          "warn",
+          "skip"
+        ]
+      }
+    },
+    "NORMALIZE_STRING": {
+      "aliases": [
+        "string_cleaning",
+        "text_normalize"
+      ],
+      "scoring": {
+        "granularity": "per_column",
+        "unit_arg": "columns"
+      },
+      "required_args": [
+        "columns"
+      ],
+      "optional_args": [
+        "case",
+        "strip",
+        "unicode_normalize",
+        "regex_rules",
+        "empty_to_null",
+        "mode",
+        "fit_scope",
+        "artifact_id",
+        "random_state",
+        "output_columns",
+        "handle_missing_input_columns",
+        "on_error"
+      ],
+      "preconditions": [
+        "string_columns_exist"
+      ],
+      "validation_rules": {
+        "case": [
+          "lower",
+          "upper",
+          "none"
+        ],
+        "fit_scope": [
+          "train_only",
+          "full_data",
+          "none"
+        ],
+        "handle_missing_input_columns": [
+          "strict",
+          "skip",
+          "create_default"
+        ],
+        "mode": [
+          "fit",
+          "transform",
+          "fit_transform"
+        ],
+        "on_error": [
+          "raise",
+          "warn",
+          "skip"
+        ]
+      }
+    },
+    "ORDINAL_ENCODE": {
+      "aliases": [
+        "ordered_category_encode"
+      ],
+      "scoring": {
+        "granularity": "per_column",
+        "unit_arg": "columns"
+      },
+      "required_args": [
+        "columns",
+        "order"
+      ],
+      "optional_args": [
+        "unknown_value",
+        "mode",
+        "fit_scope",
+        "artifact_id",
+        "random_state",
+        "output_columns",
+        "handle_missing_input_columns",
+        "on_error"
+      ],
+      "preconditions": [
+        "categorical_columns_exist"
+      ],
+      "validation_rules": {
+        "fit_scope": [
+          "train_only",
+          "none"
+        ],
+        "handle_missing_input_columns": [
+          "strict",
+          "skip",
+          "create_default"
+        ],
+        "mode": [
+          "fit",
+          "transform",
+          "fit_transform"
+        ],
+        "on_error": [
+          "raise",
+          "warn",
+          "skip"
+        ]
+      }
+    },
+    "PARSE_DATETIME": {
+      "aliases": [
+        "to_datetime",
+        "datetime_parse"
+      ],
+      "scoring": {
+        "granularity": "per_column",
+        "unit_arg": "columns"
+      },
+      "required_args": [
+        "columns"
+      ],
+      "optional_args": [
+        "format",
+        "utc",
+        "timezone",
+        "errors",
+        "mode",
+        "fit_scope",
+        "artifact_id",
+        "random_state",
+        "output_columns",
+        "handle_missing_input_columns",
+        "on_error"
+      ],
+      "preconditions": [
+        "columns_exist"
+      ],
+      "validation_rules": {
+        "errors": [
+          "raise",
+          "coerce",
+          "ignore"
+        ],
+        "fit_scope": [
+          "train_only",
+          "full_data",
+          "none"
+        ],
+        "handle_missing_input_columns": [
+          "strict",
+          "skip",
+          "create_default"
+        ],
+        "mode": [
+          "fit",
+          "transform",
+          "fit_transform"
+        ],
+        "on_error": [
+          "raise",
+          "warn",
+          "skip"
+        ]
+      }
+    },
+    "PCA_REDUCTION": {
+      "aliases": [
+        "dimensionality_reduction",
+        "svd_reduction"
+      ],
+      "required_args": [
+        "feature_columns",
+        "n_components"
+      ],
+      "optional_args": [
+        "method",
+        "whiten",
+        "mode",
+        "fit_scope",
+        "artifact_id",
+        "random_state",
+        "output_columns",
+        "handle_missing_input_columns",
+        "on_error"
+      ],
+      "preconditions": [
+        "numeric_columns_exist"
+      ],
+      "validation_rules": {
+        "fit_scope": [
+          "train_only",
+          "none"
+        ],
+        "handle_missing_input_columns": [
+          "strict",
+          "skip",
+          "create_default"
+        ],
+        "method": [
+          "pca",
+          "svd",
+          "ica"
+        ],
+        "mode": [
+          "fit",
+          "transform",
+          "fit_transform"
+        ],
+        "on_error": [
+          "raise",
+          "warn",
+          "skip"
+        ]
+      }
+    },
+    "POLYNOMIAL_FEATURE": {
+      "aliases": [
+        "poly_features",
+        "polynomial_expansion"
+      ],
+      "required_args": [
+        "feature_columns"
+      ],
+      "optional_args": [
+        "degree",
+        "include_bias",
+        "interaction_only",
+        "mode",
+        "fit_scope",
+        "artifact_id",
+        "random_state",
+        "output_columns",
+        "handle_missing_input_columns",
+        "on_error"
+      ],
+      "preconditions": [
+        "numeric_columns_exist"
+      ],
+      "validation_rules": {
+        "fit_scope": [
+          "train_only",
+          "none"
+        ],
+        "handle_missing_input_columns": [
+          "strict",
+          "skip",
+          "create_default"
+        ],
+        "mode": [
+          "fit",
+          "transform",
+          "fit_transform"
+        ],
+        "on_error": [
+          "raise",
+          "warn",
+          "skip"
+        ]
+      }
+    },
+    "POWER_TRANSFORM": {
+      "aliases": [
+        "boxcox_yeojohnson",
+        "power_scaling"
+      ],
+      "scoring": {
+        "granularity": "per_column",
+        "unit_arg": "columns"
+      },
+      "required_args": [
+        "columns",
+        "method"
+      ],
+      "optional_args": [
+        "standardize",
+        "mode",
+        "fit_scope",
+        "artifact_id",
+        "random_state",
+        "output_columns",
+        "handle_missing_input_columns",
+        "on_error"
+      ],
+      "preconditions": [
+        "numeric_columns_exist"
+      ],
+      "validation_rules": {
+        "fit_scope": [
+          "train_only",
+          "none"
+        ],
+        "handle_missing_input_columns": [
+          "strict",
+          "skip",
+          "create_default"
+        ],
+        "method": [
+          "boxcox",
+          "yeojohnson"
+        ],
+        "mode": [
+          "fit",
+          "transform",
+          "fit_transform"
+        ],
+        "on_error": [
+          "raise",
+          "warn",
+          "skip"
+        ]
+      }
+    },
+    "RARE_CATEGORY_BUCKETIZE": {
+      "aliases": [
+        "rare_labeling",
+        "category_bucketize"
+      ],
+      "scoring": {
+        "granularity": "per_column",
+        "unit_arg": "columns"
+      },
+      "required_args": [
+        "columns"
+      ],
+      "optional_args": [
+        "min_count",
+        "min_freq",
+        "other_label",
+        "mode",
+        "fit_scope",
+        "artifact_id",
+        "random_state",
+        "output_columns",
+        "handle_missing_input_columns",
+        "on_error"
+      ],
+      "preconditions": [
+        "categorical_columns_exist"
+      ],
+      "validation_rules": {
+        "fit_scope": [
+          "train_only",
+          "none"
+        ],
+        "handle_missing_input_columns": [
+          "strict",
+          "skip",
+          "create_default"
+        ],
+        "mode": [
+          "fit",
+          "transform",
+          "fit_transform"
+        ],
+        "on_error": [
+          "raise",
+          "warn",
+          "skip"
+        ]
+      }
+    },
+    "REPLACE_INF": {
+      "aliases": [
+        "sanitize_inf",
+        "inf_to_nan"
+      ],
+      "scoring": {
+        "granularity": "per_column",
+        "unit_arg": "columns"
+      },
+      "required_args": [
+        "columns"
+      ],
+      "optional_args": [
+        "strategy",
+        "replace_value",
+        "clip_min",
+        "clip_max",
+        "mode",
+        "fit_scope",
+        "artifact_id",
+        "random_state",
+        "output_columns",
+        "handle_missing_input_columns",
+        "on_error"
+      ],
+      "preconditions": [
+        "numeric_columns_exist"
+      ],
+      "validation_rules": {
+        "fit_scope": [
+          "none"
+        ],
+        "handle_missing_input_columns": [
+          "strict",
+          "skip",
+          "create_default"
+        ],
+        "mode": [
+          "transform",
+          "fit_transform"
+        ],
+        "on_error": [
+          "raise",
+          "warn",
+          "skip"
+        ],
+        "strategy": [
+          "nan",
+          "constant",
+          "clip"
+        ]
+      }
+    },
+    "RATIO_FEATURE": {
+      "aliases": [
+        "division_feature",
+        "relative_feature"
+      ],
+      "required_args": [
+        "left_columns",
+        "right_columns"
+      ],
+      "optional_args": [
+        "epsilon",
+        "new_feature_name",
+        "mode",
+        "fit_scope",
+        "artifact_id",
+        "random_state",
+        "output_columns",
+        "handle_missing_input_columns",
+        "on_error"
+      ],
+      "preconditions": [
+        "numeric_columns_exist"
+      ],
+      "validation_rules": {
+        "fit_scope": [
+          "train_only",
+          "full_data",
+          "none"
+        ],
+        "handle_missing_input_columns": [
+          "strict",
+          "skip",
+          "create_default"
+        ],
+        "mode": [
+          "fit",
+          "transform",
+          "fit_transform"
+        ],
+        "on_error": [
+          "raise",
+          "warn",
+          "skip"
+        ]
+      }
+    },
+    "ROLLING_WINDOW_FEATURE": {
+      "aliases": [
+        "rolling_stats",
+        "window_features"
+      ],
+      "scoring": {
+        "granularity": "per_column",
+        "unit_arg": "target_columns"
+      },
+      "required_args": [
+        "target_columns",
+        "window_sizes",
+        "agg_functions",
+        "order_by_columns"
+      ],
+      "optional_args": [
+        "group_by_columns",
+        "min_periods",
+        "mode",
+        "fit_scope",
+        "artifact_id",
+        "random_state",
+        "output_columns",
+        "handle_missing_input_columns",
+        "on_error"
+      ],
+      "preconditions": [
+        "ordered_data_available"
+      ],
+      "validation_rules": {
+        "agg_functions": [
+          "mean",
+          "sum",
+          "min",
+          "max",
+          "std",
+          "median"
+        ],
+        "fit_scope": [
+          "train_only",
+          "none"
+        ],
+        "handle_missing_input_columns": [
+          "strict",
+          "skip",
+          "create_default"
+        ],
+        "mode": [
+          "fit",
+          "transform",
+          "fit_transform"
+        ],
+        "on_error": [
+          "raise",
+          "warn",
+          "skip"
+        ]
+      }
+    },
+    "SAMPLE_ROWS": {
+      "aliases": [
+        "subsample_rows"
+      ],
+      "required_args": [
+        "method"
+      ],
+      "optional_args": [
+        "frac",
+        "n",
+        "stratify_columns",
+        "replace",
+        "mode",
+        "fit_scope",
+        "artifact_id",
+        "random_state",
+        "output_columns",
+        "handle_missing_input_columns",
+        "on_error"
+      ],
+      "preconditions": [],
+      "validation_rules": {
+        "fit_scope": [
+          "train_only",
+          "full_data",
+          "none"
+        ],
+        "handle_missing_input_columns": [
+          "strict",
+          "skip",
+          "create_default"
+        ],
+        "method": [
+          "random",
+          "stratified",
+          "top"
+        ],
+        "mode": [
+          "fit",
+          "transform",
+          "fit_transform"
+        ],
+        "on_error": [
+          "raise",
+          "warn",
+          "skip"
+        ]
+      }
+    },
+    "SCALE_NUMERIC": {
+      "aliases": [
+        "scaling",
+        "normalize_numeric"
+      ],
+      "scoring": {
+        "granularity": "per_column",
+        "unit_arg": "columns"
+      },
+      "required_args": [
+        "method",
+        "columns"
+      ],
+      "optional_args": [
+        "with_mean",
+        "with_std",
+        "mode",
+        "fit_scope",
+        "artifact_id",
+        "random_state",
+        "output_columns",
+        "handle_missing_input_columns",
+        "on_error"
+      ],
+      "preconditions": [
+        "numeric_columns_exist"
+      ],
+      "validation_rules": {
+        "fit_scope": [
+          "train_only",
+          "none"
+        ],
+        "handle_missing_input_columns": [
+          "strict",
+          "skip",
+          "create_default"
+        ],
+        "method": [
+          "standard",
+          "minmax",
+          "robust",
+          "maxabs"
+        ],
+        "mode": [
+          "fit",
+          "transform",
+          "fit_transform"
+        ],
+        "on_error": [
+          "raise",
+          "warn",
+          "skip"
+        ]
+      }
+    },
+    "TARGET_ENCODE_OOF": {
+      "aliases": [
+        "oof_target_encode",
+        "leakage_safe_target_encode"
+      ],
+      "scoring": {
+        "granularity": "per_column",
+        "unit_arg": "columns"
+      },
+      "required_args": [
+        "columns",
+        "target_column",
+        "cv_strategy"
+      ],
+      "optional_args": [
+        "n_splits",
+        "shuffle",
+        "random_state",
+        "smoothing",
+        "mode",
+        "fit_scope",
+        "artifact_id",
+        "output_columns",
+        "handle_missing_input_columns",
+        "on_error"
+      ],
+      "preconditions": [
+        "target_column_exists"
+      ],
+      "validation_rules": {
+        "cv_strategy": [
+          "kfold",
+          "stratifiedkfold",
+          "timeseriessplit"
+        ],
+        "fit_scope": [
+          "train_only",
+          "none"
+        ],
+        "handle_missing_input_columns": [
+          "strict",
+          "skip",
+          "create_default"
+        ],
+        "mode": [
+          "fit",
+          "transform",
+          "fit_transform"
+        ],
+        "on_error": [
+          "raise",
+          "warn",
+          "skip"
+        ]
+      }
+    },
+    "TEXT_VECTORIZATION": {
+      "aliases": [
+        "tfidf",
+        "bag_of_words",
+        "text_featurize"
+      ],
+      "scoring": {
+        "granularity": "per_column",
+        "unit_arg": "text_columns"
+      },
+      "required_args": [
+        "method",
+        "text_columns"
+      ],
+      "optional_args": [
+        "ngram_range",
+        "max_features",
+        "min_df",
+        "max_df",
+        "stop_words",
+        "lowercase",
+        "token_pattern",
+        "mode",
+        "fit_scope",
+        "artifact_id",
+        "random_state",
+        "output_columns",
+        "handle_missing_input_columns",
+        "on_error"
+      ],
+      "preconditions": [
+        "text_columns_exist"
+      ],
+      "validation_rules": {
+        "fit_scope": [
+          "train_only",
+          "none"
+        ],
+        "handle_missing_input_columns": [
+          "strict",
+          "skip",
+          "create_default"
+        ],
+        "method": [
+          "tfidf",
+          "bow",
+          "hashing"
+        ],
+        "mode": [
+          "fit",
+          "transform",
+          "fit_transform"
+        ],
+        "on_error": [
+          "raise",
+          "warn",
+          "skip"
+        ]
+      }
+    },
+    "TIME_SINCE_REFERENCE": {
+      "aliases": [
+        "elapsed_time_feature",
+        "age_feature"
+      ],
+      "scoring": {
+        "granularity": "per_column",
+        "unit_arg": "columns"
+      },
+      "required_args": [
+        "columns"
+      ],
+      "optional_args": [
+        "reference",
+        "unit",
+        "mode",
+        "fit_scope",
+        "artifact_id",
+        "random_state",
+        "output_columns",
+        "handle_missing_input_columns",
+        "on_error"
+      ],
+      "preconditions": [
+        "datetime_columns_exist"
+      ],
+      "validation_rules": {
+        "fit_scope": [
+          "train_only",
+          "full_data",
+          "none"
+        ],
+        "handle_missing_input_columns": [
+          "strict",
+          "skip",
+          "create_default"
+        ],
+        "mode": [
+          "fit",
+          "transform",
+          "fit_transform"
+        ],
+        "on_error": [
+          "raise",
+          "warn",
+          "skip"
+        ],
+        "unit": [
+          "seconds",
+          "minutes",
+          "hours",
+          "days",
+          "weeks"
+        ]
+      }
+    }
+  },
+  "action_semantics": {
+    "fittable_transformer": [
+      "BIN_NUMERIC",
+      "CLIP_OUTLIERS",
+      "DROP_CONSTANT_COLUMNS",
+      "DROP_HIGH_NULL_COLUMNS",
+      "ENCODE_CATEGORICAL",
+      "FEATURE_SELECTION",
+      "GROUP_AGG",
+      "IMPUTE_MISSING",
+      "ORDINAL_ENCODE",
+      "PCA_REDUCTION",
+      "POLYNOMIAL_FEATURE",
+      "POWER_TRANSFORM",
+      "RARE_CATEGORY_BUCKETIZE",
+      "SCALE_NUMERIC",
+      "TARGET_ENCODE_OOF",
+      "TEXT_VECTORIZATION"
+    ],
+    "pure_transform": [
+      "APPLY_EXPRESSION",
+      "CAST_DTYPE",
+      "CREATE_MISSING_INDICATOR",
+      "CYCLICAL_ENCODE",
+      "DATE_PART_FEATURE",
+      "DIFF_FEATURE",
+      "DROP_COLUMNS",
+      "DROP_DUPLICATES",
+      "DROP_ROWS_WITH_MISSING",
+      "EXPANDING_WINDOW_FEATURE",
+      "FILTER_ROWS",
+      "HASH_CROSS",
+      "INTERACTION_FEATURE",
+      "JOIN_LOOKUP",
+      "LAG_FEATURE",
+      "LOG_TRANSFORM",
+      "MAP_CATEGORIES",
+      "NORMALIZE_STRING",
+      "PARSE_DATETIME",
+      "REPLACE_INF",
+      "RATIO_FEATURE",
+      "ROLLING_WINDOW_FEATURE",
+      "SAMPLE_ROWS",
+      "TIME_SINCE_REFERENCE"
+    ]
+  },
+  "deprecated_action_aliases": {
+    "COUNT_ENCODING": {
+      "canonical_action": "ENCODE_CATEGORICAL",
+      "fixed_args": {
+        "method": "count"
+      },
+      "deprecation_note": "Use ENCODE_CATEGORICAL with method='count'."
+    },
+    "FREQ_ENCODING": {
+      "canonical_action": "ENCODE_CATEGORICAL",
+      "fixed_args": {
+        "method": "freq"
+      },
+      "deprecation_note": "Use ENCODE_CATEGORICAL with method='freq'."
+    },
+    "GROUP_AGG_FEATURE": {
+      "canonical_action": "GROUP_AGG",
+      "fixed_args": {
+        "join_back": true
+      },
+      "deprecation_note": "Use GROUP_AGG."
+    },
+    "GROUP_AGG_JOIN": {
+      "canonical_action": "GROUP_AGG",
+      "fixed_args": {
+        "join_back": true
+      },
+      "deprecation_note": "Use GROUP_AGG."
+    }
+  }
+}

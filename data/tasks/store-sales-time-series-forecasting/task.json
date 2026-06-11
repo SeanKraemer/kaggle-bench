@@ -1,0 +1,169 @@
+{
+  "competition_slug": "store-sales-time-series-forecasting",
+  "dataset": {
+    "provider": "kaggle",
+    "competition": "store-sales-time-series-forecasting",
+    "train_files": [
+      "train.csv"
+    ],
+    "test_files": [
+      "test.csv"
+    ],
+    "lookup_files": [
+      "stores.csv",
+      "oil.csv",
+      "holidays_events.csv",
+      "transactions.csv"
+    ],
+    "sample_submission_files": [
+      "sample_submission.csv"
+    ],
+    "target_column": "sales"
+  },
+  "goal": "Suggest preprocessing and feature-engineering actions for forecasting daily store-family sales in Ecuador under the Kaggle RMSLE metric.",
+  "task_characteristics": {
+    "ml_domain": "retail_forecasting",
+    "problem_type": "forecasting",
+    "table_structure": "multi_table_lookup",
+    "dataset_size_bucket": "xlarge",
+    "dataset_size_raw": 3000888,
+    "feature_dimensionality_bucket": "low",
+    "feature_dimensionality_raw": 17,
+    "preprocessing_complexity_bucket": "medium",
+    "preprocessing_complexity_raw": 16,
+    "analysis_notes": "Store Sales is an xlarge multi-table retail forecasting task. The training table has approximately 3,000,888 store-family-day rows, placing it firmly in the xlarge bucket (>2 M rows). Four lookup tables (stores, oil, holidays_events, transactions) contribute additional columns; the benchmark-relevant case-insensitive column union across all files is 17 columns, so the task is low-dimensionality. The action bank contains 16 good (role=good) candidate actions covering the canonical pipeline from date parsing and lookup joins through holiday filtering, oil price interpolation, calendar decomposition, grouped lag and rolling-window features, and family encoding; all 16 are core_preprocessing stage, giving preprocessing_complexity_raw=16 and a medium complexity bucket (9-20 range)."
+  },
+  "overview": {
+    "title": "Store Sales - Time Series Forecasting",
+    "summary": "Forecast unit sales for Corporacion Favorita grocery stores in Ecuador using store, oil price, holiday, and transaction data.",
+    "raw_text": "Store Sales - Time Series Forecasting is a Kaggle Playground Series competition about predicting daily sales for 54 Corporacion Favorita grocery stores across 33 product families in Ecuador. Participants forecast the `sales` value for each store-family-date row in the test horizon using train sales history and four lookup tables covering store metadata, crude oil prices, Ecuador holidays, and daily transaction counts. Submissions are evaluated with root mean squared log error (RMSLE).",
+    "host": "Kaggle",
+    "category": "Playground",
+    "reward": "Knowledge",
+    "team_count": 4831,
+    "enabled_date": "2021-11-23T00:00:00.000Z",
+    "new_entrant_deadline": null,
+    "deadline": "2023-07-01T23:59:00.000Z",
+    "url": "https://www.kaggle.com/competitions/store-sales-time-series-forecasting"
+  },
+  "dataset_description": {
+    "summary": "The competition data contains one 3,000,888-row train.csv store-family-day table, a 28,512-row test.csv future horizon, and four lookup tables: 54-row stores.csv (store metadata), 1,218-row oil.csv (daily Ecuador crude oil price), 350-row holidays_events.csv (Ecuador national and regional holidays), and 83,488-row transactions.csv (daily store transaction counts). The benchmark-relevant case-insensitive column union is 17 columns.",
+    "raw_text": "Store Sales - Time Series Forecasting is a multi-table retail forecasting task centered on Corporacion Favorita grocery stores in Ecuador. The main grain is store_nbr x family x date. train.csv covers 2013-01-01 through 2017-08-15 with columns id, date, store_nbr, family, sales, onpromotion. test.csv continues the same grain from 2017-08-16 through 2017-08-31, omitting sales. stores.csv provides per-store metadata (city, state, type, cluster). oil.csv provides daily dcoilwtico crude oil prices with weekends and holidays missing. holidays_events.csv lists Ecuador national, regional, and local holidays with a transferred flag indicating whether the official observance was moved to a weekday. transactions.csv provides daily total transactions per store. The canonical preprocessing path joins all lookup tables, interpolates the sparse oil series, decomposes the date, filters spurious holiday rows, adds grouped sales lag and rolling features, and encodes the family categorical.",
+    "file_summary": {
+      "total_file_count": 6,
+      "file_types": [
+        {
+          "extension": ".csv",
+          "file_count": 6,
+          "total_size_bytes": 176000000
+        }
+      ]
+    },
+    "column_summary": {
+      "total_column_count": 17,
+      "column_types": [
+        {
+          "column_type": "Integer",
+          "column_count": 3
+        },
+        {
+          "column_type": "Numeric",
+          "column_count": 3
+        },
+        {
+          "column_type": "Categorical",
+          "column_count": 8
+        },
+        {
+          "column_type": "DateTime",
+          "column_count": 1
+        },
+        {
+          "column_type": "Boolean",
+          "column_count": 1
+        },
+        {
+          "column_type": "Id",
+          "column_count": 1
+        }
+      ]
+    },
+    "feature_list": {
+      "source_file": "train.csv, stores.csv, oil.csv, holidays_events.csv, transactions.csv",
+      "source_sheet": "competition data tab",
+      "features": [
+        {
+          "name": "id",
+          "description": "Row identifier for train/test tables"
+        },
+        {
+          "name": "date",
+          "description": "Date of the sales record (YYYY-MM-DD string)"
+        },
+        {
+          "name": "store_nbr",
+          "description": "Store number (1-54)"
+        },
+        {
+          "name": "family",
+          "description": "Product family (33 categories, e.g. PRODUCE, DAIRY, BREAD/BAKERY)"
+        },
+        {
+          "name": "sales",
+          "description": "Total sales for the product family at the store on the given date (target)"
+        },
+        {
+          "name": "onpromotion",
+          "description": "Number of items in the product family that were on promotion"
+        },
+        {
+          "name": "city",
+          "description": "City where the store is located (from stores.csv)"
+        },
+        {
+          "name": "state",
+          "description": "State/province where the store is located (from stores.csv)"
+        },
+        {
+          "name": "type",
+          "description": "Store type label A-E (from stores.csv)"
+        },
+        {
+          "name": "cluster",
+          "description": "Grouping of similar stores 1-17 (from stores.csv)"
+        },
+        {
+          "name": "dcoilwtico",
+          "description": "Daily WTI crude oil price in USD (from oil.csv); gaps on weekends and holidays"
+        },
+        {
+          "name": "holiday_type",
+          "description": "Holiday event type: Holiday, Transfer, Additional, Bridge, Work Day, Event (from holidays_events.csv)"
+        },
+        {
+          "name": "locale",
+          "description": "Scope of the holiday: National, Regional, Local (from holidays_events.csv)"
+        },
+        {
+          "name": "locale_name",
+          "description": "Name of the locale (country/region/city) for the holiday (from holidays_events.csv)"
+        },
+        {
+          "name": "description",
+          "description": "Human-readable name of the holiday or event (from holidays_events.csv)"
+        },
+        {
+          "name": "transferred",
+          "description": "Whether the holiday was transferred to a different date by the government (from holidays_events.csv)"
+        },
+        {
+          "name": "transactions",
+          "description": "Number of transactions at the store on the given date (from transactions.csv)"
+        }
+      ]
+    }
+  },
+  "metric": {
+    "name": "RMSLE"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "competition_slug": "spaceship-titanic",
+  "dataset": {
+    "provider": "kaggle",
+    "competition": "spaceship-titanic",
+    "train_files": [
+      "train.csv"
+    ],
+    "test_files": [
+      "test.csv"
+    ],
+    "lookup_files": [],
+    "sample_submission_files": [
+      "sample_submission.csv"
+    ],
+    "data_dictionary_files": [],
+    "target_column": "Transported",
+    "primary_key": "PassengerId"
+  },
+  "goal": "Suggest preprocessing and feature-engineering actions for predicting whether a passenger is transported to another dimension from passenger profile, cabin, and amenity-spending data under the competition accuracy metric.",
+  "task_characteristics": {
+    "ml_domain": "transportation_tabular",
+    "problem_type": "binary_classification",
+    "table_structure": "single_table",
+    "dataset_size_bucket": "small",
+    "dataset_size_raw": 8693,
+    "feature_dimensionality_bucket": "low",
+    "feature_dimensionality_raw": 14,
+    "preprocessing_complexity_bucket": "medium",
+    "preprocessing_complexity_raw": 17,
+    "analysis_notes": "Small single-table passenger classification task with 8,693 training rows, 4,277 test rows, and a 14-column case-insensitive column union across the benchmark-relevant CSVs. The curated preprocessing burden is moderate: the benchmark expects structured extraction from Cabin and PassengerId, expenditure aggregation and derived no-spending behavior, missing-value handling for both spending and demographic fields, categorical encoding, and a final raw-column cleanup step. Numeric scaling remains in the golden library for provenance but is treated as model-specific rather than part of the primary preprocessing score."
+  },
+  "metric": {
+    "name": "Accuracy"
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "competition_slug": "spaceship-titanic",
+  "testcase_id": "tc1_from_scratch",
+  "agent_name": "human",
+  "run_by": "annotator_c",
+  "run_id": "human_tc1_annotator_c_v1",
+  "artifact_refs": [
+    {
+      "kind": "notebook",
+      "path": "work.ipynb",
+      "description": "Executed notebook used as evidence for the TC1 bank-id human baseline."
+    },
+    {
+      "kind": "metadata",
+      "path": "provenance/metadata.json",
+      "description": "Run-level provenance metadata for the bank-id human baseline."
+    },
+    {
+      "kind": "trace",
+      "path": "provenance/action_trace.json",
+      "description": "Maps each selected bank action back to the notebook section that supports it."
+    },
+    {
+      "kind": "notes",
+      "path": "notes.md",
+      "description": "Author notes for the bank-id human baseline."
+    }
+  ],
+  "predicted_add_action_ids": [
+    "CA-000021",
+    "CA-000019",
+    "CA-000006",
+    "CA-000007",
+    "CA-000033",
+    "CA-000003",
+    "CA-000020",
+    "CA-000013",
+    "CA-000037",
+    "CA-000043",
+    "CA-000010"
+  ],
+  "predicted_remove_action_ids": [],
+  "time_spent_seconds": 2700,
+  "token_usage": {
+    "input_tokens": null,
+    "output_tokens": null,
+    "total_tokens": null
+  },
+  "notes": "Re-authored TC1 human baseline against the current Spaceship action bank using the executed notebook as evidence. Selected only bank actions with clear notebook support and a defensible mapping to the canonical benchmark contract."
+}

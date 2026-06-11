@@ -1,0 +1,18 @@
+{
+  "competition_slug": "lish-moa",
+  "testcase_id": "tc1_from_scratch",
+  "artifact_type": "eval_human_baseline_provenance",
+  "author": "annotator_a",
+  "created_at": "2026-04-24T15:36:00-05:00",
+  "source_mode": "manual_bank_id_selection_from_masked_candidate_menu",
+  "related_output": "../tc1_human.json",
+  "source_candidate_bank": "../../candidate_actions.json",
+  "source_testcase": "../../testcases/tc1_from_scratch.json",
+  "time_spent_minutes": 60,
+  "consulted_candidate_bank": true,
+  "consulted_expected_answers": false,
+  "consulted_action_roles": false,
+  "consulted_eval_stage": false,
+  "consulted_equivalence_groups": false,
+  "notes": "The human baseline was authored by selecting candidate action IDs from a masked menu grouped by action type. The menu included action IDs, parameter summaries, and pros/cons, but hid scoring labels and expected-answer metadata. Time was not instrumented; the recorded duration is a coarse estimate."
+}

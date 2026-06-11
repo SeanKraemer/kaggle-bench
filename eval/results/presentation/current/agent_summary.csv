@@ -1,0 +1,7 @@
+agent_name,group_count,task_success_rate,mean_add_f1,mean_remove_recall,mean_task_completion_score,mean_total_tokens,mean_tool_call_count,mean_cost_usd
+claude_code,80,0.925,0.613767,0.898625,0.756196,5718.915,11.7775,0.309853
+generic_agent,80,0.95,0.641714,0.889292,0.765503,15855.165,5.2625,0.143448
+human,20,1.0,0.771756,1.0,0.885878,,,
+proposed_agent,80,0.9125,0.675845,0.821542,0.748693,20388.9775,5.005,0.19624
+rule_based,80,0.5625,0.222645,0.633333,0.427989,,0.0,0.0
+single_llm,80,0.9625,0.675742,0.87775,0.776746,2034.0375,0.0,0.057095

@@ -1,0 +1,23 @@
+name: Validate Eval Artifacts Schema
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  validate-eval-artifacts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Sync dependencies
+        run: uv sync --dev
+
+      - name: Validate task/testcase/output artifacts
+        run: uv run python eval/scripts/validate_artifacts.py

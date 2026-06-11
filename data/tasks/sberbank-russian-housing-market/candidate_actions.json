@@ -1,0 +1,3008 @@
+{
+  "competition_slug": "sberbank-russian-housing-market",
+  "generated_at": "2026-03-31T00:00:00-05:00",
+  "actions": [
+    {
+      "action_id": "CA-000001",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "build_year = NaN when build_year < 1500",
+        "output_columns": [
+          "build_year"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Clearly impossible build-year values are normalized to missing before downstream feature engineering.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "aharless/latest-iteration-in-this-silly-game"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Train/test cleaning rule for implausible construction years.",
+      "evidence_snippets": [
+        "bad_index = train[train.build_year < 1500].index",
+        "train.ix[bad_index, 'build_year'] = np.NaN"
+      ],
+      "rareness": "rare",
+      "confidence": 0.9
+    },
+    {
+      "action_id": "CA-000002",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "building_age = build_year - year(timestamp)",
+        "output_columns": [
+          "building_age"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Subtracting sale year from build year flips the sign of age and makes newer buildings look larger on the wrong axis.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic wrong-direction age-expression branch around timestamp and build_year.",
+      "derived_from_action_ids": [
+        "CA-000001",
+        "CA-000025",
+        "CA-000105"
+      ]
+    },
+    {
+      "action_id": "CA-000003",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "floor_share = floor / (1 + max_floor)",
+        "output_columns": [
+          "floor_share"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "This floor-share variant is close to rel_floor, but it adds a nonstandard denominator tweak without notebook evidence that it is preferred.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic nearby expression variant around the rel_floor family.",
+      "derived_from_action_ids": [
+        "CA-000110"
+      ]
+    },
+    {
+      "action_id": "CA-000004",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "is_top_floor = (floor == max_floor).astype(int)",
+        "output_columns": [
+          "is_top_floor"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "A top-floor indicator is mechanically fine, but it is a narrow binary carve-out compared with the richer continuous floor representations already in the bank.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic narrow floor-indicator branch.",
+      "derived_from_action_ids": [
+        "CA-000110"
+      ]
+    },
+    {
+      "action_id": "CA-000005",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "month_quarter_key = year(timestamp) * 10 + quarter(timestamp)",
+        "output_columns": [
+          "month_quarter_key"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "A quarter-style time key is plausible, but it is a weaker aggregation grain than the observed month/week temporal branches.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic temporal-key expression branch around timestamp-derived counts.",
+      "derived_from_action_ids": [
+        "CA-000037",
+        "CA-000105"
+      ]
+    },
+    {
+      "action_id": "CA-000006",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "eco_state_mix = num_ecology * state",
+        "output_columns": [
+          "eco_state_mix"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Multiplying the ecology ordinal by state is mechanically possible, but it stacks two noisy quality signals without a clear notebook-backed benefit.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic expression variant around mapped ecology and state.",
+      "derived_from_action_ids": [
+        "CA-000095",
+        "CA-000073"
+      ]
+    },
+    {
+      "action_id": "CA-000007",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "building_name = factorize(sub_area + metro_km_avto.astype(str))",
+        "output_columns": [
+          "building_name"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "hard",
+      "reasoning": "A composite location key is factorized from sub_area and metro distance to approximate building identity.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "aharless/exercising-the-exorcism"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Composite categorical feature combining neighborhood and distance-to-metro granularity.",
+      "evidence_snippets": [
+        "train['building_name'] = pd.factorize(train.sub_area + train['metro_km_avto'].astype(str))[0]"
+      ],
+      "rareness": "rare",
+      "confidence": 0.9
+    },
+    {
+      "action_id": "CA-000008",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "big_flat = (full_sq >= 80).astype(int)",
+        "output_columns": [
+          "big_flat"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "A hard threshold on full_sq creates a coarse apartment-size flag that throws away much of the continuous information the stronger branches keep.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Second coarse area-threshold expression branch.",
+      "derived_from_action_ids": [
+        "CA-000115",
+        "CA-000120"
+      ]
+    },
+    {
+      "action_id": "CA-000009",
+      "action_type": "BIN_NUMERIC",
+      "canonical_params": {
+        "columns": [
+          "full_sq",
+          "life_sq"
+        ],
+        "method": "quantile",
+        "bins": 10
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Quantile-binning the apartment-area signals throws away the continuous size information that most strong Sberbank baselines keep.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic coarse-area branch derived from the apartment-size and ratio-feature families.",
+      "derived_from_action_ids": [
+        "CA-000115",
+        "CA-000120"
+      ]
+    },
+    {
+      "action_id": "CA-000010",
+      "action_type": "BIN_NUMERIC",
+      "canonical_params": {
+        "columns": [
+          "metro_km_avto",
+          "build_year"
+        ],
+        "method": "uniform",
+        "bins": 8
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Uniform bins on transport distance and construction year create brittle cutoffs across a table that already contains many sparse housing regimes.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Second Sberbank binning distractor around distance and age signals.",
+      "derived_from_action_ids": [
+        "CA-000025",
+        "CA-000085"
+      ]
+    },
+    {
+      "action_id": "CA-000011",
+      "action_type": "CAST_DTYPE",
+      "canonical_params": {
+        "columns": [
+          "full_sq",
+          "life_sq",
+          "kitch_sq"
+        ],
+        "dtype": "int32",
+        "errors": "coerce"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Casting apartment sizes to integers strips potentially useful fine-grained area differences after the notebooks already spend effort cleaning those fields.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic lossy cast branch around the housing-area columns.",
+      "derived_from_action_ids": [
+        "CA-000013",
+        "CA-000019",
+        "CA-000120"
+      ]
+    },
+    {
+      "action_id": "CA-000012",
+      "action_type": "CAST_DTYPE",
+      "canonical_params": {
+        "columns": [
+          "metro_km_avto",
+          "public_transport_station_km",
+          "green_zone_km"
+        ],
+        "dtype": "int16",
+        "errors": "coerce"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Integer-casting distance columns collapses transport and environment resolution that the model would otherwise retain.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Second lossy cast variant around continuous distance features.",
+      "base_refs": [
+        "demesgal/magic-numbers",
+        "dex314/magic-numbers-new-change-additional-vars"
+      ]
+    },
+    {
+      "action_id": "CA-000013",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "kitch_sq = NaN when kitch_sq >= life_sq or kitch_sq in {0, 1}",
+        "output_columns": [
+          "kitch_sq"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Kitchen-area values are set to missing when they are impossible relative to living area or encode tiny invalid values.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "aharless/latest-iteration-in-this-silly-game"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Observed as a recurring apartment-size consistency repair.",
+      "evidence_snippets": [
+        "bad_index = train[train.kitch_sq >= train.life_sq].index",
+        "train.ix[bad_index, 'kitch_sq'] = np.NaN",
+        "bad_index = train[(train.kitch_sq == 0).values + (train.kitch_sq == 1).values].index"
+      ],
+      "rareness": "rare",
+      "confidence": 0.9
+    },
+    {
+      "action_id": "CA-000014",
+      "action_type": "CLIP_OUTLIERS",
+      "canonical_params": {
+        "columns": [
+          "full_sq",
+          "life_sq",
+          "kitch_sq"
+        ],
+        "method": "winsorize",
+        "lower_quantile": 0.01,
+        "upper_quantile": 0.99
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Global winsorization of the main apartment-size columns is plausible, but the stronger Sberbank notebooks tend to repair specific impossible values rather than bluntly clipping everything.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic clipping branch around area columns.",
+      "derived_from_action_ids": [
+        "CA-000013",
+        "CA-000019"
+      ]
+    },
+    {
+      "action_id": "CA-000015",
+      "action_type": "CLIP_OUTLIERS",
+      "canonical_params": {
+        "columns": [
+          "build_year",
+          "num_room"
+        ],
+        "method": "winsorize",
+        "lower_quantile": 0.01,
+        "upper_quantile": 0.99
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Winsorizing build_year and num_room is a generic robustness move, but it can hide clearly bad values that should instead be nulled or filtered explicitly.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Second clipping variant around corrupted building metadata.",
+      "derived_from_action_ids": [
+        "CA-000001"
+      ]
+    },
+    {
+      "action_id": "CA-000016",
+      "action_type": "CLIP_OUTLIERS",
+      "canonical_params": {
+        "columns": [
+          "metro_km_avto",
+          "park_km"
+        ],
+        "method": "winsorize",
+        "lower_quantile": 0.05,
+        "upper_quantile": 0.95
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Aggressively clipping distance features is mechanically valid but can flatten genuine geographic variation across Moscow neighborhoods.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Third clipping variant around transport/environment distances.",
+      "base_refs": [
+        "demesgal/magic-numbers",
+        "dex314/magic-numbers-new-change-additional-vars"
+      ]
+    },
+    {
+      "action_id": "CA-000017",
+      "action_type": "CREATE_MISSING_INDICATOR",
+      "canonical_params": {
+        "columns": [
+          "build_year",
+          "max_floor"
+        ],
+        "output_suffix": "_is_missing"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Missingness flags for build_year and max_floor are mechanically possible, but using indicators alone leaves the obvious bad values and NaNs unresolved.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic missing-indicator branch derived from the build-year cleanup and max-floor imputation families.",
+      "derived_from_action_ids": [
+        "CA-000001"
+      ]
+    },
+    {
+      "action_id": "CA-000018",
+      "action_type": "CREATE_MISSING_INDICATOR",
+      "canonical_params": {
+        "columns": [
+          "life_sq",
+          "kitch_sq"
+        ],
+        "output_suffix": "_missing"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Adding only missing flags for life_sq and kitch_sq is weaker than repairing the corrupted area measurements directly.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Second Sberbank missing-indicator distractor around the area-cleanup branch.",
+      "derived_from_action_ids": [
+        "CA-000013",
+        "CA-000019"
+      ]
+    },
+    {
+      "action_id": "CA-000019",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "life_sq = NaN when life_sq > full_sq or life_sq < 5",
+        "output_columns": [
+          "life_sq"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Invalid living-area values are normalized to missing when they exceed total area or fall below a small threshold.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "aharless/latest-iteration-in-this-silly-game"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Data-cleaning rule applied to both train and test with the same semantic intent.",
+      "evidence_snippets": [
+        "bad_index = train[train.life_sq > train.full_sq].index",
+        "train.ix[bad_index, 'life_sq'] = np.NaN",
+        "bad_index = train[train.life_sq < 5].index"
+      ],
+      "rareness": "rare",
+      "confidence": 0.9
+    },
+    {
+      "action_id": "CA-000020",
+      "action_type": "CYCLICAL_ENCODE",
+      "canonical_params": {
+        "columns": [
+          "month"
+        ],
+        "period": 12,
+        "output_columns": [
+          "month_sin",
+          "month_cos"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Sine-cosine month encoding is plausible once timestamp has been parsed, but it adds extra geometry for a competition where simple calendar buckets usually suffice.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic cyclical month variant derived from the timestamp parsing and date-part families.",
+      "derived_from_action_ids": [
+        "CA-000037",
+        "CA-000105"
+      ],
+      "must_follow_action_ids": [
+        "CA-000037"
+      ]
+    },
+    {
+      "action_id": "CA-000021",
+      "action_type": "CYCLICAL_ENCODE",
+      "canonical_params": {
+        "columns": [
+          "dayofweek"
+        ],
+        "period": 7,
+        "output_columns": [
+          "dow_sin",
+          "dow_cos"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Encoding day-of-week cyclically is mechanically valid but overbuilds around a weak calendar signal in the sparse real-estate table.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Second cyclical Sberbank timestamp variant around weekday features.",
+      "derived_from_action_ids": [
+        "CA-000037",
+        "CA-000105"
+      ],
+      "must_follow_action_ids": [
+        "CA-000037"
+      ]
+    },
+    {
+      "action_id": "CA-000022",
+      "action_type": "DATE_PART_FEATURE",
+      "canonical_params": {
+        "date_columns": [
+          "timestamp"
+        ],
+        "parts": [
+          "quarter"
+        ],
+        "drop_original": true
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Reducing transaction time to quarter alone and dropping the raw timestamp throws away the month-level movement that stronger Sberbank baselines use.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic coarse date-part variant around timestamp.",
+      "derived_from_action_ids": [
+        "CA-000037",
+        "CA-000105"
+      ],
+      "must_follow_action_ids": [
+        "CA-000105"
+      ]
+    },
+    {
+      "action_id": "CA-000023",
+      "action_type": "DATE_PART_FEATURE",
+      "canonical_params": {
+        "date_columns": [
+          "timestamp"
+        ],
+        "parts": [
+          "year"
+        ],
+        "drop_original": true
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Dropping timestamp after keeping only year collapses away the month-level timing signal that matters in this market.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Third lossy date-part variant around timestamp.",
+      "derived_from_action_ids": [
+        "CA-000037",
+        "CA-000105"
+      ],
+      "must_follow_action_ids": [
+        "CA-000105"
+      ]
+    },
+    {
+      "action_id": "CA-000024",
+      "action_type": "DIFF_FEATURE",
+      "canonical_params": {
+        "left_columns": [
+          "life_sq"
+        ],
+        "right_columns": [
+          "full_sq"
+        ],
+        "new_feature_name": "signed_living_gap"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Reversing the area-gap direction produces a mostly negative feature that is harder to interpret than the observed extra_sq branch.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic reversed area-gap variant derived from the observed extra_sq branch.",
+      "base_refs": [
+        "sudalairajkumar/feature-engineering-validation-strategy"
+      ]
+    },
+    {
+      "action_id": "CA-000025",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "yrs_old = 2017 - build_year",
+        "output_columns": [
+          "yrs_old"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "This add-vars magic-number variant also derives years-old from build_year.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "dex314/magic-numbers-new-change-additional-vars",
+        "valadi/magic-numbers-add-vars-change"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Explicit age-of-building feature engineered after cleaning.\nObserved in the additional-manual-feature branch.",
+      "evidence_snippets": [
+        "train['yrs_old'] = 2017 - train['build_year'].astype(float)",
+        "df_all['yrs_old'] = 2017 - df_all['build_year'].astype(float)"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.9
+    },
+    {
+      "action_id": "CA-000026",
+      "action_type": "DIFF_FEATURE",
+      "canonical_params": {
+        "left_columns": [
+          "floor"
+        ],
+        "right_columns": [
+          "max_floor"
+        ],
+        "new_feature_name": "signed_floor_gap"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Reversing the floor-gap direction creates a mostly negative signed feature that misstates distance from the top floor.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic reversed floor-gap variant derived from the observed floor_from_top branch.",
+      "derived_from_action_ids": [
+        "CA-000110"
+      ]
+    },
+    {
+      "action_id": "CA-000027",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "sub_area",
+          "product_type",
+          "ecology"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Dropping the main location and product categorical fields removes important structured signal before any encoding or mapping step can use it.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic destructive drop branch around high-value categorical columns.",
+      "derived_from_action_ids": [
+        "CA-000007",
+        "CA-000043",
+        "CA-000095",
+        "CA-000100"
+      ]
+    },
+    {
+      "action_id": "CA-000028",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "full_sq",
+          "life_sq",
+          "kitch_sq",
+          "num_room"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Dropping the core apartment-size columns is a plausible but clearly harmful pruning move in a housing-price task.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Second destructive drop branch around core housing measurements.",
+      "derived_from_action_ids": [
+        "CA-000115",
+        "CA-000120"
+      ]
+    },
+    {
+      "action_id": "CA-000029",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "balance_trade",
+          "eurrub",
+          "deposits_rate",
+          "mortgage_rate"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Removing the key macro columns right after joining them defeats the point of carrying macro context into the housing table.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Third destructive drop variant around the macro branch.",
+      "derived_from_action_ids": [
+        "CA-000085"
+      ],
+      "must_follow_action_ids": [
+        "CA-000085"
+      ]
+    },
+    {
+      "action_id": "CA-000030",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "floor",
+          "max_floor",
+          "rel_floor"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Throwing away both raw floor fields and their normalized derivative removes a consistent structural housing signal used by many notebooks.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Fourth destructive drop branch around vertical-position features.",
+      "derived_from_action_ids": [
+        "CA-000110"
+      ],
+      "must_follow_action_ids": [
+        "CA-000110"
+      ]
+    },
+    {
+      "action_id": "CA-000031",
+      "action_type": "CAST_DTYPE",
+      "canonical_params": {
+        "columns": [
+          "floor",
+          "material",
+          "product_type",
+          "culture_objects_top_25",
+          "thermal_power_plant_raion",
+          "incineration_raion",
+          "oil_chemistry_raion",
+          "radiation_raion",
+          "railroad_terminal_raion",
+          "big_market_raion",
+          "nuclear_reactor_raion",
+          "detention_facility_raion",
+          "healthcare_centers_raion",
+          "water_1line",
+          "big_road1_1line",
+          "railroad_1line",
+          "ID_railroad_terminal",
+          "ecology"
+        ],
+        "dtype": "string"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "This notebook explicitly coerces mixed numeric-like categorical flags and identifiers to strings before categorical encoding.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "dmkravtsov/11-sberbank"
+      ],
+      "source_profile": "explanatory_style",
+      "context_notes": "Observed after filling missing values with a string sentinel and before label encoding the object columns.",
+      "evidence_snippets": [
+        "df['floor'] = df['floor'].astype(str)",
+        "df['ecology'] = df['ecology'].astype(str)"
+      ],
+      "rareness": "rare",
+      "confidence": 0.9
+    },
+    {
+      "action_id": "CA-000032",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "timestamp",
+          "year",
+          "month"
+        ],
+        "after_feature_block": true
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Dropping timestamp plus the derived year/month features leaves almost no temporal signal in a competition where timing matters.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Fifth destructive drop variant around the temporal branch.",
+      "derived_from_action_ids": [
+        "CA-000037",
+        "CA-000105"
+      ],
+      "must_follow_action_ids": [
+        "CA-000037"
+      ]
+    },
+    {
+      "action_id": "CA-000033",
+      "action_type": "DROP_CONSTANT_COLUMNS",
+      "canonical_params": {
+        "criterion": "nunique == 1",
+        "scope": "train_only"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Dropping train-only constant columns is a standard cleanup move, but it does little to address Sberbank's actual issues around bad values, sparse categories, and macro joins.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic low-impact constant-column pruning branch for broad canonical coverage.",
+      "base_refs": [
+        "sudalairajkumar/feature-engineering-validation-strategy",
+        "dmkravtsov/11-sberbank"
+      ]
+    },
+    {
+      "action_id": "CA-000034",
+      "action_type": "DROP_CONSTANT_COLUMNS",
+      "canonical_params": {
+        "criterion": "nunique <= 1 after train_test_concat",
+        "scope": "concat_frame"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Searching for constants only after concatenating train and test is plausible, but it is mostly housekeeping rather than a core Sberbank modeling gain.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Second low-salience constant-column branch added for coverage.",
+      "base_refs": [
+        "demesgal/magic-numbers",
+        "dex314/magic-numbers-new-change-additional-vars"
+      ]
+    },
+    {
+      "action_id": "CA-000035",
+      "action_type": "DROP_DUPLICATES",
+      "canonical_params": {
+        "subset_columns": [
+          "timestamp",
+          "full_sq",
+          "life_sq",
+          "floor",
+          "max_floor",
+          "sub_area"
+        ],
+        "keep": "first"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "De-duplicating apartment rows by repeated housing attributes can silently throw away legitimate repeated listings that share common layouts.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic harmful duplicate-row pruning branch around the repeated-layout columns.",
+      "base_refs": [
+        "bguberfain/naive-xgb-lb-0-317",
+        "aharless/latest-iteration-in-this-silly-game"
+      ]
+    },
+    {
+      "action_id": "CA-000036",
+      "action_type": "DROP_DUPLICATES",
+      "canonical_params": {
+        "subset_columns": [
+          "timestamp"
+        ],
+        "keep": "first",
+        "target_table": "macro"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Removing duplicate macro timestamps is a tempting cleanup, but merge_ordered-style joins already tolerate repeated dates and aggressive deduping can discard useful macro snapshots.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Second duplicate-removal distractor around the macro join workflow.",
+      "base_refs": [
+        "bguberfain/naive-xgb-lb-0-317",
+        "alijs1/lightgbm-starter-0-33342"
+      ]
+    },
+    {
+      "action_id": "CA-000037",
+      "action_type": "DATE_PART_FEATURE",
+      "canonical_params": {
+        "date_columns": [
+          "timestamp"
+        ],
+        "parts": [
+          "year",
+          "month",
+          "week",
+          "dayofweek"
+        ],
+        "drop_original": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "This benchmark-style branch expands parsed timestamp into year, month, week-of-year, and day-of-week features for downstream temporal modeling.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "sudalairajkumar/feature-engineering-validation-strategy"
+      ],
+      "source_profile": "explanatory_style",
+      "context_notes": "Common temporal feature block used before model training and validation analysis.",
+      "evidence_snippets": [
+        "train_df['year'] = train_df['timestamp'].dt.year",
+        "train_df['month_of_year'] = train_df['timestamp'].dt.month",
+        "train_df['week_of_year'] = train_df['timestamp'].dt.weekofyear",
+        "train_df['day_of_week'] = train_df['timestamp'].dt.weekday"
+      ],
+      "rareness": "rare",
+      "confidence": 0.9,
+      "must_follow_action_ids": [
+        "CA-000105"
+      ]
+    },
+    {
+      "action_id": "CA-000038",
+      "action_type": "DROP_HIGH_NULL_COLUMNS",
+      "canonical_params": {
+        "threshold": 0.7,
+        "scope": "train_test_concat"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Dropping every column above a 70% missing-rate threshold throws away many weak-but-still-usable housing and macro signals without attempting structured imputation first.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic high-null pruning branch derived from the broader missing-data handling review.",
+      "base_refs": [
+        "sudalairajkumar/feature-engineering-validation-strategy",
+        "dmkravtsov/11-sberbank"
+      ]
+    },
+    {
+      "action_id": "CA-000039",
+      "action_type": "DROP_HIGH_NULL_COLUMNS",
+      "canonical_params": {
+        "threshold": 0.5,
+        "scope": "macro_joined_frame"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "A 50% null cutoff after the macro join is an especially blunt rule for Sberbank because sparse macro and infrastructure fields can still carry directional signal.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Second high-null drop variant around the joined macro frame.",
+      "derived_from_action_ids": [
+        "CA-000085"
+      ]
+    },
+    {
+      "action_id": "CA-000040",
+      "action_type": "DROP_ROWS_WITH_MISSING",
+      "canonical_params": {
+        "columns": [
+          "life_sq",
+          "full_sq"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Dropping every row missing life_sq or full_sq discards a large fraction of transactions instead of repairing the broken area fields.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic harmful row-drop branch derived from the life_sq/full_sq cleanup family.",
+      "derived_from_action_ids": [
+        "CA-000013",
+        "CA-000019",
+        "CA-000055"
+      ]
+    },
+    {
+      "action_id": "CA-000041",
+      "action_type": "DROP_ROWS_WITH_MISSING",
+      "canonical_params": {
+        "columns": [
+          "build_year",
+          "max_floor",
+          "state"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Filtering out all rows missing build_year, max_floor, or state shrinks the housing table too aggressively for a competition with many partially observed units.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Second missing-row pruning branch around sparse building metadata.",
+      "derived_from_action_ids": [
+        "CA-000001",
+        "CA-000067"
+      ]
+    },
+    {
+      "action_id": "CA-000042",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "onehot",
+        "columns": [
+          "sub_area",
+          "building_name"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "One-hot encoding neighborhood and pseudo-building identifiers creates a much wider matrix than the leaner Sberbank label and factorize branches seen in notebooks.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic wide one-hot branch around the location and pseudo-building categorical fields.",
+      "derived_from_action_ids": [
+        "CA-000007"
+      ],
+      "must_follow_action_ids": [
+        "CA-000007"
+      ]
+    },
+    {
+      "action_id": "CA-000043",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "label",
+        "columns": [
+          "floor",
+          "material",
+          "product_type",
+          "culture_objects_top_25",
+          "thermal_power_plant_raion",
+          "incineration_raion",
+          "oil_chemistry_raion",
+          "radiation_raion",
+          "railroad_terminal_raion",
+          "big_market_raion",
+          "nuclear_reactor_raion",
+          "detention_facility_raion",
+          "healthcare_centers_raion",
+          "water_1line",
+          "big_road1_1line",
+          "railroad_1line",
+          "ID_railroad_terminal",
+          "ecology"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "The prepared modeling frame label-encodes the string-cast categorical and flag columns into stable numeric codes before model fitting.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "dmkravtsov/11-sberbank"
+      ],
+      "source_profile": "explanatory_style",
+      "context_notes": "Observed as the main categorical encoding branch after string coercion and sentinel filling.",
+      "evidence_snippets": [
+        "from sklearn.preprocessing import LabelEncoder",
+        "for col in object_columns:",
+        "df[col] = le.fit_transform(df[col].astype(str))"
+      ],
+      "rareness": "rare",
+      "confidence": 0.9,
+      "must_follow_action_ids": [
+        "CA-000031"
+      ]
+    },
+    {
+      "action_id": "CA-000044",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "frequency",
+        "columns": [
+          "water_1line",
+          "big_road1_1line",
+          "railroad_1line"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Replacing binary infrastructure flags with global frequency scores maps each yes/no value to the same dataset-level prevalence constant, so the row-local binary signal is erased and turned into a near-constant proxy.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Deliberately destructive categorical coarsening branch around binary location flags.",
+      "derived_from_action_ids": [
+        "CA-000043"
+      ]
+    },
+    {
+      "action_id": "CA-000045",
+      "action_type": "EXPANDING_WINDOW_FEATURE",
+      "canonical_params": {
+        "group_by_columns": [
+          "sub_area"
+        ],
+        "order_by": "timestamp",
+        "target_columns": [
+          "full_sq"
+        ],
+        "agg_function": "mean",
+        "new_feature_name": "sub_area_expanding_mean_full_sq"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "An expanding sub_area mean of full_sq is mechanically possible after sorting by timestamp, but it adds a fragile temporal branch that few strong Sberbank notebooks rely on.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic expanding-window branch around sub_area history features.",
+      "base_refs": [
+        "bguberfain/naive-xgb-lb-0-317",
+        "aharless/latest-iteration-in-this-silly-game"
+      ]
+    },
+    {
+      "action_id": "CA-000046",
+      "action_type": "EXPANDING_WINDOW_FEATURE",
+      "canonical_params": {
+        "group_by_columns": [
+          "timestamp"
+        ],
+        "order_by": "timestamp",
+        "target_columns": [
+          "id"
+        ],
+        "agg_function": "count",
+        "new_feature_name": "expanding_sale_count"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Expanding counts over timestamp create a trending transaction-volume proxy, but the benchmark-preferred notebooks more often use simpler month/week count aggregates.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Second expanding-window variant derived from the temporal count-aggregation family.",
+      "derived_from_action_ids": [
+        "CA-000061"
+      ]
+    },
+    {
+      "action_id": "CA-000047",
+      "action_type": "FEATURE_SELECTION",
+      "canonical_params": {
+        "method": "variance_threshold",
+        "threshold": 0.0
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Variance-threshold selection is an easy generic move, but it is too weak for Sberbank because most problematic features are sparse, collinear, or semantically redundant rather than strictly constant.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic light feature-selection branch for canonical coverage.",
+      "base_refs": [
+        "sudalairajkumar/feature-engineering-validation-strategy",
+        "dmkravtsov/11-sberbank"
+      ]
+    },
+    {
+      "action_id": "CA-000048",
+      "action_type": "FEATURE_SELECTION",
+      "canonical_params": {
+        "method": "univariate_correlation",
+        "feature_columns": [
+          "full_sq",
+          "life_sq",
+          "floor",
+          "max_floor",
+          "build_year",
+          "sub_area"
+        ],
+        "k": 20,
+        "target_column": "price_doc"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Selecting only the top univariate correlations discards interaction-heavy housing features and macro context that better notebook branches keep.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Second model-specific feature-selection variant around simple correlation screening.",
+      "base_refs": [
+        "demesgal/magic-numbers",
+        "dex314/magic-numbers-new-change-additional-vars"
+      ]
+    },
+    {
+      "action_id": "CA-000049",
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "10000 <= price_doc / full_sq <= 600000"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "The notebook removes training rows with extreme price-per-square-meter values before model fitting.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "aharless/latest-iteration-in-this-silly-game"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Train-only outlier filter on price per square meter.",
+      "evidence_snippets": [
+        "train = train[train.price_doc/train.full_sq <= 600000]",
+        "train = train[train.price_doc/train.full_sq >= 10000]"
+      ],
+      "rareness": "rare",
+      "confidence": 0.9
+    },
+    {
+      "action_id": "CA-000050",
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "product_type == 'Investment'"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Keeping only investment properties is a plausible niche slice, but it throws away the owner-occupier segment that remains central to the official train distribution.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic over-restrictive product-type filter.",
+      "derived_from_action_ids": [
+        "CA-000100"
+      ]
+    },
+    {
+      "action_id": "CA-000051",
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "full_sq >= 20 and max_floor <= 40"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Hard-filtering to medium-size units and moderate building heights looks tidy, but it discards legitimate extremes instead of repairing only the corrupted cases.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Second over-restrictive housing filter branch.",
+      "derived_from_action_ids": [
+        "CA-000055",
+        "CA-000110"
+      ]
+    },
+    {
+      "action_id": "CA-000052",
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "state in {1, 2}"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Restricting training rows to the best condition states only biases the dataset toward a narrow slice of the market.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Third restrictive filter branch around property condition.",
+      "derived_from_action_ids": [
+        "CA-000073",
+        "CA-000079"
+      ]
+    },
+    {
+      "action_id": "CA-000053",
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "sub_area in top_10_by_frequency"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Training only on the most common neighborhoods is a tempting simplification, but it throws away much of the geographic diversity that the competition expects.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Fourth restrictive filter branch around sub_area.",
+      "base_refs": [
+        "aharless/latest-iteration-in-this-silly-game",
+        "optidatascience/use-partial-pca-for-collinearity-lb-0-328-w-xgb"
+      ]
+    },
+    {
+      "action_id": "CA-000054",
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "2014-01-01 <= timestamp <= 2015-12-31"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "A recent-years-only training slice can look attractive in a drifting market, but it discards too much supervised data for the held-out test horizon.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Fifth temporal filter branch around timestamp.",
+      "derived_from_action_ids": [
+        "CA-000105",
+        "CA-000037"
+      ]
+    },
+    {
+      "action_id": "CA-000055",
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "life_sq <= 7000"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "This Bruno-derived variant explicitly drops training rows with extreme life_sq values before building the merged feature table.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "aharless/from-bruno-do-amaral-naive-xgb-v9"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Train-only size outlier filter.",
+      "evidence_snippets": [
+        "df_train.drop(df_train[df_train['life_sq'] > 7000].index, inplace=True)"
+      ],
+      "rareness": "rare",
+      "confidence": 0.75
+    },
+    {
+      "action_id": "CA-000056",
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "sub_area"
+        ],
+        "target_columns": [
+          "price_doc"
+        ],
+        "agg_functions": [
+          "mean"
+        ],
+        "join_back": true,
+        "how": "left"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Computing the mean target price by sub_area on the supervised table and joining it back row-wise leaks full-frame label statistics directly into each training example.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Deliberately leaky full-frame target-mean join over neighborhood buckets.",
+      "base_refs": [
+        "aharless/latest-iteration-in-this-silly-game",
+        "optidatascience/use-partial-pca-for-collinearity-lb-0-328-w-xgb"
+      ],
+      "challenge_type": "leaky_target_aggregation"
+    },
+    {
+      "action_id": "CA-000057",
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "product_type"
+        ],
+        "target_columns": [
+          "price_doc"
+        ],
+        "agg_functions": [
+          "mean"
+        ],
+        "join_back": true,
+        "how": "left"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Joining back mean target price by product_type leaks label statistics into the feature table and is not a safe preprocessing step.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Fourth grouped branch intentionally illustrating a leakage-prone aggregation.",
+      "base_refs": [
+        "sudalairajkumar/feature-engineering-validation-strategy",
+        "dmkravtsov/11-sberbank"
+      ],
+      "challenge_type": "leaky_target_aggregation"
+    },
+    {
+      "action_id": "CA-000058",
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "year",
+          "sub_area"
+        ],
+        "target_columns": [
+          "price_doc"
+        ],
+        "agg_functions": [
+          "mean"
+        ],
+        "join_back": true,
+        "how": "left"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Computing mean target price by year and sub_area on the supervised table and joining it back row-wise creates a sparse, time-aware leakage feature for every training example.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Deliberately leaky full-frame target-mean join over joint time-location buckets.",
+      "derived_from_action_ids": [
+        "CA-000037",
+        "CA-000061"
+      ],
+      "must_follow_action_ids": [
+        "CA-000037"
+      ],
+      "challenge_type": "leaky_target_aggregation"
+    },
+    {
+      "action_id": "CA-000059",
+      "action_type": "HASH_CROSS",
+      "canonical_params": {
+        "columns": [
+          "sub_area",
+          "product_type"
+        ],
+        "n_buckets": 512
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Hashing sub_area with product_type is plausible once building_name-style identifiers appear, but it makes the housing-location interaction less interpretable than the observed feature branches.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic hashed-cross branch around sub_area and product_type interactions.",
+      "derived_from_action_ids": [
+        "CA-000007",
+        "CA-000100"
+      ]
+    },
+    {
+      "action_id": "CA-000060",
+      "action_type": "HASH_CROSS",
+      "canonical_params": {
+        "columns": [
+          "ecology",
+          "state"
+        ],
+        "n_buckets": 128
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Hash-crossing ecology and state compresses two already low-cardinality fields into opaque buckets with little evidence that the representation helps this task.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Second hashed-cross distractor around low-cardinality housing quality fields.",
+      "derived_from_action_ids": [
+        "CA-000073",
+        "CA-000095"
+      ]
+    },
+    {
+      "action_id": "CA-000061",
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "year",
+          "month"
+        ],
+        "target_columns": [
+          "id"
+        ],
+        "agg_functions": [
+          "count"
+        ],
+        "join_back": true,
+        "how": "left"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "hard",
+      "reasoning": "The notebook counts how many listings occur in each year-and-month bucket and merges that count back as a supply proxy.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "sudalairajkumar/feature-engineering-validation-strategy"
+      ],
+      "source_profile": "explanatory_style",
+      "context_notes": "Calendar-level inventory count feature joined back to each row.",
+      "evidence_snippets": [
+        "grouped_df = df.groupby(group_col)['id'].aggregate('count').reset_index()",
+        "train_df = add_count(train_df, 'yearmonth')"
+      ],
+      "rareness": "rare",
+      "confidence": 0.75,
+      "must_follow_action_ids": [
+        "CA-000037"
+      ]
+    },
+    {
+      "action_id": "CA-000062",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "median",
+        "columns": [
+          "life_sq",
+          "kitch_sq"
+        ],
+        "group_by_columns": [
+          "sub_area"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Median-imputing life_sq and kitch_sq by neighborhood is plausible, but it can blur apart the very area anomalies that Sberbank notebooks often treat more carefully.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic imputation branch around missing apartment-area fields.",
+      "derived_from_action_ids": [
+        "CA-000013",
+        "CA-000019",
+        "CA-000067"
+      ]
+    },
+    {
+      "action_id": "CA-000063",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "constant",
+        "columns": [
+          "build_year"
+        ],
+        "fill_value": 0
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Zero-filling build_year makes the column numerically complete but introduces an impossible year that downstream models can overreact to.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Second imputation distractor around build_year.",
+      "derived_from_action_ids": [
+        "CA-000001",
+        "CA-000067"
+      ]
+    },
+    {
+      "action_id": "CA-000064",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "mean",
+        "columns": [
+          "state",
+          "num_room"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Mean-imputing state and num_room is mechanically valid but semantically awkward for quasi-discrete housing attributes.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Third imputation branch around quasi-discrete apartment metadata.",
+      "base_refs": [
+        "demesgal/magic-numbers",
+        "dex314/magic-numbers-new-change-additional-vars"
+      ]
+    },
+    {
+      "action_id": "CA-000065",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "constant",
+        "columns": [
+          "life_sq",
+          "full_sq"
+        ],
+        "fill_value": 0
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Zero-filling the main apartment-size columns creates impossible housing records instead of recovering from missingness.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Fourth harmful imputation branch around critical area fields.",
+      "derived_from_action_ids": [
+        "CA-000013",
+        "CA-000019",
+        "CA-000055"
+      ]
+    },
+    {
+      "action_id": "CA-000066",
+      "action_type": "INTERACTION_FEATURE",
+      "canonical_params": {
+        "feature_columns": [
+          "full_sq",
+          "state"
+        ],
+        "operator": "multiply",
+        "output_columns": [
+          "full_sq_x_state"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Multiplying full_sq by state is a plausible interaction, but it is a noisier cross than the tighter notebook-local state interactions that were actually observed.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic interaction branch around apartment size and condition.",
+      "derived_from_action_ids": [
+        "CA-000073",
+        "CA-000079"
+      ]
+    },
+    {
+      "action_id": "CA-000067",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "mean",
+        "columns": [
+          "build_year"
+        ],
+        "group_by_columns": [
+          "sub_area"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Build year missing values are filled with the mean build_year within each sub_area.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "palbha/russian-house-price-prediction"
+      ],
+      "source_profile": "explanatory_style",
+      "context_notes": "Applied after invalid build_year values are normalized to missing.",
+      "evidence_snippets": [
+        "df.build_year = df.groupby(['sub_area'])['build_year'].apply(lambda x: x.fillna(x.mean()))"
+      ],
+      "rareness": "rare",
+      "confidence": 0.9
+    },
+    {
+      "action_id": "CA-000068",
+      "action_type": "INTERACTION_FEATURE",
+      "canonical_params": {
+        "feature_columns": [
+          "building_name",
+          "num_product_type"
+        ],
+        "operator": "multiply",
+        "output_columns": [
+          "building_name_x_product_type"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "A building-name-by-product interaction is mechanically possible, but it turns a location proxy into a noisier crossed signal than the direct notebook-backed building feature.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Second interaction variant around bank-produced categorical proxies.",
+      "derived_from_action_ids": [
+        "CA-000007",
+        "CA-000100"
+      ],
+      "must_follow_action_ids": [
+        "CA-000007",
+        "CA-000100"
+      ]
+    },
+    {
+      "action_id": "CA-000069",
+      "action_type": "INTERACTION_FEATURE",
+      "canonical_params": {
+        "feature_columns": [
+          "metro_km_avto",
+          "green_zone_km"
+        ],
+        "operator": "multiply",
+        "output_columns": [
+          "metro_x_green"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Distance-by-distance interactions are plausible, but they add opaque continuous crosses with little notebook evidence of payoff.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Third interaction branch around transport and environment features.",
+      "base_refs": [
+        "demesgal/magic-numbers",
+        "dex314/magic-numbers-new-change-additional-vars"
+      ]
+    },
+    {
+      "action_id": "CA-000070",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "macro",
+        "left_on": "timestamp",
+        "right_on": "timestamp",
+        "how": "inner",
+        "fit_scope": "none",
+        "mode": "transform"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "An inner join on macro looks natural, but it can drop housing rows whenever macro coverage is imperfect and therefore reshapes the supervised table.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic harmful macro-join variant derived from the rewarded left-join strategy.",
+      "derived_from_action_ids": [
+        "CA-000085"
+      ],
+      "conflicts_with_action_ids": [
+        "CA-000085"
+      ]
+    },
+    {
+      "action_id": "CA-000071",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "macro",
+        "left_on": "month",
+        "right_on": "timestamp",
+        "how": "left",
+        "fit_scope": "none",
+        "mode": "transform"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Joining macro data by a standalone month bucket against the raw timestamp column mixes incompatible calendar keys and misaligns rows across years.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Second bad macro-join variant around temporal-key mismatch.",
+      "derived_from_action_ids": [
+        "CA-000085",
+        "CA-000037"
+      ],
+      "must_follow_action_ids": [
+        "CA-000037"
+      ]
+    },
+    {
+      "action_id": "CA-000072",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "macro",
+        "left_on": "timestamp",
+        "right_on": "timestamp",
+        "how": "left",
+        "select_columns": [
+          "timestamp"
+        ],
+        "fit_scope": "none",
+        "mode": "transform"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "A left join that keeps only the macro timestamp contributes almost no information while still paying the cost of the merge step.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Third underpowered join variant around the macro branch.",
+      "derived_from_action_ids": [
+        "CA-000085"
+      ]
+    },
+    {
+      "action_id": "CA-000073",
+      "action_type": "INTERACTION_FEATURE",
+      "canonical_params": {
+        "feature_columns": [
+          "life_sq",
+          "state"
+        ],
+        "operator": "multiply",
+        "output_columns": [
+          "lifesq_x_state"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "hard",
+      "reasoning": "The exorcism notebook multiplies living area by state to form an apartment-quality interaction feature.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "aharless/exercising-the-exorcism"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Part of the additional manual interaction block layered on top of the standard cleaning pipeline.",
+      "evidence_snippets": [
+        "train['lifesq_x_state'] = train['life_sq'] * train['state'].astype(float)"
+      ],
+      "rareness": "rare",
+      "confidence": 0.9
+    },
+    {
+      "action_id": "CA-000074",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "macro",
+        "left_on": "timestamp",
+        "right_on": "timestamp",
+        "how": "right",
+        "fit_scope": "none",
+        "mode": "transform"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "A right join re-centers the table around macro coverage instead of the housing transactions that define the supervised task.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Fourth harmful macro-join variant added for richer local coverage.",
+      "derived_from_action_ids": [
+        "CA-000085"
+      ],
+      "conflicts_with_action_ids": [
+        "CA-000085"
+      ]
+    },
+    {
+      "action_id": "CA-000075",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "macro",
+        "left_on": "timestamp",
+        "right_on": "timestamp",
+        "how": "left",
+        "fit_scope": "train_only",
+        "mode": "fit_transform"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Treating the macro table as something to fit only on training rows is an awkward misuse of an external lookup table that should be applied consistently.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Fifth join variant illustrating an unnecessary fit/transform split for static external data.",
+      "derived_from_action_ids": [
+        "CA-000085"
+      ]
+    },
+    {
+      "action_id": "CA-000076",
+      "action_type": "LAG_FEATURE",
+      "canonical_params": {
+        "group_by_columns": [
+          "sub_area"
+        ],
+        "order_by": "timestamp",
+        "target_columns": [
+          "full_sq"
+        ],
+        "lags": [
+          1,
+          3
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Lagging full_sq by sub_area over timestamp creates a time-series style branch on a dataset that is primarily a sparse transactional cross-section.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic lag-feature branch around sub_area histories.",
+      "base_refs": [
+        "bguberfain/naive-xgb-lb-0-317",
+        "aharless/latest-iteration-in-this-silly-game"
+      ]
+    },
+    {
+      "action_id": "CA-000077",
+      "action_type": "LAG_FEATURE",
+      "canonical_params": {
+        "group_by_columns": [
+          "timestamp"
+        ],
+        "order_by": "timestamp",
+        "target_columns": [
+          "eurrub"
+        ],
+        "lags": [
+          1,
+          2
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Lagging joined macro rates is mechanically possible after the merge, but it adds temporal complexity beyond the observed Sberbank macro-join baseline.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Second lag-feature branch around the macro time series.",
+      "derived_from_action_ids": [
+        "CA-000085"
+      ],
+      "must_follow_action_ids": [
+        "CA-000085"
+      ]
+    },
+    {
+      "action_id": "CA-000078",
+      "action_type": "LOG_TRANSFORM",
+      "canonical_params": {
+        "columns": [
+          "full_sq",
+          "life_sq"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Logging apartment-size columns is mechanically possible, but it is not the notebook-preferred branch here and can complicate downstream ratio interpretation.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic log-transform branch around housing-area predictors.",
+      "base_refs": [
+        "demesgal/magic-numbers",
+        "dex314/magic-numbers-new-change-additional-vars"
+      ]
+    },
+    {
+      "action_id": "CA-000079",
+      "action_type": "INTERACTION_FEATURE",
+      "canonical_params": {
+        "feature_columns": [
+          "public_transport_station_km",
+          "state"
+        ],
+        "operator": "multiply",
+        "output_columns": [
+          "pts_x_state"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "hard",
+      "reasoning": "The notebook explicitly multiplies transit distance by state to create a cross-feature capturing location quality interaction.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "aharless/exercising-the-exorcism"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Part of the additional manual interaction block layered on top of the standard cleaning pipeline.",
+      "evidence_snippets": [
+        "train['pts_x_state'] = train['public_transport_station_km'] * train['state'].astype(float)"
+      ],
+      "rareness": "rare",
+      "confidence": 0.9
+    },
+    {
+      "action_id": "CA-000080",
+      "action_type": "LOG_TRANSFORM",
+      "canonical_params": {
+        "columns": [
+          "metro_km_avto",
+          "park_km"
+        ],
+        "offset": 1.0
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Applying log1p to a few distance features is plausible, but it is a secondary modeling choice beside the stronger cleanup and join decisions in this task.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Second predictor-side log-transform variant around distances.",
+      "base_refs": [
+        "demesgal/magic-numbers",
+        "dex314/magic-numbers-new-change-additional-vars"
+      ]
+    },
+    {
+      "action_id": "CA-000081",
+      "action_type": "LOG_TRANSFORM",
+      "canonical_params": {
+        "columns": [
+          "full_sq",
+          "life_sq",
+          "kitch_sq"
+        ],
+        "offset": 1.0
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "A blanket log1p over the area block can dampen the scale differences that several observed ratio features deliberately exploit.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Third predictor-side log-transform branch around housing areas.",
+      "derived_from_action_ids": [
+        "CA-000115",
+        "CA-000120"
+      ]
+    },
+    {
+      "action_id": "CA-000082",
+      "action_type": "MAP_CATEGORIES",
+      "canonical_params": {
+        "columns": [
+          "product_type"
+        ],
+        "mapping": {
+          "OwnerOccupier": 1,
+          "Investment": 0
+        },
+        "output_columns": [
+          "num_product_type_reversed"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Reversing the product_type polarity flips the owner-versus-investment signal relative to the notebook-backed binary branch.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic wrong-direction map derived from the rewarded product_type branch.",
+      "derived_from_action_ids": [
+        "CA-000100"
+      ]
+    },
+    {
+      "action_id": "CA-000083",
+      "action_type": "MAP_CATEGORIES",
+      "canonical_params": {
+        "columns": [
+          "product_type"
+        ],
+        "mapping": {
+          "OwnerOccupier": 0,
+          "Investment": 0
+        },
+        "output_columns": [
+          "num_product_type_constant"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Collapsing both product_type values to the same code turns the feature into a constant column and erases the only ownership-versus-investment signal entirely.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Deliberately destructive constant map that collapses the rewarded product_type signal.",
+      "base_refs": [
+        "demesgal/magic-numbers",
+        "dex314/magic-numbers-new-change-additional-vars"
+      ],
+      "derived_from_action_ids": [
+        "CA-000100"
+      ]
+    },
+    {
+      "action_id": "CA-000084",
+      "action_type": "NORMALIZE_STRING",
+      "canonical_params": {
+        "columns": [
+          "sub_area"
+        ],
+        "operations": [
+          "lower",
+          "strip",
+          "replace_punctuation"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Normalizing sub_area text is possible, but the competition's raw neighborhood names are already fairly regular and are more often encoded directly than aggressively cleaned.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic string-normalization branch around sub_area text fields.",
+      "base_refs": [
+        "aharless/latest-iteration-in-this-silly-game",
+        "optidatascience/use-partial-pca-for-collinearity-lb-0-328-w-xgb"
+      ]
+    },
+    {
+      "action_id": "CA-000085",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "macro",
+        "left_on": "timestamp",
+        "right_on": "timestamp",
+        "how": "left",
+        "select_columns": [
+          "balance_trade",
+          "balance_trade_growth",
+          "eurrub",
+          "average_provision_of_build_contract",
+          "micex_rgbi_tr",
+          "micex_cbi_tr",
+          "deposits_rate",
+          "mortgage_value",
+          "mortgage_rate",
+          "income_per_cap",
+          "rent_price_4+room_bus",
+          "museum_visitis_per_100_cap",
+          "apartment_build"
+        ],
+        "fit_scope": "none",
+        "mode": "transform"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "hard",
+      "reasoning": "Baseline notebook left-joins a selected macroeconomic feature set onto the concatenated train/test table by timestamp.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "bguberfain/naive-xgb-lb-0-317"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Macro table is restricted to an observed subset of economic columns before the ordered timestamp join.",
+      "evidence_snippets": [
+        "df_all = pd.merge_ordered(df_all, df_macro, on='timestamp', how='left')"
+      ],
+      "rareness": "rare",
+      "confidence": 0.9
+    },
+    {
+      "action_id": "CA-000086",
+      "action_type": "NORMALIZE_STRING",
+      "canonical_params": {
+        "columns": [
+          "product_type",
+          "ecology"
+        ],
+        "operations": [
+          "lower",
+          "strip"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "String normalization on product_type and ecology is a mild preprocessing branch, but it is secondary next to the stronger observed categorical mapping choices.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Second normalization variant around low-cardinality text categories.",
+      "derived_from_action_ids": [
+        "CA-000095",
+        "CA-000100"
+      ]
+    },
+    {
+      "action_id": "CA-000087",
+      "action_type": "ORDINAL_ENCODE",
+      "canonical_params": {
+        "columns": [
+          "sub_area"
+        ],
+        "order_source": "lexicographic"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Lexicographic ordinal codes for sub_area impose an arbitrary ordering on neighborhoods that has no semantic meaning for housing prices.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic harmful ordinal-encoding branch around a high-cardinality location field.",
+      "base_refs": [
+        "aharless/latest-iteration-in-this-silly-game",
+        "optidatascience/use-partial-pca-for-collinearity-lb-0-328-w-xgb"
+      ]
+    },
+    {
+      "action_id": "CA-000088",
+      "action_type": "ORDINAL_ENCODE",
+      "canonical_params": {
+        "columns": [
+          "product_type"
+        ],
+        "order_source": "frequency_rank"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Frequency-ranked ordinal codes for product_type compress a simple binary field into an arbitrary order without adding signal beyond the direct mapping branch.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Second ordinal-encoding variant around product_type.",
+      "derived_from_action_ids": [
+        "CA-000100"
+      ]
+    },
+    {
+      "action_id": "CA-000089",
+      "action_type": "PARSE_DATETIME",
+      "canonical_params": {
+        "columns": [
+          "timestamp"
+        ],
+        "format": "%d/%m/%Y",
+        "errors": "coerce"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Parsing the ISO timestamp with a day-first format is a plausible implementation slip that would silently coerce or misread many dates.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic timestamp-misread branch derived from the rewarded datetime parsing action.",
+      "derived_from_action_ids": [
+        "CA-000105"
+      ],
+      "conflicts_with_action_ids": [
+        "CA-000105"
+      ]
+    },
+    {
+      "action_id": "CA-000090",
+      "action_type": "LOG_TRANSFORM",
+      "canonical_params": {
+        "columns": [
+          "price_doc"
+        ],
+        "offset": 1.0
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Several explanatory Sberbank notebooks stabilize the skewed sale-price target with a log1p-style transform before regression.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "dan195/knn-imputation-gbregression-an-plsregression",
+        "optidatascience/use-partial-pca-for-collinearity-lb-0-328-w-xgb"
+      ],
+      "source_profile": "explanatory_style",
+      "context_notes": "Target-scaling branch used to make the response more Gaussian for linear or boosted-regression workflows.",
+      "evidence_snippets": [
+        "train.price_doc = np.log1p(train.price_doc)",
+        "train['LogAmt']=np.log(train.price_doc+1.0)"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.9
+    },
+    {
+      "action_id": "CA-000091",
+      "action_type": "PARSE_DATETIME",
+      "canonical_params": {
+        "columns": [
+          "timestamp"
+        ],
+        "format": "%Y-%m",
+        "errors": "coerce"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Reducing timestamp parsing to year-month precision discards the day-level ordering needed for some temporal feature variants.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Second timestamp-lossy parsing branch around the Sberbank date column.",
+      "derived_from_action_ids": [
+        "CA-000105"
+      ],
+      "conflicts_with_action_ids": [
+        "CA-000105"
+      ]
+    },
+    {
+      "action_id": "CA-000092",
+      "action_type": "PCA_REDUCTION",
+      "canonical_params": {
+        "columns": [
+          "area_m",
+          "raion_popul",
+          "green_zone_part",
+          "indust_part",
+          "school_quota",
+          "preschool_quota"
+        ],
+        "n_components": 3
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Collapsing dense location and infrastructure columns into a few PCA components can hide useful, directly interpretable housing signals.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic PCA branch around the broad numeric location block.",
+      "base_refs": [
+        "optidatascience/use-partial-pca-for-collinearity-lb-0-328-w-xgb"
+      ]
+    },
+    {
+      "action_id": "CA-000093",
+      "action_type": "PCA_REDUCTION",
+      "canonical_params": {
+        "columns": [
+          "balance_trade",
+          "eurrub",
+          "deposits_rate",
+          "mortgage_value",
+          "mortgage_rate",
+          "income_per_cap"
+        ],
+        "n_components": 2
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Reducing macro columns to a tiny PCA basis is plausible after the join, but it makes the macro branch harder to audit and often weaker than simply selecting a small observed subset.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Second model-specific PCA variant around macro features.",
+      "derived_from_action_ids": [
+        "CA-000085"
+      ],
+      "must_follow_action_ids": [
+        "CA-000085"
+      ]
+    },
+    {
+      "action_id": "CA-000094",
+      "action_type": "POLYNOMIAL_FEATURE",
+      "canonical_params": {
+        "columns": [
+          "full_sq",
+          "life_sq",
+          "floor"
+        ],
+        "degree": 2,
+        "include_bias": false
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Quadratic expansion over basic housing measures quickly explodes the feature space for little gain on a mostly tree-based Sberbank workflow.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic polynomial branch around the core apartment-size features.",
+      "derived_from_action_ids": [
+        "CA-000115",
+        "CA-000120"
+      ]
+    },
+    {
+      "action_id": "CA-000095",
+      "action_type": "MAP_CATEGORIES",
+      "canonical_params": {
+        "columns": [
+          "ecology"
+        ],
+        "mapping": {
+          "poor": 0,
+          "satisfactory": 1,
+          "good": 2,
+          "excellent": 3,
+          "no data": 1
+        },
+        "output_columns": [
+          "num_ecology"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "The PCA notebook explicitly ordinal-maps ecology labels into a numeric quality scale before modeling.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "optidatascience/use-partial-pca-for-collinearity-lb-0-328-w-xgb"
+      ],
+      "source_profile": "explanatory_style",
+      "context_notes": "Canonicalized as a single ecology-to-ordinal mapping action that preserves the notebook's output column semantics.",
+      "evidence_snippets": [
+        "alldata['num_'+c].loc[alldata[c]=='poor']=0",
+        "alldata['num_'+c].loc[alldata[c]=='excellent']=3",
+        "alldata['num_'+c].loc[alldata[c]=='no data']=1"
+      ],
+      "rareness": "rare",
+      "confidence": 0.9
+    },
+    {
+      "action_id": "CA-000096",
+      "action_type": "POLYNOMIAL_FEATURE",
+      "canonical_params": {
+        "columns": [
+          "metro_km_avto",
+          "public_transport_station_km",
+          "green_zone_km"
+        ],
+        "degree": 2,
+        "include_bias": false
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Polynomial distance interactions are mechanically possible, but they create many continuous cross-terms without notebook evidence that this branch is preferred here.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Second model-specific polynomial variant around transport and environment distances.",
+      "base_refs": [
+        "demesgal/magic-numbers",
+        "dex314/magic-numbers-new-change-additional-vars"
+      ]
+    },
+    {
+      "action_id": "CA-000097",
+      "action_type": "POWER_TRANSFORM",
+      "canonical_params": {
+        "columns": [
+          "full_sq",
+          "life_sq",
+          "kitch_sq"
+        ],
+        "method": "yeo-johnson"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "A Yeo-Johnson power transform on apartment areas is a plausible model-specific branch, but the stronger observed Sberbank choices rely on direct ratios and targeted cleanup instead.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic power-transform variant around the housing-area block.",
+      "derived_from_action_ids": [
+        "CA-000115",
+        "CA-000120"
+      ]
+    },
+    {
+      "action_id": "CA-000098",
+      "action_type": "POWER_TRANSFORM",
+      "canonical_params": {
+        "columns": [
+          "metro_km_avto",
+          "park_km",
+          "industrial_km"
+        ],
+        "method": "box-cox"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Box-Cox transforms on distance columns add another tuning-sensitive layer around already noisy geographic features.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Second model-specific power-transform branch around skewed distance measures.",
+      "base_refs": [
+        "demesgal/magic-numbers",
+        "dex314/magic-numbers-new-change-additional-vars"
+      ]
+    },
+    {
+      "action_id": "CA-000099",
+      "action_type": "RARE_CATEGORY_BUCKETIZE",
+      "canonical_params": {
+        "columns": [
+          "sub_area"
+        ],
+        "min_count": 50,
+        "other_label": "__RARE__"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Bucketing rare sub_area values into a shared token is mechanically possible, but it discards fine-grained neighborhood identity that many Sberbank baselines preserve.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic rare-category branch around the location text field.",
+      "base_refs": [
+        "aharless/latest-iteration-in-this-silly-game",
+        "optidatascience/use-partial-pca-for-collinearity-lb-0-328-w-xgb"
+      ]
+    },
+    {
+      "action_id": "CA-000100",
+      "action_type": "MAP_CATEGORIES",
+      "canonical_params": {
+        "columns": [
+          "product_type"
+        ],
+        "mapping": {
+          "OwnerOccupier": 0,
+          "Investment": 1
+        },
+        "output_columns": [
+          "num_product_type"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "The same object-to-numeric branch maps the binary product_type field into a compact 0/1 indicator before model fitting.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "optidatascience/use-partial-pca-for-collinearity-lb-0-328-w-xgb"
+      ],
+      "source_profile": "explanatory_style",
+      "context_notes": "Canonicalized from the notebook's generic two-category conversion loop for the product_type field.",
+      "evidence_snippets": [
+        "if len(alldata[c].value_counts())==2:",
+        "alldata['num_'+c]=[0 if x in ['no','OwnerOccupier'] else 1 for x in alldata[c]]"
+      ],
+      "rareness": "rare",
+      "confidence": 0.8
+    },
+    {
+      "action_id": "CA-000101",
+      "action_type": "RARE_CATEGORY_BUCKETIZE",
+      "canonical_params": {
+        "columns": [
+          "building_name"
+        ],
+        "min_count": 20,
+        "other_label": "__RARE__"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Rare-bucketing the factorized building_name identifier defeats the point of the notebook branch that tried to keep location-building distinctions explicit.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Second rare-category variant derived from the building_name feature family.",
+      "derived_from_action_ids": [
+        "CA-000007"
+      ],
+      "must_follow_action_ids": [
+        "CA-000007"
+      ]
+    },
+    {
+      "action_id": "CA-000102",
+      "action_type": "RATIO_FEATURE",
+      "canonical_params": {
+        "left_columns": [
+          "max_floor"
+        ],
+        "right_columns": [
+          "floor"
+        ],
+        "epsilon": 1.0,
+        "new_feature_name": "inv_rel_floor"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Inverting the floor ratio overemphasizes low-floor apartments and is much less natural than the observed floor-over-max_floor normalization.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic inverted ratio branch around rel_floor.",
+      "derived_from_action_ids": [
+        "CA-000110"
+      ]
+    },
+    {
+      "action_id": "CA-000103",
+      "action_type": "RATIO_FEATURE",
+      "canonical_params": {
+        "left_columns": [
+          "full_sq"
+        ],
+        "right_columns": [
+          "state"
+        ],
+        "epsilon": 1.0,
+        "new_feature_name": "full_sq_per_state"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic ratio misuse branch around apartment area and state.",
+      "derived_from_action_ids": [
+        "CA-000115"
+      ],
+      "reasoning": "Dividing apartment area by the noisy housing-condition code treats state as a true numeric denominator and distorts the main size signal."
+    },
+    {
+      "action_id": "CA-000104",
+      "action_type": "RATIO_FEATURE",
+      "canonical_params": {
+        "left_columns": [
+          "build_year"
+        ],
+        "right_columns": [
+          "max_floor"
+        ],
+        "epsilon": 1.0,
+        "new_feature_name": "year_per_floor"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "A build_year over max_floor ratio has no clear housing interpretation and mainly amplifies noise in both columns.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Fifth weak ratio branch around building metadata.",
+      "derived_from_action_ids": [
+        "CA-000025"
+      ]
+    },
+    {
+      "action_id": "CA-000105",
+      "action_type": "PARSE_DATETIME",
+      "canonical_params": {
+        "columns": [
+          "timestamp"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Strong Sberbank pipelines explicitly parse timestamp before macro joins, calendar derivation, and downstream temporal feature engineering.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "aharless/exercising-the-exorcism",
+        "bguberfain/naive-xgb-lb-0-317",
+        "dmkravtsov/11-sberbank",
+        "optidatascience/use-partial-pca-for-collinearity-lb-0-328-w-xgb"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Shared prerequisite for timestamp-derived calendar features and ordered macro joins.",
+      "evidence_snippets": [
+        "train = pd.read_csv('../input/train.csv', parse_dates=['timestamp'])",
+        "test = pd.read_csv('../input/test.csv', parse_dates=['timestamp'])",
+        "macro = pd.read_csv('../input/macro.csv', parse_dates=['timestamp'])"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.95
+    },
+    {
+      "action_id": "CA-000106",
+      "action_type": "RATIO_FEATURE",
+      "canonical_params": {
+        "left_columns": [
+          "life_sq"
+        ],
+        "right_columns": [
+          "state"
+        ],
+        "epsilon": 1.0,
+        "new_feature_name": "life_sq_per_state"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Dividing life_sq by state treats a noisy ordinal-like condition code as if it were a true scale denominator.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Sixth weak ratio branch around state.",
+      "derived_from_action_ids": [
+        "CA-000073"
+      ]
+    },
+    {
+      "action_id": "CA-000107",
+      "action_type": "RATIO_FEATURE",
+      "canonical_params": {
+        "left_columns": [
+          "floor"
+        ],
+        "right_columns": [
+          "state"
+        ],
+        "epsilon": 1.0,
+        "new_feature_name": "floor_per_state"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Floor per state is another mechanically possible but poorly motivated ratio that tends to blur both the floor and condition signals.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Seventh weak ratio branch around floor and state.",
+      "base_refs": [
+        "aharless/exercising-the-exorcism"
+      ]
+    },
+    {
+      "action_id": "CA-000108",
+      "action_type": "REPLACE_INF",
+      "canonical_params": {
+        "columns": [
+          "rel_floor",
+          "room_size"
+        ],
+        "replacement": null
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Nulling failed ratio outputs after the fact is weaker than fixing the denominator issues before engineering rel_floor and room_size.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic inf-replacement branch around ratio-derived features.",
+      "derived_from_action_ids": [
+        "CA-000110",
+        "CA-000120"
+      ],
+      "must_follow_action_ids": [
+        "CA-000110",
+        "CA-000120"
+      ]
+    },
+    {
+      "action_id": "CA-000109",
+      "action_type": "REPLACE_INF",
+      "canonical_params": {
+        "columns": [
+          "rel_floor",
+          "livArea_ratio",
+          "room_size"
+        ],
+        "replacement": 0
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Zero-filling failed ratio features after engineering rel_floor, livArea_ratio, and room_size bakes arbitrary numeric meaning into divide-by-problem cases.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Second inf-replacement branch around bank-produced apartment-layout ratios.",
+      "derived_from_action_ids": [
+        "CA-000110",
+        "CA-000115",
+        "CA-000120"
+      ],
+      "must_follow_action_ids": [
+        "CA-000110",
+        "CA-000115",
+        "CA-000120"
+      ]
+    },
+    {
+      "action_id": "CA-000110",
+      "action_type": "RATIO_FEATURE",
+      "canonical_params": {
+        "left_columns": [
+          "floor"
+        ],
+        "right_columns": [
+          "max_floor"
+        ],
+        "epsilon": 1.0,
+        "new_feature_name": "rel_floor"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "The cleaning-and-ensemble notebook adds relative floor position by dividing floor by max_floor.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "aharless/latest-iteration-in-this-silly-game"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Observed alongside other apartment-layout normalization features.",
+      "evidence_snippets": [
+        "train['rel_floor'] = train['floor'] / train['max_floor'].astype(float)"
+      ],
+      "rareness": "rare",
+      "confidence": 0.75
+    },
+    {
+      "action_id": "CA-000111",
+      "action_type": "ROLLING_WINDOW_FEATURE",
+      "canonical_params": {
+        "group_by_columns": [
+          "sub_area"
+        ],
+        "order_by": "timestamp",
+        "target_columns": [
+          "full_sq"
+        ],
+        "window": 3,
+        "agg_function": "mean",
+        "new_feature_name": "sub_area_rolling_mean_full_sq"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Rolling sub_area means over timestamp are mechanically possible but push the task toward a heavier time-series framing than most strong Sberbank solutions use.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic rolling-window branch around sub_area time history.",
+      "base_refs": [
+        "bguberfain/naive-xgb-lb-0-317",
+        "aharless/latest-iteration-in-this-silly-game"
+      ]
+    },
+    {
+      "action_id": "CA-000112",
+      "action_type": "ROLLING_WINDOW_FEATURE",
+      "canonical_params": {
+        "group_by_columns": [
+          "timestamp"
+        ],
+        "order_by": "timestamp",
+        "target_columns": [
+          "eurrub"
+        ],
+        "window": 6,
+        "agg_function": "mean",
+        "new_feature_name": "macro_rolling_eurrub"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "A rolling macro-rate smoother is plausible after the join, but it changes the simple timestamp-lookup baseline into a more elaborate temporal engineering path.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Second rolling-window branch around macro time-series features.",
+      "derived_from_action_ids": [
+        "CA-000085"
+      ],
+      "must_follow_action_ids": [
+        "CA-000085"
+      ]
+    },
+    {
+      "action_id": "CA-000113",
+      "action_type": "SAMPLE_ROWS",
+      "canonical_params": {
+        "method": "random",
+        "fraction": 0.5,
+        "random_state": 2017
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Randomly training on only half the housing rows is a tempting speed optimization, but it throws away already-limited signal from the transaction table.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic harmful subsampling branch for bank coverage.",
+      "base_refs": [
+        "bguberfain/naive-xgb-lb-0-317",
+        "aharless/latest-iteration-in-this-silly-game"
+      ]
+    },
+    {
+      "action_id": "CA-000114",
+      "action_type": "SAMPLE_ROWS",
+      "canonical_params": {
+        "method": "filter_recent",
+        "timestamp_column": "timestamp",
+        "start": "2014-01-01"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Keeping only recent years is plausible in a drifting market, but it discards too much historical evidence for the official train/test setup.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Second sampling branch around a recency-only slice.",
+      "base_refs": [
+        "sudalairajkumar/feature-engineering-validation-strategy",
+        "dmkravtsov/11-sberbank"
+      ]
+    },
+    {
+      "action_id": "CA-000115",
+      "action_type": "RATIO_FEATURE",
+      "canonical_params": {
+        "left_columns": [
+          "life_sq"
+        ],
+        "right_columns": [
+          "full_sq"
+        ],
+        "epsilon": 1.0,
+        "new_feature_name": "livArea_ratio"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "The exorcism notebook adds a living-area share feature by dividing life_sq by full_sq.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "aharless/exercising-the-exorcism"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Additional apartment-layout ratio introduced in the Bill S feature block.",
+      "evidence_snippets": [
+        "train['livArea_ratio'] = train['life_sq'] / train['full_sq'].astype(float)"
+      ],
+      "rareness": "rare",
+      "confidence": 0.9
+    },
+    {
+      "action_id": "CA-000116",
+      "action_type": "SCALE_NUMERIC",
+      "canonical_params": {
+        "method": "minmax",
+        "columns": [
+          "full_sq",
+          "life_sq",
+          "kitch_sq",
+          "floor",
+          "max_floor"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Min-max scaling the main apartment measurements is mechanically possible, but it is usually unnecessary for the tree-heavy Sberbank baseline family.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic scaling alternative around the apartment-size block.",
+      "base_refs": [
+        "palbha/russian-house-price-prediction"
+      ]
+    },
+    {
+      "action_id": "CA-000117",
+      "action_type": "SCALE_NUMERIC",
+      "canonical_params": {
+        "method": "robust",
+        "columns": [
+          "metro_km_avto",
+          "park_km",
+          "industrial_km",
+          "green_zone_km"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Robust-scaling a narrow distance subset adds another model-specific branch without addressing the more important cleanup and join decisions in the task.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Second scaling branch around transport and environment distances.",
+      "base_refs": [
+        "demesgal/magic-numbers",
+        "dex314/magic-numbers-new-change-additional-vars"
+      ]
+    },
+    {
+      "action_id": "CA-000118",
+      "action_type": "TARGET_ENCODE_OOF",
+      "canonical_params": {
+        "columns": [
+          "sub_area"
+        ],
+        "target_column": "price_doc",
+        "cv_strategy": "kfold",
+        "n_splits": 5,
+        "statistic": "mean"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "OOF target encoding of sub_area is mechanically possible for regression, but it adds a fairly heavy supervised categorical branch that few observed Sberbank notebooks use.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic leakage-aware encoding branch added for broad canonical coverage.",
+      "base_refs": [
+        "aharless/latest-iteration-in-this-silly-game",
+        "optidatascience/use-partial-pca-for-collinearity-lb-0-328-w-xgb"
+      ]
+    },
+    {
+      "action_id": "CA-000119",
+      "action_type": "TARGET_ENCODE_OOF",
+      "canonical_params": {
+        "columns": [
+          "building_name"
+        ],
+        "target_column": "price_doc",
+        "cv_strategy": "kfold",
+        "n_splits": 5,
+        "statistic": "mean"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "OOF target-encoding the derived building_name identifier compounds a high-cardinality branch without clear evidence that it beats the simpler observed encodings.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Second model-specific target-encoding variant around building_name.",
+      "derived_from_action_ids": [
+        "CA-000007"
+      ],
+      "must_follow_action_ids": [
+        "CA-000007"
+      ]
+    },
+    {
+      "action_id": "CA-000120",
+      "action_type": "RATIO_FEATURE",
+      "canonical_params": {
+        "left_columns": [
+          "life_sq"
+        ],
+        "right_columns": [
+          "num_room"
+        ],
+        "epsilon": 1.0,
+        "new_feature_name": "room_size"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "The silly-games notebook also engineers room_size as living area divided by room count after the shared apartment-cleaning block.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "demesgal/magic-numbers",
+        "ezyyyy/silly-silly-data",
+        "kirillal/silly-games",
+        "paulorzp/xgb-mix-models-lb-0-31",
+        "saeedt2977/latest-iteration-in-this-silly-game-lb-0-31039",
+        "valadi/magic-numbers-try-different"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Apartment-layout normalization feature added after basic cleaning.\nSame housing-layout feature appears in the stronger magic-number family.\nRepeated across the silly/magic family as a housing-layout normalization feature.\nRepeated provenance for the same apartment-layout ratio used in the silly family.\nRepeated provenance for the same layout-normalization feature.\nRepeated provenance for the same room_size ratio in the magic-number family.",
+      "evidence_snippets": [
+        "train['room_size'] = train['life_sq'] / train['num_room'].astype(float)"
+      ],
+      "rareness": "common",
+      "confidence": 0.9
+    },
+    {
+      "action_id": "CA-000121",
+      "action_type": "TEXT_VECTORIZATION",
+      "canonical_params": {
+        "columns": [
+          "sub_area"
+        ],
+        "method": "tfidf",
+        "ngram_range": [
+          1,
+          2
+        ],
+        "max_features": 500
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "TF-IDF on sub_area names is mechanically possible because the table has text, but the short neighborhood strings rarely justify a separate text-model branch here.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic text-vectorization branch around sub_area.",
+      "base_refs": [
+        "aharless/latest-iteration-in-this-silly-game",
+        "optidatascience/use-partial-pca-for-collinearity-lb-0-328-w-xgb"
+      ]
+    },
+    {
+      "action_id": "CA-000122",
+      "action_type": "TEXT_VECTORIZATION",
+      "canonical_params": {
+        "columns": [
+          "sub_area"
+        ],
+        "method": "char_tfidf",
+        "ngram_range": [
+          3,
+          5
+        ],
+        "max_features": 1000
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Character n-gram vectorization on sub_area overfits spelling fragments in a task where structured location and macro columns already dominate.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Second model-specific text-vectorization variant around location names.",
+      "base_refs": [
+        "aharless/latest-iteration-in-this-silly-game",
+        "optidatascience/use-partial-pca-for-collinearity-lb-0-328-w-xgb"
+      ]
+    },
+    {
+      "action_id": "CA-000123",
+      "action_type": "TIME_SINCE_REFERENCE",
+      "canonical_params": {
+        "timestamp_column": "timestamp",
+        "reference": "2011-01-01",
+        "unit": "days",
+        "output_column": "days_since_start"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "A global days-since-reference feature is mechanically valid after parsing timestamp, but it is a weaker temporal summary than the observed month/week count branches.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic elapsed-time branch around the Sberbank timestamp column.",
+      "derived_from_action_ids": [
+        "CA-000105",
+        "CA-000037"
+      ]
+    },
+    {
+      "action_id": "CA-000124",
+      "action_type": "TIME_SINCE_REFERENCE",
+      "canonical_params": {
+        "timestamp_column": "timestamp",
+        "reference": "first_train_row",
+        "unit": "months",
+        "output_column": "months_since_first_sale"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Months-since-first-sale creates a simple temporal trend proxy, but it is still a secondary branch next to direct calendar parts and macro lookups.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Second elapsed-time variant around timestamp-derived trends.",
+      "derived_from_action_ids": [
+        "CA-000105",
+        "CA-000037"
+      ]
+    }
+  ]
+}

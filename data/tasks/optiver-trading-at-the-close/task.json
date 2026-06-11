@@ -1,0 +1,65 @@
+{
+  "competition_slug": "optiver-trading-at-the-close",
+  "dataset": {
+    "provider": "kaggle",
+    "competition": "optiver-trading-at-the-close",
+    "train_files": [
+      "train.csv"
+    ],
+    "test_files": [
+      "example_test_files/test.csv"
+    ],
+    "sample_submission_files": [
+      "example_test_files/sample_submission.csv"
+    ],
+    "target_column": "target",
+    "primary_key": "row_id"
+  },
+  "goal": "Suggest preprocessing and feature-engineering actions for predicting short-horizon closing price movements from order-book and auction microstructure data under MAE.",
+  "task_characteristics": {
+    "ml_domain": "finance_tabular",
+    "problem_type": "regression",
+    "table_structure": "single_table",
+    "dataset_size_bucket": "xlarge",
+    "dataset_size_raw": 5237980,
+    "feature_dimensionality_bucket": "low",
+    "feature_dimensionality_raw": 16,
+    "preprocessing_complexity_bucket": "medium",
+    "preprocessing_complexity_raw": 20,
+    "analysis_notes": "Single-table time-series finance regression task. The train CSV contains approximately 5.24 million intraday rows keyed by (stock_id, date_id, seconds_in_bucket), placing it well into the xlarge bucket. Raw feature dimensionality is low at 16 columns (stock_id, date_id, seconds_in_bucket, imbalance_size, imbalance_buy_sell_flag, reference_price, matched_size, far_price, near_price, ask_price, bid_price, ask_size, bid_size, wap, target, row_id). Preprocessing complexity is medium at 20 golden actions because competitive pipelines build extensive microstructure imbalance formulas, pairwise price features, stock-level lag/diff/rolling temporal features, stock priors from grouped aggregations, and multiple missing-value handling strategies."
+  },
+  "dataset_description": {
+    "summary": "A single train.csv file with approximately 5.24 million intraday order-book rows across 200 stocks and 481 trading days. Each row captures the auction state at a specific (stock_id, date_id, seconds_in_bucket) triple and includes quoted prices (reference, far, near, ask, bid, WAP), order sizes (imbalance, matched, ask, bid), and a directional imbalance flag. The target column is the 60-second closing price return. The example_test_files directory contains a sample test CSV and submission template.",
+    "raw_text": "Optiver Trading at the Close is a Kaggle code competition focused on predicting short-horizon closing auction price movements using order-book microstructure data. The primary dataset is a single large CSV with repeated intraday rows per stock per trading day. Each row is identified by stock_id (integer 0-199), date_id (integer trading day), and seconds_in_bucket (seconds into the closing auction window). The feature set is compact but dense: six price columns (reference_price, far_price, near_price, ask_price, bid_price, wap), four size columns (imbalance_size, matched_size, ask_size, bid_size), and one directional flag (imbalance_buy_sell_flag). Missing values are concentrated in far_price and near_price (approximately 50% null), which represent indicative auction prices that are only published when there is sufficient order flow. The target is a normalized 60-second WAP return measured from the auction. The competition uses a code-submission format with a hidden test set served through a runtime API, but example test files are provided for local development.",
+    "file_summary": {
+      "total_file_count": 3,
+      "file_types": [
+        {
+          "extension": ".csv",
+          "file_count": 3,
+          "total_size_bytes": 1500000000
+        }
+      ]
+    },
+    "column_summary": {
+      "total_column_count": 16,
+      "column_types": [
+        {
+          "column_type": "Numeric",
+          "column_count": 12
+        },
+        {
+          "column_type": "Categorical",
+          "column_count": 1
+        },
+        {
+          "column_type": "Id",
+          "column_count": 3
+        }
+      ]
+    }
+  },
+  "metric": {
+    "name": "MAE"
+  }
+}

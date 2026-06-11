@@ -1,0 +1,377 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "data/schema/task.schema.json",
+  "title": "TaskArtifact",
+  "description": "Schema for data/tasks/<competition_slug>/task.json",
+  "type": "object",
+  "required": [
+    "competition_slug",
+    "dataset",
+    "goal",
+    "task_characteristics"
+  ],
+  "properties": {
+    "competition_slug": {
+      "type": "string",
+      "minLength": 1
+    },
+    "dataset": {
+      "type": "object",
+      "required": [
+        "provider",
+        "competition",
+        "target_column"
+      ],
+      "properties": {
+        "provider": {
+          "type": "string",
+          "minLength": 1
+        },
+        "competition": {
+          "type": "string",
+          "minLength": 1
+        },
+        "train_files": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "test_files": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "lookup_files": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "sample_submission_files": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "data_dictionary_files": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "target_column": {
+          "type": "string",
+          "minLength": 1
+        },
+        "primary_key": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "goal": {
+      "type": "string",
+      "minLength": 1
+    },
+    "task_characteristics": {
+      "type": "object",
+      "required": [
+        "ml_domain",
+        "problem_type",
+        "table_structure",
+        "dataset_size_bucket",
+        "dataset_size_raw",
+        "feature_dimensionality_bucket",
+        "feature_dimensionality_raw",
+        "preprocessing_complexity_bucket",
+        "preprocessing_complexity_raw",
+        "analysis_notes"
+      ],
+      "properties": {
+        "ml_domain": {
+          "type": "string",
+          "minLength": 1
+        },
+        "problem_type": {
+          "type": "string",
+          "enum": [
+            "binary_classification",
+            "multiclass_classification",
+            "regression",
+            "ranking",
+            "forecasting",
+            "other"
+          ]
+        },
+        "table_structure": {
+          "type": "string",
+          "enum": [
+            "single_table",
+            "multi_table_lookup",
+            "multi_table_relational"
+          ]
+        },
+        "dataset_size_bucket": {
+          "type": "string",
+          "enum": [
+            "small",
+            "medium",
+            "large",
+            "xlarge"
+          ]
+        },
+        "dataset_size_raw": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "feature_dimensionality_bucket": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "feature_dimensionality_raw": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "preprocessing_complexity_bucket": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "preprocessing_complexity_raw": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "analysis_notes": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "overview": {
+      "type": "object",
+      "required": [
+        "title",
+        "summary",
+        "raw_text",
+        "host",
+        "category",
+        "reward",
+        "team_count",
+        "enabled_date",
+        "deadline",
+        "url"
+      ],
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "raw_text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "host": {
+          "type": "string",
+          "minLength": 1
+        },
+        "category": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reward": {
+          "type": "string",
+          "minLength": 1
+        },
+        "team_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "enabled_date": {
+          "type": "string",
+          "minLength": 1
+        },
+        "new_entrant_deadline": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "deadline": {
+          "type": "string",
+          "minLength": 1
+        },
+        "url": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "dataset_description": {
+      "type": "object",
+      "required": [
+        "summary",
+        "raw_text",
+        "file_summary",
+        "column_summary"
+      ],
+      "properties": {
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "raw_text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "file_summary": {
+          "type": "object",
+          "required": [
+            "total_file_count",
+            "file_types"
+          ],
+          "properties": {
+            "total_file_count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "file_types": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "extension",
+                  "file_count",
+                  "total_size_bytes"
+                ],
+                "properties": {
+                  "extension": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "file_count": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "total_size_bytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "column_summary": {
+          "type": "object",
+          "required": [
+            "total_column_count",
+            "column_types"
+          ],
+          "properties": {
+            "total_column_count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "column_types": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "column_type",
+                  "column_count"
+                ],
+                "properties": {
+                  "column_type": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "column_count": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "feature_list": {
+          "type": "object",
+          "required": [
+            "features"
+          ],
+          "properties": {
+            "source_file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "source_sheet": {
+              "type": "string",
+              "minLength": 1
+            },
+            "features": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "name",
+                  "description"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "description": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "metric": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,16 @@
+{
+  "testcase_id": "tc4_mixed_history",
+  "competition_slug": "sberbank-russian-housing-market",
+  "task_ref": "../task.json",
+  "input": {
+    "scenario": "mixed",
+    "context_action_ids": [
+      "CA-000001",
+      "CA-000013",
+      "CA-000105",
+      "CA-000050",
+      "CA-000062",
+      "CA-000103"
+    ]
+  }
+}

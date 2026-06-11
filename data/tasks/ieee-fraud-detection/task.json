@@ -1,0 +1,88 @@
+{
+  "competition_slug": "ieee-fraud-detection",
+  "dataset": {
+    "provider": "kaggle",
+    "competition": "ieee-fraud-detection",
+    "train_files": [
+      "train_transaction.csv",
+      "train_identity.csv"
+    ],
+    "test_files": [
+      "test_transaction.csv",
+      "test_identity.csv"
+    ],
+    "sample_submission_files": [
+      "sample_submission.csv"
+    ],
+    "target_column": "isFraud",
+    "primary_key": "TransactionID"
+  },
+  "goal": "Suggest preprocessing and feature-engineering actions for predicting fraudulent transactions from IEEE-CIS transaction and identity tables under the AUC evaluation metric.",
+  "task_characteristics": {
+    "ml_domain": "fraud_detection_tabular",
+    "problem_type": "binary_classification",
+    "table_structure": "multi_table_relational",
+    "dataset_size_bucket": "large",
+    "dataset_size_raw": 590540,
+    "feature_dimensionality_bucket": "high",
+    "feature_dimensionality_raw": 434,
+    "preprocessing_complexity_bucket": "medium",
+    "preprocessing_complexity_raw": 16,
+    "analysis_notes": "Large fraud-classification benchmark built from one transaction table and one sparse identity table joined by TransactionID. The largest benchmark-relevant raw table is train_transaction.csv with 590,540 labeled rows, which places the task in the large bucket under the shared threshold policy. The benchmark-relevant case-insensitive raw-column union is 434 columns across the transaction, identity, and submission files, so the task is materially wider than the medium cutoff. The curated IEEE golden set currently contains 16 preprocessing actions, keeping the task in the medium preprocessing-complexity bucket even though the actual feature engineering style is relational, time-aware, and highly aggregation-heavy."
+  },
+  "overview": {
+    "title": "IEEE-CIS Fraud Detection",
+    "summary": "Predict fraudulent e-commerce transactions from anonymized transaction and identity tables.",
+    "raw_text": "IEEE-CIS Fraud Detection is a Kaggle research competition built around real-world, anonymized online-transaction data. The prediction target is isFraud for each TransactionID. Participants work with one wide transaction table and one linked identity table, both anonymized but still rich in temporal, card, address, email, device, and high-dimensional V-feature signals. Strong solutions usually join the identity table to the transaction table, engineer temporal features from TransactionDT, create client-style identifiers, aggregate transaction statistics by those identifiers, and encode a mixture of numeric, categorical, and sparse identity features before fitting tree ensembles. Submissions output one fraud probability per TransactionID and are scored with area under the ROC curve.",
+    "host": "Kaggle",
+    "category": "Research",
+    "reward": "20,000 Usd",
+    "team_count": 6351,
+    "enabled_date": "2019-07-15 00:00:00",
+    "new_entrant_deadline": null,
+    "deadline": "2019-10-03 23:59:00",
+    "url": "https://www.kaggle.com/competitions/ieee-fraud-detection"
+  },
+  "dataset_description": {
+    "summary": "The downloadable competition bundle contains five CSV files totaling 1,354,953,156 bytes. The main supervised table is train_transaction.csv with 590,540 rows and 394 columns, paired with test_transaction.csv containing 506,691 rows and 393 columns. A secondary identity table adds 41 columns for only a subset of transactions: train_identity.csv has 144,233 rows and test_identity.csv has 141,907 rows, both keyed by TransactionID. sample_submission.csv contains 506,691 rows and two columns. Across the benchmark-relevant train, test, identity, and submission files, the case-insensitive raw-column union is 434 columns.",
+    "raw_text": "IEEE-CIS Fraud Detection is organized as a two-table relational benchmark keyed by TransactionID. train_transaction.csv contains the supervised target isFraud together with TransactionDT, TransactionAmt, card, address, email, count-style C features, delay-style D features, boolean-like M features, and a very wide block of anonymized V features. test_transaction.csv mirrors the same schema without the target column. train_identity.csv and test_identity.csv provide sparse auxiliary identity attributes such as id_* fields, DeviceType, and DeviceInfo, and must be left-joined back to the transaction tables on TransactionID because only a subset of transactions has identity coverage. The downloaded data does not include a human-readable feature dictionary, so practical preprocessing decisions are driven by the raw file layout and repeated notebook conventions: careful join handling, temporal derivation from TransactionDT, mixed categorical encoding, and group aggregation over engineered client identifiers are central to the benchmark.",
+    "file_summary": {
+      "total_file_count": 5,
+      "file_types": [
+        {
+          "extension": ".csv",
+          "file_count": 5,
+          "total_size_bytes": 1354953156
+        }
+      ]
+    },
+    "column_summary": {
+      "total_column_count": 434,
+      "column_types": [
+        {
+          "column_type": "Numeric",
+          "column_count": 385
+        },
+        {
+          "column_type": "TemporalOffset",
+          "column_count": 16
+        },
+        {
+          "column_type": "Categorical",
+          "column_count": 22
+        },
+        {
+          "column_type": "Boolean",
+          "column_count": 10
+        },
+        {
+          "column_type": "Id",
+          "column_count": 1
+        }
+      ]
+    }
+  },
+  "metric": {
+    "name": "AUC"
+  }
+}

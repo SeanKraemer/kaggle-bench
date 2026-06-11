@@ -1,0 +1,13 @@
+{
+  "testcase_id": "tc2_partial_good",
+  "competition_slug": "lish-moa",
+  "task_ref": "../task.json",
+  "input": {
+    "scenario": "partial_good",
+    "context_action_ids": [
+      "CA-000003",
+      "CA-000008",
+      "CA-000034"
+    ]
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "testcase_id": "tc2_partial_good",
+  "competition_slug": "santander-customer-transaction-prediction",
+  "task_ref": "../task.json",
+  "input": {
+    "scenario": "partial_good",
+    "context_action_ids": [
+      "CA-000002",
+      "CA-000005"
+    ]
+  }
+}

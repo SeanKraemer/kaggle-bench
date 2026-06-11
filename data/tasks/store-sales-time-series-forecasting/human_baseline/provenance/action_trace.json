@@ -1,0 +1,56 @@
+[
+  {
+    "predicted_action_id": "CA-000002",
+    "artifact": "../work.ipynb",
+    "section": "Parse Date Column",
+    "mapping_rationale": "Universal prerequisite \u2014 date must be parsed before any calendar feature or join."
+  },
+  {
+    "predicted_action_id": "CA-000004",
+    "artifact": "../work.ipynb",
+    "section": "Join Stores Metadata",
+    "mapping_rationale": "Adds city, state, type, cluster store metadata features"
+  },
+  {
+    "predicted_action_id": "CA-000007",
+    "artifact": "../work.ipynb",
+    "section": "Join Oil Prices",
+    "mapping_rationale": "Left join preserves all rows; oil has no entries for weekends/holidays."
+  },
+  {
+    "predicted_action_id": "CA-000011",
+    "artifact": "../work.ipynb",
+    "section": "Join Holiday Events",
+    "mapping_rationale": "Adds holiday type, locale, transferred flag. Left join preserves non-holiday rows."
+  },
+  {
+    "predicted_action_id": "CA-000018",
+    "artifact": "../work.ipynb",
+    "section": "Oil Price Interpolation",
+    "mapping_rationale": "Linear interpolation fills weekend/holiday NaN gaps in dcoilwtico."
+  },
+  {
+    "predicted_action_id": "CA-000024",
+    "artifact": "../work.ipynb",
+    "section": "Filter Transferred Holidays",
+    "mapping_rationale": "Uses a null-safe holiday cleanup so ordinary non-holiday rows stay in the data while moved-holiday labels are removed."
+  },
+  {
+    "predicted_action_id": "CA-000031",
+    "artifact": "../work.ipynb",
+    "section": "Calendar Date Features",
+    "mapping_rationale": "Full calendar block (year, month, dayofweek, quarter) is used by majority of top notebooks."
+  },
+  {
+    "predicted_action_id": "CA-000044",
+    "artifact": "../work.ipynb",
+    "section": "Encode Family Column",
+    "mapping_rationale": "Label encoding of the family column is standard for tree-based models."
+  },
+  {
+    "predicted_action_id": "CA-000052",
+    "artifact": "../work.ipynb",
+    "section": "Drop id Column",
+    "mapping_rationale": "Row identifier has no predictive value."
+  }
+]

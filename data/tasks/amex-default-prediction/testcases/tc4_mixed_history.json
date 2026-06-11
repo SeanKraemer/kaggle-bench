@@ -1,0 +1,16 @@
+{
+  "testcase_id": "tc4_mixed_history",
+  "competition_slug": "amex-default-prediction",
+  "task_ref": "../task.json",
+  "input": {
+    "scenario": "mixed",
+    "context_action_ids": [
+      "CA-000056",
+      "CA-000049",
+      "CA-000014",
+      "CA-000052",
+      "CA-000031",
+      "CA-000002"
+    ]
+  }
+}

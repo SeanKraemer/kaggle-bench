@@ -1,0 +1,14 @@
+[
+  {
+    "predicted_action_id": "CA-000002",
+    "artifact": "../work.ipynb",
+    "section": "Drop ID_code Column",
+    "mapping_rationale": "ID_code is a unique string row identifier with no predictive value; it must be excluded from the feature matrix."
+  },
+  {
+    "predicted_action_id": "CA-000009",
+    "artifact": "../work.ipynb",
+    "section": "Value-Count Features",
+    "mapping_rationale": "Value-count features expose frequency fingerprints that tree models exploit for AUC gains. CA-000005 (real-row identification) was not selected; the synthetic-row discovery is a non-obvious competition-specific insight."
+  }
+]

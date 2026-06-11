@@ -1,0 +1,13 @@
+{
+  "competition_slug": "spaceship-titanic",
+  "testcase_id": "tc1_from_scratch",
+  "artifact_type": "human_baseline_provenance",
+  "author": "annotator_c",
+  "created_at": "2026-04-13T00:00:00-05:00",
+  "source_mode": "re_authored_bank_id_output_from_notebook_evidence",
+  "related_output": "../tc1_human.json",
+  "notebook_artifacts": ["../work.ipynb"],
+  "time_spent_minutes": 45,
+  "consulted_candidate_bank": true,
+  "notes": "This artifact re-authors the executed notebook-backed TC1 reference baseline into the current bank-id output format. It is benchmark-aware and should not be treated as a blinded human experiment."
+}

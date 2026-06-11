@@ -1,0 +1,56 @@
+{
+  "competition_slug": "icr-identify-age-related-conditions",
+  "testcase_id": "tc1_from_scratch",
+  "artifact_type": "eval_human_baseline_action_trace",
+  "related_output": "../tc1_human.json",
+  "traces": [
+    {
+      "predicted_action_id": "CA-000002",
+      "artifact": "../work.ipynb",
+      "section": "Build Core Modeling Frame",
+      "mapping_rationale": "The notebook explicitly removes Id before building the model-side feature frame, matching the bank's identifier-drop action."
+    },
+    {
+      "predicted_action_id": "CA-000006",
+      "artifact": "../work.ipynb",
+      "section": "Build Core Modeling Frame",
+      "mapping_rationale": "The notebook maps EJ from A/B to 0/1 directly, which is a clean bank match."
+    },
+    {
+      "predicted_action_id": "CA-000004",
+      "artifact": "../work.ipynb",
+      "section": "Build Core Modeling Frame",
+      "mapping_rationale": "The notebook applies median imputation to the sparse biomarker subset and uses this as the canonical current-bank missing-value repair branch."
+    },
+    {
+      "predicted_action_id": "CA-000008",
+      "artifact": "../work.ipynb",
+      "section": "Join Official Greeks Metadata",
+      "mapping_rationale": "The notebook joins greeks.csv onto train rows by Id for the optional validation-side branch."
+    },
+    {
+      "predicted_action_id": "CA-000010",
+      "artifact": "../work.ipynb",
+      "section": "Join Official Greeks Metadata",
+      "mapping_rationale": "The notebook parses Epsilon with coercion because Unknown values exist in the official file."
+    },
+    {
+      "predicted_action_id": "CA-000012",
+      "artifact": "../work.ipynb",
+      "section": "Standard-Scale Numeric Biomarkers",
+      "mapping_rationale": "The notebook standard-scales the numeric biomarker frame after core repairs, matching the non-primary standard scaling branch."
+    },
+    {
+      "predicted_action_id": "CA-000014",
+      "artifact": "../work.ipynb",
+      "section": "Selective Log Transform For Skewed Biomarkers",
+      "mapping_rationale": "The notebook applies log1p to a selective subset of skewed columns before the scaling branch, matching the bank's selective log-transform row."
+    }
+  ],
+  "omitted_notebook_steps": [
+    {
+      "section": "Inspect Sparse Columns And Header Quirk",
+      "note": "The notebook strips whitespace from BD / CD / CW / FD headers, but the current candidate bank does not have a rename-columns action."
+    }
+  ]
+}

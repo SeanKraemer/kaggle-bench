@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "data/schema/fault_actions.schema.json",
+  "title": "FaultActionBundle",
+  "description": "Schema for data/tasks/<competition_slug>/fault_actions.json",
+  "type": "object",
+  "required": [
+    "competition_slug",
+    "fault_actions"
+  ],
+  "properties": {
+    "competition_slug": {
+      "type": "string",
+      "minLength": 1
+    },
+    "fault_actions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/fault_action"
+      }
+    }
+  },
+  "$defs": {
+    "fault_action": {
+      "type": "object",
+      "required": [
+        "fault_action_id",
+        "action_type",
+        "canonical_params",
+        "reason"
+      ],
+      "properties": {
+        "fault_action_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "action_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "canonical_params": {
+          "type": "object"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,14 @@
+{
+  "testcase_id": "tc2_partial_good",
+  "competition_slug": "recruit-restaurant-visitor-forecasting",
+  "task_ref": "../task.json",
+  "input": {
+    "scenario": "partial_good",
+    "context_action_ids": [
+      "CA-000005",
+      "CA-000009",
+      "CA-000023",
+      "CA-000027"
+    ]
+  }
+}

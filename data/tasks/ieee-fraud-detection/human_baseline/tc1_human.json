@@ -1,0 +1,61 @@
+{
+  "competition_slug": "ieee-fraud-detection",
+  "testcase_id": "tc1_from_scratch",
+  "agent_name": "human",
+  "run_by": "annotator_a",
+  "run_id": "human_tc1_annotator_a_v1",
+  "artifact_refs": [
+    {
+      "kind": "other",
+      "path": "tc1_action_selection_workspace.md",
+      "description": "Family-by-family workspace used for the manual IEEE TC1 action-bank review."
+    },
+    {
+      "kind": "notes",
+      "path": "notes.md",
+      "description": "Author notes describing the manual review scope, evidence limits, and unresolved dependency notes for this TC1 human output."
+    },
+    {
+      "kind": "metadata",
+      "path": "provenance/metadata.json",
+      "description": "Run-level provenance for the manual IEEE TC1 human output."
+    },
+    {
+      "kind": "trace",
+      "path": "provenance/action_trace.json",
+      "description": "Trace linking each selected action to the family-by-family manual selection record."
+    },
+    {
+      "kind": "notebook",
+      "path": "work.ipynb",
+      "description": "Retained scaffold notebook; not used as primary evidence for this manual action-bank selection."
+    }
+  ],
+  "predicted_add_action_ids": [
+    "CA-000005",
+    "CA-000003",
+    "CA-000025",
+    "CA-000089",
+    "CA-000069",
+    "CA-000034",
+    "CA-000043",
+    "CA-000066",
+    "CA-000054",
+    "CA-000083",
+    "CA-000032",
+    "CA-000033",
+    "CA-000047",
+    "CA-000027",
+    "CA-000028",
+    "CA-000029",
+    "CA-000011"
+  ],
+  "predicted_remove_action_ids": [],
+  "time_spent_seconds": 1800,
+  "token_usage": {
+    "input_tokens": null,
+    "output_tokens": null,
+    "total_tokens": null
+  },
+  "notes": "Manual TC1 human output authored by annotator_a through a full family-by-family review of the IEEE candidate bank. The add-set below records the exact actions selected during that review."
+}

@@ -1,0 +1,10 @@
+**/__pycache__
+.DS_Store
+.venv/
+data/collector/data/*
+api_key.txt
+data/tasks/*/data/*
+data/tasks/*/outputs/
+*.log
+*.trace
+*.jsonl.tmp

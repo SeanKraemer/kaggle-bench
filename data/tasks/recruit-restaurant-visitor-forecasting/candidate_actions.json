@@ -1,0 +1,2607 @@
+{
+  "competition_slug": "recruit-restaurant-visitor-forecasting",
+  "generated_at": "2026-03-31T00:00:00-05:00",
+  "actions": [
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "off_day_flg = (weekend_flg == 1) AND (holiday_flg == 1)",
+        "output_columns": [
+          "off_day_flg"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Using an AND rule for off-day flags is plausible but misses ordinary weekends and ordinary holidays that the broader off-day branch is trying to capture.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "kimjunil/aiffel-yj-9-save-me"
+      ],
+      "derivation_reasoning": "Synthetic near-miss derived from the observed weekend/off-day expression by changing the boolean logic.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000001"
+    },
+    {
+      "action_type": "BIN_NUMERIC",
+      "canonical_params": {
+        "columns": [
+          "reserve_datetime_diff",
+          "reserve_visitors"
+        ],
+        "method": "quantile",
+        "bins": 10
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Quantile-binning reservation lead-time and reservation counts is plausible, but it coarsens dense reservation signal that Recruit kernels usually keep numeric.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "tunguz/surprise-me-2",
+        "djhavera/best-algorithm",
+        "festa78/simple-xgboost-lb-0-495",
+        "festa78/simple-lightgbm-lb-0-493",
+        "johannesss/multiple-lightgbm",
+        "jmbull/no-xgb-starter-here-s-one-lb-507",
+        "jdpaletto/surprised-yet-part2-lb-0-503",
+        "domcastro/surprise-me-3-get-the-kettle-on",
+        "abhilashawasthi/surprise-me-2-c3454b",
+        "mauryashubham/multiple-models-new-features-from-surprise-me-2",
+        "pranav84/surprise-me-h2o-automl-version"
+      ],
+      "derivation_reasoning": "Synthetic discretization branch derived from the observed reservation numeric feature family.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000002"
+    },
+    {
+      "action_type": "BIN_NUMERIC",
+      "canonical_params": {
+        "columns": [
+          "mean_visitors",
+          "count_observations"
+        ],
+        "method": "uniform",
+        "bins": 8
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Uniform-width bins over store-weekday history features are also plausible, but they flatten the compact lookup features that strong Recruit baselines preserve as numeric.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "djhavera/best-algorithm"
+      ],
+      "derivation_reasoning": "Second numeric-binning variant so Recruit numeric bucketing is not singleton.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000003"
+    },
+    {
+      "action_type": "CAST_DTYPE",
+      "canonical_params": {
+        "columns": [
+          "reserve_datetime_diff",
+          "reserve_visitors"
+        ],
+        "dtype": "string",
+        "errors": "coerce"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Casting reservation numeric features to strings is a plausible mistake when preparing model inputs, but it destroys their intended numeric meaning.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "tunguz/surprise-me-2",
+        "djhavera/best-algorithm",
+        "festa78/simple-xgboost-lb-0-495",
+        "festa78/simple-lightgbm-lb-0-493",
+        "johannesss/multiple-lightgbm",
+        "jmbull/no-xgb-starter-here-s-one-lb-507",
+        "jdpaletto/surprised-yet-part2-lb-0-503",
+        "domcastro/surprise-me-3-get-the-kettle-on",
+        "abhilashawasthi/surprise-me-2-c3454b",
+        "mauryashubham/multiple-models-new-features-from-surprise-me-2",
+        "pranav84/surprise-me-h2o-automl-version"
+      ],
+      "derivation_reasoning": "Synthetic harmful dtype-cast branch derived from the observed reservation feature columns.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000004"
+    },
+    {
+      "action_type": "PARSE_DATETIME",
+      "canonical_params": {
+        "columns": [
+          "visit_datetime",
+          "reserve_datetime"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Recruit reservation pipelines first parse visit and reserve timestamps before deriving reservation lead-time and daily reservation summaries.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "sherring/recruit-restaurant-visitor-forecasting-first-try",
+        "osciiart/denoising-autoencoder",
+        "danofer/swap-noise-denoising-autoencoder"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Shared starting step for both air_reserve and hpg_reserve feature branches.",
+      "evidence_snippets": [
+        "data[df]['visit_datetime'] = pd.to_datetime(data[df]['visit_datetime'])",
+        "data[df]['reserve_datetime'] = pd.to_datetime(data[df]['reserve_datetime'])",
+        "air_reserve['visit_datetime']=pd.to_datetime(air_reserve['visit_datetime'])"
+      ],
+      "rareness": "common",
+      "confidence": 0.92,
+      "action_id": "CA-000005"
+    },
+    {
+      "action_type": "CAST_DTYPE",
+      "canonical_params": {
+        "columns": [
+          "latitude",
+          "longitude"
+        ],
+        "dtype": "int",
+        "errors": "coerce"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Casting store geolocation to integers is mechanically valid but discards useful spatial precision.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "tflana/simple-keras-feed-fwd-nn"
+      ],
+      "derivation_reasoning": "Synthetic truncating cast variant derived from the observed air_store_info geographic columns.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000006"
+    },
+    {
+      "action_type": "CLIP_OUTLIERS",
+      "canonical_params": {
+        "columns": [
+          "visitors"
+        ],
+        "lower": 0,
+        "upper_quantile": 0.95
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Aggressively clipping visitors at the 95th percentile is a plausible tabular cleanup move, but it suppresses genuine demand spikes in this forecasting task.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "novinsh/surprise-me-2-with-lstm"
+      ],
+      "derivation_reasoning": "Synthetic outlier-clipping branch derived from the observed visitor target family.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000007"
+    },
+    {
+      "action_type": "CLIP_OUTLIERS",
+      "canonical_params": {
+        "columns": [
+          "reserve_visitors"
+        ],
+        "lower": 0,
+        "upper": 20
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Hard-capping reservation counts is another plausible cleanup move, but it discards real reservation volume variation that kernels typically keep.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "osciiart/denoising-autoencoder",
+        "tflana/simple-keras-feed-fwd-nn"
+      ],
+      "derivation_reasoning": "Second clipping variant added on reservation features.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000008"
+    },
+    {
+      "action_type": "TIME_SINCE_REFERENCE",
+      "canonical_params": {
+        "columns": [
+          "reserve_datetime"
+        ],
+        "reference": "visit_datetime",
+        "unit": "days",
+        "output_columns": [
+          "reserve_datetime_diff"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Top Recruit kernels explicitly convert reservation timestamps into day-gap features between reservation time and visit time.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "tunguz/surprise-me-2",
+        "osciiart/denoising-autoencoder",
+        "festa78/simple-xgboost-lb-0-495"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Reservation lead time is a core temporal signal before any grouped reservation rollups.",
+      "evidence_snippets": [
+        "reserve_datetime_diff = (visit_datetime - reserve_datetime).days",
+        "data[df]['reserve_datetime_diff'] = data[df].apply(lambda r: (r['visit_datetime'] - r['reserve_datetime']).days, axis=1)"
+      ],
+      "rareness": "common",
+      "confidence": 0.9,
+      "must_follow_action_ids": [
+        "CA-000005"
+      ],
+      "action_id": "CA-000009"
+    },
+    {
+      "action_type": "CREATE_MISSING_INDICATOR",
+      "canonical_params": {
+        "columns": [
+          "rs1_x",
+          "rv1_x",
+          "rs2_x",
+          "rv2_x"
+        ],
+        "indicator_suffix": "_missing"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Missingness flags for wide reservation aggregates are plausible, but Recruit branches usually handle these columns directly through fill policies rather than extra indicator features.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "djhavera/best-algorithm",
+        "jmbull/no-xgb-starter-here-s-one-lb-507",
+        "jdpaletto/surprised-yet-part2-lb-0-503",
+        "dongxu027/mean-mix-math-geo-harmonic-lb-0-493",
+        "domcastro/surprise-me-3-get-the-kettle-on",
+        "abhilashawasthi/surprise-me-2-c3454b",
+        "mauryashubham/multiple-models-new-features-from-surprise-me-2"
+      ],
+      "derivation_reasoning": "Synthetic missingness-indicator branch derived from the observed wide-table fill policies.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000010"
+    },
+    {
+      "action_type": "CREATE_MISSING_INDICATOR",
+      "canonical_params": {
+        "columns": [
+          "air_genre_name",
+          "air_area_name",
+          "holiday_flg"
+        ],
+        "indicator_suffix": "_missing"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Adding explicit missingness indicators to joined store and holiday metadata is mechanically possible, but it expands the feature space beyond the curated Recruit target path.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "kimjunil/aiffel-yj-9-save-me"
+      ],
+      "derivation_reasoning": "Second missingness-indicator variant derived from store/date metadata joins.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000011"
+    },
+    {
+      "action_type": "CYCLICAL_ENCODE",
+      "canonical_params": {
+        "columns": [
+          "dow"
+        ],
+        "period": 7,
+        "output_columns": [
+          "dow_sin",
+          "dow_cos"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Sine/cosine encoding of weekday is plausible for neural models, but the benchmark does not currently reward a separate cyclical branch for Recruit.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "tflana/simple-keras-feed-fwd-nn",
+        "novinsh/surprise-me-2-with-lstm"
+      ],
+      "derivation_reasoning": "Synthetic cyclical weekday branch derived from the observed day-of-week feature family.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000012"
+    },
+    {
+      "action_type": "CYCLICAL_ENCODE",
+      "canonical_params": {
+        "columns": [
+          "month"
+        ],
+        "period": 12,
+        "output_columns": [
+          "month_sin",
+          "month_cos"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Cyclical month encoding is equally plausible, but still outside the curated Recruit target path.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "johannesss/multiple-lightgbm"
+      ],
+      "derivation_reasoning": "Second cyclical date-part variant added for canonical coverage.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000013"
+    },
+    {
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "air_store_id",
+          "visit_date"
+        ],
+        "target_columns": [
+          "reserve_datetime_diff",
+          "reserve_visitors"
+        ],
+        "agg_functions": [
+          "sum"
+        ],
+        "join_back": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "A dominant Recruit branch sums reservation lead-time and reserved visitors per store-date before joining them back to train/test.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "tunguz/surprise-me-2",
+        "djhavera/best-algorithm",
+        "festa78/simple-xgboost-lb-0-495",
+        "danofer/swap-noise-denoising-autoencoder"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "This is the standard reservation volume aggregate at prediction grain.",
+      "evidence_snippets": [
+        "tmp1 = data[df].groupby(['air_store_id','visit_datetime'], as_index=False)[['reserve_datetime_diff', 'reserve_visitors']].sum()",
+        "air_reserve_gp1=air_reserve.groupby(['air_store_id','visit_date'],as_index=False)['reserve_visitors'].sum()"
+      ],
+      "rareness": "common",
+      "confidence": 0.9,
+      "must_follow_action_ids": [
+        "CA-000009"
+      ],
+      "action_id": "CA-000014"
+    },
+    {
+      "action_type": "DATE_PART_FEATURE",
+      "canonical_params": {
+        "date_columns": [
+          "visit_date"
+        ],
+        "parts": [
+          "day"
+        ],
+        "drop_original": true
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Keeping only day-of-month while dropping the original visit date is a nearby but weaker calendar expansion than the shared Recruit branches use.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "johannesss/multiple-lightgbm",
+        "meli19/py-single-light-gbm-lb-0-521"
+      ],
+      "derivation_reasoning": "Synthetic near-miss date-part variant derived from the observed visit-date expansion.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000015"
+    },
+    {
+      "action_type": "DIFF_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "visitors"
+        ],
+        "periods": [
+          1
+        ],
+        "order_by_columns": [
+          "visit_date"
+        ],
+        "group_by_columns": [
+          "air_store_id"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Store-level visitor deltas are mechanically possible, but they move Recruit toward a heavier sequential branch than this benchmark is targeting.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "dongxu027/mean-mix-math-geo-harmonic-lb-0-493"
+      ],
+      "derivation_reasoning": "Synthetic temporal-delta branch derived from the observed store-date visit history.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000016"
+    },
+    {
+      "action_type": "DIFF_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "reserve_visitors"
+        ],
+        "periods": [
+          1
+        ],
+        "order_by_columns": [
+          "visit_date"
+        ],
+        "group_by_columns": [
+          "air_store_id"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Reservation-count deltas are also plausible, but they add a fragile sequential reservation branch that the benchmark does not reward.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "osciiart/denoising-autoencoder",
+        "tflana/simple-keras-feed-fwd-nn"
+      ],
+      "derivation_reasoning": "Second diff-feature variant added on reservation history.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000017"
+    },
+    {
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "air_store_id",
+          "visit_date"
+        ],
+        "target_columns": [
+          "reserve_datetime_diff",
+          "reserve_visitors"
+        ],
+        "agg_functions": [
+          "mean"
+        ],
+        "join_back": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Many strong Recruit kernels also average reservation size and lead-time at the same store-date grain.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "tunguz/surprise-me-2",
+        "djhavera/best-algorithm",
+        "osciiart/denoising-autoencoder",
+        "tflana/simple-keras-feed-fwd-nn"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Paired with the reservation-sum aggregate in the common the1owl-style branch.",
+      "evidence_snippets": [
+        "tmp2 = data[df].groupby(['air_store_id','visit_datetime'], as_index=False)[['reserve_datetime_diff', 'reserve_visitors']].mean()"
+      ],
+      "rareness": "common",
+      "confidence": 0.88,
+      "must_follow_action_ids": [
+        "CA-000009"
+      ],
+      "action_id": "CA-000018"
+    },
+    {
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "visit_date"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Dropping visit_date too early blocks calendar features, holiday joins, and store-weekday history construction.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "tunguz/surprise-me-2",
+        "djhavera/best-algorithm",
+        "festa78/simple-xgboost-lb-0-495",
+        "festa78/simple-lightgbm-lb-0-493",
+        "johannesss/multiple-lightgbm",
+        "jmbull/no-xgb-starter-here-s-one-lb-507",
+        "jdpaletto/surprised-yet-part2-lb-0-503",
+        "domcastro/surprise-me-3-get-the-kettle-on",
+        "abhilashawasthi/surprise-me-2-c3454b",
+        "mauryashubham/multiple-models-new-features-from-surprise-me-2",
+        "pranav84/surprise-me-h2o-automl-version"
+      ],
+      "derivation_reasoning": "Synthetic destructive-drop error derived from the observed visit-date parsing and date-part actions.",
+      "challenge_type": "obvious",
+      "action_id": "CA-000019"
+    },
+    {
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "air_store_id"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Dropping the store identifier too early destroys nearly every useful grouped lookup and join in Recruit.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "tunguz/surprise-me-2",
+        "djhavera/best-algorithm",
+        "festa78/simple-xgboost-lb-0-495",
+        "festa78/simple-lightgbm-lb-0-493",
+        "johannesss/multiple-lightgbm",
+        "jmbull/no-xgb-starter-here-s-one-lb-507",
+        "jdpaletto/surprised-yet-part2-lb-0-503",
+        "domcastro/surprise-me-3-get-the-kettle-on",
+        "abhilashawasthi/surprise-me-2-c3454b",
+        "mauryashubham/multiple-models-new-features-from-surprise-me-2",
+        "pranav84/surprise-me-h2o-automl-version"
+      ],
+      "derivation_reasoning": "Synthetic destructive-drop error derived from the shared store-grain modeling setup.",
+      "challenge_type": "obvious",
+      "action_id": "CA-000020"
+    },
+    {
+      "action_type": "DROP_CONSTANT_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "holiday_flg",
+          "weekend_flg"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Constant-column pruning is plausible on a narrow slice, but dropping holiday indicators can erase the very state flags later feature branches rely on.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "kimjunil/aiffel-yj-9-save-me",
+        "zeemeen/weighted-mean-comparisons-lb-0-497-1st"
+      ],
+      "derivation_reasoning": "Synthetic over-pruning branch derived from the observed holiday-flag engineering.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000021"
+    },
+    {
+      "action_type": "DROP_CONSTANT_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "count_observations",
+          "year"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "These columns can look low-variance in a narrow slice, but dropping them globally is a brittle pruning choice.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "johannesss/multiple-lightgbm"
+      ],
+      "derivation_reasoning": "Second constant-pruning variant added for canonical coverage.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000022"
+    },
+    {
+      "action_type": "PARSE_DATETIME",
+      "canonical_params": {
+        "columns": [
+          "visit_date"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Visit date strings are parsed before weekday and calendar-derived features are extracted.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "sherring/recruit-restaurant-visitor-forecasting-first-try",
+        "johannesss/multiple-lightgbm"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Shared train/test preparation step before date-part engineering and holiday joins.",
+      "evidence_snippets": [
+        "data['tra']['visit_date'] = pd.to_datetime(data['tra']['visit_date'])",
+        "data['tes']['visit_date'] = pd.to_datetime(data['tes']['visit_date'])"
+      ],
+      "rareness": "common",
+      "confidence": 0.9,
+      "action_id": "CA-000023"
+    },
+    {
+      "action_type": "DROP_HIGH_NULL_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "rs1_x",
+          "rv1_x",
+          "rs2_x",
+          "rv2_x"
+        ],
+        "null_ratio_threshold": 0.6
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "High-null pruning of reservation aggregates is tempting, but it deletes the reservation branch instead of handling sparsity in-feature.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "djhavera/best-algorithm",
+        "jmbull/no-xgb-starter-here-s-one-lb-507",
+        "jdpaletto/surprised-yet-part2-lb-0-503",
+        "dongxu027/mean-mix-math-geo-harmonic-lb-0-493",
+        "domcastro/surprise-me-3-get-the-kettle-on",
+        "abhilashawasthi/surprise-me-2-c3454b",
+        "mauryashubham/multiple-models-new-features-from-surprise-me-2"
+      ],
+      "derivation_reasoning": "Synthetic sparse-column pruning branch derived from the observed wide reservation feature family.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000024"
+    },
+    {
+      "action_type": "DROP_HIGH_NULL_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "total_reserv_sum",
+          "total_reserv_mean",
+          "total_reserv_dt_diff_mean"
+        ],
+        "null_ratio_threshold": 0.5
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Pruning combined reservation features by null ratio is also plausible, but it discards a repeated model-specific reservation branch.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "osciiart/denoising-autoencoder",
+        "tflana/simple-keras-feed-fwd-nn"
+      ],
+      "derivation_reasoning": "Second high-null pruning variant derived from the combined-reservation feature family.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000025"
+    },
+    {
+      "action_type": "DROP_ROWS_WITH_MISSING",
+      "canonical_params": {
+        "subset_columns": [
+          "reserve_datetime_diff",
+          "reserve_visitors",
+          "holiday_flg"
+        ],
+        "how": "any"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Dropping rows missing reservation or holiday features is a blunt cleanup step that throws away too much supervised data for this forecasting task.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "djhavera/best-algorithm",
+        "jmbull/no-xgb-starter-here-s-one-lb-507",
+        "jdpaletto/surprised-yet-part2-lb-0-503",
+        "dongxu027/mean-mix-math-geo-harmonic-lb-0-493",
+        "domcastro/surprise-me-3-get-the-kettle-on",
+        "abhilashawasthi/surprise-me-2-c3454b",
+        "mauryashubham/multiple-models-new-features-from-surprise-me-2"
+      ],
+      "derivation_reasoning": "Synthetic row-drop-on-missing branch derived from the observed imputation families.",
+      "challenge_type": "obvious",
+      "action_id": "CA-000026"
+    },
+    {
+      "action_type": "DATE_PART_FEATURE",
+      "canonical_params": {
+        "date_columns": [
+          "visit_date"
+        ],
+        "parts": [
+          "dayofweek",
+          "year",
+          "month"
+        ],
+        "drop_original": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Recruit tabular kernels almost always extract weekday, year, and month from visit_date before grouped history features and model fitting.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "sherring/recruit-restaurant-visitor-forecasting-first-try",
+        "djhavera/best-algorithm",
+        "festa78/simple-lightgbm-lb-0-493"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "This is the canonical visit-date expansion used across tree, neural, and ridge-style baselines.",
+      "evidence_snippets": [
+        "data['tra']['dow'] = data['tra']['visit_date'].dt.dayofweek",
+        "data['tra']['year'] = data['tra']['visit_date'].dt.year",
+        "data['tra']['month'] = data['tra']['visit_date'].dt.month"
+      ],
+      "rareness": "common",
+      "confidence": 0.92,
+      "must_follow_action_ids": [
+        "CA-000023"
+      ],
+      "action_id": "CA-000027"
+    },
+    {
+      "action_type": "DROP_ROWS_WITH_MISSING",
+      "canonical_params": {
+        "subset_columns": [
+          "air_genre_name",
+          "air_area_name"
+        ],
+        "how": "any"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Dropping rows with missing joined store metadata is equally plausible, but it still discards useful supervision instead of repairing features in-place.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "kimjunil/aiffel-yj-9-save-me"
+      ],
+      "derivation_reasoning": "Second drop-rows-with-missing variant for store metadata.",
+      "challenge_type": "obvious",
+      "action_id": "CA-000028"
+    },
+    {
+      "action_type": "DROP_DUPLICATES",
+      "canonical_params": {
+        "subset_columns": [
+          "air_store_id",
+          "visit_date"
+        ],
+        "keep": "first"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Deduplicating store-date rows is tempting once many joins are present, but it can collapse genuinely distinct supervised examples or synthetic test rows.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "tunguz/surprise-me-2",
+        "djhavera/best-algorithm",
+        "festa78/simple-xgboost-lb-0-495",
+        "festa78/simple-lightgbm-lb-0-493",
+        "johannesss/multiple-lightgbm",
+        "jmbull/no-xgb-starter-here-s-one-lb-507",
+        "jdpaletto/surprised-yet-part2-lb-0-503",
+        "domcastro/surprise-me-3-get-the-kettle-on",
+        "abhilashawasthi/surprise-me-2-c3454b",
+        "mauryashubham/multiple-models-new-features-from-surprise-me-2",
+        "pranav84/surprise-me-h2o-automl-version"
+      ],
+      "derivation_reasoning": "Synthetic row-deduplication branch derived from the store-date grain.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000029"
+    },
+    {
+      "action_type": "DROP_DUPLICATES",
+      "canonical_params": {
+        "subset_columns": [
+          "air_store_id"
+        ],
+        "keep": "first"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Deduplicating by store id is clearly destructive because it collapses the time dimension of the task.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "tunguz/surprise-me-2",
+        "djhavera/best-algorithm",
+        "festa78/simple-xgboost-lb-0-495",
+        "festa78/simple-lightgbm-lb-0-493",
+        "johannesss/multiple-lightgbm",
+        "jmbull/no-xgb-starter-here-s-one-lb-507",
+        "jdpaletto/surprised-yet-part2-lb-0-503",
+        "domcastro/surprise-me-3-get-the-kettle-on",
+        "abhilashawasthi/surprise-me-2-c3454b",
+        "mauryashubham/multiple-models-new-features-from-surprise-me-2",
+        "pranav84/surprise-me-h2o-automl-version"
+      ],
+      "derivation_reasoning": "Second duplicate-dropping variant added with an even more destructive subset.",
+      "challenge_type": "obvious",
+      "action_id": "CA-000030"
+    },
+    {
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "columns": [
+          "air_store_id"
+        ],
+        "method": "label"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Label-encoding every store id as a dense numeric feature is plausible, but it pushes the task toward a very high-cardinality id branch that the benchmark does not currently reward.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "ievgenvp/lstm-encoder-decoder-via-keras-lb-0-5",
+        "oglangelo/restaurant-visitor-lstm"
+      ],
+      "derivation_reasoning": "Synthetic nearby encoding variant derived from the observed store metadata and id families.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000031"
+    },
+    {
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "air_store_id",
+          "dow"
+        ],
+        "target_columns": [
+          "visitors"
+        ],
+        "agg_functions": [
+          "min",
+          "mean",
+          "median",
+          "max",
+          "count"
+        ],
+        "join_back": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Historical visitor summaries by store and weekday are the central demand-lookup features in the common Recruit tabular path.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "djhavera/best-algorithm",
+        "johannesss/multiple-lightgbm",
+        "festa78/simple-xgboost-lb-0-495",
+        "mauryashubham/multiple-models-new-features-from-surprise-me-2"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "This compact lookup captures recurring store-weekday demand patterns and is reused by many top kernels.",
+      "evidence_snippets": [
+        "tmp = data['tra'].groupby(['air_store_id','dow'], as_index=False)['visitors'].median().rename(columns={'visitors':'median_visitors'})",
+        "tmp = data['tra'].groupby(['air_store_id','dow'], as_index=False)['visitors'].count().rename(columns={'visitors':'count_observations'})"
+      ],
+      "rareness": "common",
+      "confidence": 0.92,
+      "must_follow_action_ids": [
+        "CA-000027"
+      ],
+      "action_id": "CA-000032"
+    },
+    {
+      "action_type": "EXPANDING_WINDOW_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "visitors"
+        ],
+        "agg_functions": [
+          "mean"
+        ],
+        "order_by_columns": [
+          "visit_date"
+        ],
+        "group_by_columns": [
+          "air_store_id"
+        ],
+        "min_periods": 2
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Expanding store-level visitor means are mechanically possible, but they introduce a heavier sequential demand branch than the current Recruit benchmark target.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "zeemeen/weighted-mean-running-10-sec-lb-0-509",
+        "zeemeen/weighted-mean-comparisons-lb-0-497-1st",
+        "zusmani/baseline-lb-0-497",
+        "cadong/weighted-average-on-four-kernels-lb-0-495",
+        "dongxu027/mean-mix-math-geo-harmonic-lb-0-493",
+        "domcastro/surprise-me-3-get-the-kettle-on",
+        "abhilashawasthi/surprise-me-2-c3454b",
+        "mauryashubham/multiple-models-new-features-from-surprise-me-2",
+        "pranav84/surprise-me-h2o-automl-version",
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "tunguz/surprise-me-2"
+      ],
+      "derivation_reasoning": "Synthetic cumulative-window branch derived from the time-indexed store history structure.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000033"
+    },
+    {
+      "action_type": "EXPANDING_WINDOW_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "reserve_visitors"
+        ],
+        "agg_functions": [
+          "mean"
+        ],
+        "order_by_columns": [
+          "visit_date"
+        ],
+        "group_by_columns": [
+          "air_store_id"
+        ],
+        "min_periods": 2
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Expanding reservation means are also plausible, but still outside the curated Recruit path.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "osciiart/denoising-autoencoder",
+        "tflana/simple-keras-feed-fwd-nn"
+      ],
+      "derivation_reasoning": "Second expanding-window variant on reservation history.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000034"
+    },
+    {
+      "action_type": "FEATURE_SELECTION",
+      "canonical_params": {
+        "method": "variance_threshold",
+        "feature_columns": [
+          "mean_visitors",
+          "median_visitors",
+          "count_observations",
+          "holiday_flg"
+        ],
+        "threshold": 0.0
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "An explicit feature-selection pass is plausible, but Recruit benchmark scoring is not meant to reward a separate selector stage.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "tunguz/surprise-me-2",
+        "djhavera/best-algorithm",
+        "festa78/simple-xgboost-lb-0-495",
+        "festa78/simple-lightgbm-lb-0-493",
+        "johannesss/multiple-lightgbm",
+        "jmbull/no-xgb-starter-here-s-one-lb-507",
+        "jdpaletto/surprised-yet-part2-lb-0-503",
+        "domcastro/surprise-me-3-get-the-kettle-on",
+        "abhilashawasthi/surprise-me-2-c3454b",
+        "mauryashubham/multiple-models-new-features-from-surprise-me-2",
+        "pranav84/surprise-me-h2o-automl-version"
+      ],
+      "derivation_reasoning": "Synthetic feature-selection branch derived from the compact tabular feature set.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000035"
+    },
+    {
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "reservation_aggregates",
+        "left_on": [
+          "air_store_id",
+          "visit_date"
+        ],
+        "right_on": [
+          "air_store_id",
+          "visit_date"
+        ],
+        "how": "left",
+        "fit_scope": "none",
+        "mode": "transform"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "After aggregation, reservation features are merged back to train/test rows by store and visit date.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "tunguz/surprise-me-2",
+        "sherring/recruit-restaurant-visitor-forecasting-first-try"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Join-back step that attaches reservation-derived features at prediction grain.",
+      "evidence_snippets": [
+        "train = pd.merge(train, data[df], how='left', on=['air_store_id','visit_date'])",
+        "test = pd.merge(test, data[df], how='left', on=['air_store_id','visit_date'])"
+      ],
+      "rareness": "common",
+      "confidence": 0.9,
+      "must_follow_action_ids": [
+        "CA-000014",
+        "CA-000018"
+      ],
+      "action_id": "CA-000036"
+    },
+    {
+      "action_type": "FEATURE_SELECTION",
+      "canonical_params": {
+        "method": "mutual_info",
+        "feature_columns": [
+          "reserve_visitors",
+          "reserve_datetime_diff",
+          "mean_visitors",
+          "median_visitors"
+        ],
+        "k": 3
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Mutual-information pruning is another plausible modeling move, but still outside the curated preprocessing target.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "osciiart/denoising-autoencoder",
+        "tflana/simple-keras-feed-fwd-nn"
+      ],
+      "derivation_reasoning": "Second feature-selection variant added for canonical coverage.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000037"
+    },
+    {
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "holiday_flg == 1"
+      },
+      "eval_stage": "validation_protocol",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Restricting training to holiday rows only is a plausible but harmful shortcut that discards the bulk of demand history.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "zeemeen/weighted-mean-running-10-sec-lb-0-509",
+        "zeemeen/weighted-mean-comparisons-lb-0-497-1st",
+        "zusmani/baseline-lb-0-497",
+        "cadong/weighted-average-on-four-kernels-lb-0-495",
+        "dongxu027/mean-mix-math-geo-harmonic-lb-0-493",
+        "domcastro/surprise-me-3-get-the-kettle-on",
+        "abhilashawasthi/surprise-me-2-c3454b",
+        "mauryashubham/multiple-models-new-features-from-surprise-me-2",
+        "pranav84/surprise-me-h2o-automl-version"
+      ],
+      "derivation_reasoning": "Synthetic harmful row-filter branch derived from the observed holiday-aware lookup family.",
+      "challenge_type": "obvious",
+      "action_id": "CA-000038"
+    },
+    {
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "air_store_id"
+        ],
+        "target_columns": [
+          "visitors"
+        ],
+        "agg_functions": [
+          "mean",
+          "std"
+        ],
+        "join_back": false
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Store-only visitor summaries are plausible fallback features, but they are a coarser branch than the benchmark-preferred store-weekday history lookup.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "mauryashubham/multiple-models-new-features-from-surprise-me-2",
+        "ievgenvp/lstm-encoder-decoder-via-keras-lb-0-5"
+      ],
+      "derivation_reasoning": "Synthetic nearby aggregate variant derived from observed coarser grouped history branches.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000039"
+    },
+    {
+      "action_type": "HASH_CROSS",
+      "canonical_params": {
+        "columns": [
+          "air_genre_name",
+          "dow"
+        ],
+        "n_buckets": 256,
+        "seed": 42
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Hashed crosses between store genre and weekday are plausible, but they create a heavier crossed-feature branch than the benchmark is aiming to reward.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "tflana/simple-keras-feed-fwd-nn",
+        "kimjunil/aiffel-yj-9-save-me"
+      ],
+      "derivation_reasoning": "Synthetic crossed-feature branch derived from observed genre and weekday features.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000040"
+    },
+    {
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "holiday_calendar",
+        "left_on": [
+          "visit_date"
+        ],
+        "right_on": [
+          "visit_date"
+        ],
+        "how": "left",
+        "fit_scope": "none",
+        "mode": "transform"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Date-level holiday metadata is broadly joined onto visit rows before modeling or holiday-aware grouped history.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "tunguz/surprise-me-2",
+        "ievgenvp/lstm-encoder-decoder-via-keras-lb-0-5",
+        "kimjunil/aiffel-yj-9-save-me"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Explicit date_info lookup is a stable piece of both tabular and weighted-mean branches.",
+      "evidence_snippets": [
+        "data['tra'] = pd.merge(data['tra'], data['hol'], how='left', on=['visit_date'])",
+        "df = df.join(date_info_mod.set_index('calendar_date'), on = 'visit_date')"
+      ],
+      "rareness": "common",
+      "confidence": 0.92,
+      "must_follow_action_ids": [
+        "CA-000023"
+      ],
+      "action_id": "CA-000041"
+    },
+    {
+      "action_type": "HASH_CROSS",
+      "canonical_params": {
+        "columns": [
+          "air_area_name",
+          "holiday_flg"
+        ],
+        "n_buckets": 512,
+        "seed": 7
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "A second hashed cross over area and holiday state is equally plausible but still outside the benchmark target.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "zeemeen/weighted-mean-comparisons-lb-0-497-1st"
+      ],
+      "derivation_reasoning": "Second hash-cross variant added for canonical coverage.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000042"
+    },
+    {
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "median",
+        "columns": [
+          "reserve_datetime_diff",
+          "reserve_visitors",
+          "mean_visitors",
+          "median_visitors"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Median-filling mixed reservation and lookup features is plausible, but it is not the repeated observed fill policy in Recruit kernels.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "djhavera/best-algorithm",
+        "jmbull/no-xgb-starter-here-s-one-lb-507",
+        "jdpaletto/surprised-yet-part2-lb-0-503",
+        "dongxu027/mean-mix-math-geo-harmonic-lb-0-493",
+        "domcastro/surprise-me-3-get-the-kettle-on",
+        "abhilashawasthi/surprise-me-2-c3454b",
+        "mauryashubham/multiple-models-new-features-from-surprise-me-2",
+        "ievgenvp/lstm-encoder-decoder-via-keras-lb-0-5",
+        "tflana/simple-keras-feed-fwd-nn",
+        "kimjunil/aiffel-yj-9-save-me"
+      ],
+      "derivation_reasoning": "Synthetic nearby imputation choice derived from the observed wide-table fill-policy alternatives.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000043"
+    },
+    {
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "constant",
+        "columns": [
+          "reserve_datetime_diff",
+          "reserve_visitors",
+          "mean_visitors",
+          "median_visitors"
+        ],
+        "fill_value": 999
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "A large positive sentinel fill is another plausible but harmful imputation choice for dense numeric reservation and history features.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "djhavera/best-algorithm",
+        "jmbull/no-xgb-starter-here-s-one-lb-507",
+        "jdpaletto/surprised-yet-part2-lb-0-503",
+        "dongxu027/mean-mix-math-geo-harmonic-lb-0-493",
+        "domcastro/surprise-me-3-get-the-kettle-on",
+        "abhilashawasthi/surprise-me-2-c3454b",
+        "mauryashubham/multiple-models-new-features-from-surprise-me-2",
+        "pranav84/surprise-me-h2o-automl-version"
+      ],
+      "derivation_reasoning": "Second imputation near-miss added so the family has non-equivalent distractors.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000044"
+    },
+    {
+      "action_type": "INTERACTION_FEATURE",
+      "canonical_params": {
+        "feature_columns": [
+          "mean_visitors",
+          "holiday_flg"
+        ],
+        "method": "multiply",
+        "output_columns": [
+          "mean_visitors_x_holiday"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Explicit interaction terms between history features and holiday state are plausible, but they add a bespoke feature-engineering branch outside the benchmark target.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "kimjunil/aiffel-yj-9-save-me"
+      ],
+      "derivation_reasoning": "Synthetic interaction branch derived from observed demand-history and holiday features.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000045"
+    },
+    {
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "air_store_info",
+        "left_on": [
+          "air_store_id"
+        ],
+        "right_on": [
+          "air_store_id"
+        ],
+        "how": "left",
+        "fit_scope": "none",
+        "mode": "transform"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Store genre, area, and geolocation metadata are left-joined by air_store_id before modeling.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "ievgenvp/lstm-encoder-decoder-via-keras-lb-0-5",
+        "kimjunil/aiffel-yj-9-save-me"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Common store-metadata join used by tabular, neural, and custom feature-heavy branches.",
+      "evidence_snippets": [
+        "stores = pd.merge(stores, data['as'], how='left', on=['air_store_id'])",
+        "df = df.join(air_store_info.set_index('air_store_id'), on = 'air_store_id')"
+      ],
+      "rareness": "common",
+      "confidence": 0.88,
+      "action_id": "CA-000046"
+    },
+    {
+      "action_type": "INTERACTION_FEATURE",
+      "canonical_params": {
+        "feature_columns": [
+          "reserve_visitors",
+          "off_day_flg"
+        ],
+        "method": "multiply",
+        "output_columns": [
+          "reserve_visitors_x_off_day"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Reservation-by-off-day interactions are equally plausible but still belong to a different handcrafted feature regime.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "kimjunil/aiffel-yj-9-save-me",
+        "tflana/simple-keras-feed-fwd-nn"
+      ],
+      "derivation_reasoning": "Second interaction-feature variant added for canonical coverage.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000047"
+    },
+    {
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "holiday_calendar",
+        "left_on": [
+          "visit_date"
+        ],
+        "right_on": [
+          "visit_date"
+        ],
+        "how": "inner",
+        "fit_scope": "none",
+        "mode": "transform"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Inner-joining holiday metadata looks close to the correct step, but it would drop non-holiday dates and distort the supervised row set.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "zeemeen/weighted-mean-running-10-sec-lb-0-509",
+        "zeemeen/weighted-mean-comparisons-lb-0-497-1st",
+        "zusmani/baseline-lb-0-497",
+        "cadong/weighted-average-on-four-kernels-lb-0-495",
+        "dongxu027/mean-mix-math-geo-harmonic-lb-0-493",
+        "domcastro/surprise-me-3-get-the-kettle-on",
+        "abhilashawasthi/surprise-me-2-c3454b",
+        "mauryashubham/multiple-models-new-features-from-surprise-me-2",
+        "pranav84/surprise-me-h2o-automl-version",
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "tunguz/surprise-me-2"
+      ],
+      "derivation_reasoning": "Synthetic wrong-join-type variant derived from the observed holiday left join.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000048"
+    },
+    {
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "reservation_aggregates",
+        "left_on": [
+          "air_store_id"
+        ],
+        "right_on": [
+          "air_store_id"
+        ],
+        "how": "left",
+        "fit_scope": "none",
+        "mode": "transform"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Joining reservation aggregates by store only ignores the visit-date key and creates a many-to-many leakage-prone merge.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "tunguz/surprise-me-2",
+        "djhavera/best-algorithm",
+        "festa78/simple-xgboost-lb-0-495",
+        "festa78/simple-lightgbm-lb-0-493",
+        "johannesss/multiple-lightgbm",
+        "jmbull/no-xgb-starter-here-s-one-lb-507",
+        "jdpaletto/surprised-yet-part2-lb-0-503",
+        "domcastro/surprise-me-3-get-the-kettle-on",
+        "abhilashawasthi/surprise-me-2-c3454b",
+        "mauryashubham/multiple-models-new-features-from-surprise-me-2",
+        "pranav84/surprise-me-h2o-automl-version"
+      ],
+      "derivation_reasoning": "Synthetic wrong-key reservation join derived from the observed store-date join-back step.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000049"
+    },
+    {
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "columns": [
+          "air_genre_name",
+          "air_area_name"
+        ],
+        "method": "label"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Label-encoding store genre and area is the default categorical handling in the dominant Recruit tabular kernels.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "sherring/recruit-restaurant-visitor-forecasting-first-try",
+        "festa78/simple-xgboost-lb-0-495",
+        "pranav84/surprise-me-h2o-automl-version"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "The common tabular path keeps store metadata numeric through simple label encoding.",
+      "evidence_snippets": [
+        "stores['air_genre_name'] = lbl.fit_transform(stores['air_genre_name'])",
+        "stores['air_area_name'] = lbl.fit_transform(stores['air_area_name'])"
+      ],
+      "rareness": "common",
+      "confidence": 0.86,
+      "must_follow_action_ids": [
+        "CA-000046"
+      ],
+      "action_id": "CA-000050"
+    },
+    {
+      "action_type": "LAG_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "visitors"
+        ],
+        "lag_periods": [
+          1
+        ],
+        "order_by_columns": [
+          "visit_date"
+        ],
+        "group_by_columns": [
+          "air_store_id"
+        ],
+        "fill_value": 0
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Store-level visitor lags are mechanically possible, but they move Recruit toward a sequential modeling branch not targeted by the benchmark.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "tunguz/surprise-me-2",
+        "djhavera/best-algorithm",
+        "festa78/simple-xgboost-lb-0-495"
+      ],
+      "derivation_reasoning": "Synthetic lag-feature branch derived from the ordered per-store demand history.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000051"
+    },
+    {
+      "action_type": "LAG_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "reserve_visitors"
+        ],
+        "lag_periods": [
+          1
+        ],
+        "order_by_columns": [
+          "visit_date"
+        ],
+        "group_by_columns": [
+          "air_store_id"
+        ],
+        "fill_value": 0
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Reservation lags are also plausible, but they add another sequential reservation branch outside the curated target.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "osciiart/denoising-autoencoder",
+        "tflana/simple-keras-feed-fwd-nn"
+      ],
+      "derivation_reasoning": "Second lag-feature variant on reservation history.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000052"
+    },
+    {
+      "action_type": "LOG_TRANSFORM",
+      "canonical_params": {
+        "columns": [
+          "visitors"
+        ],
+        "offset": 0
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Applying a plain log transform without an offset is a nearby but unsafe variant because zero-visitor rows are common in Recruit.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "tunguz/surprise-me-2",
+        "djhavera/best-algorithm",
+        "festa78/simple-xgboost-lb-0-495",
+        "festa78/simple-lightgbm-lb-0-493",
+        "johannesss/multiple-lightgbm",
+        "jmbull/no-xgb-starter-here-s-one-lb-507",
+        "jdpaletto/surprised-yet-part2-lb-0-503",
+        "domcastro/surprise-me-3-get-the-kettle-on",
+        "abhilashawasthi/surprise-me-2-c3454b",
+        "mauryashubham/multiple-models-new-features-from-surprise-me-2",
+        "pranav84/surprise-me-h2o-automl-version",
+        "zeemeen/weighted-mean-running-10-sec-lb-0-509",
+        "zeemeen/weighted-mean-comparisons-lb-0-497-1st"
+      ],
+      "derivation_reasoning": "Synthetic near-miss log transform derived from the observed log1p visitor handling.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000053"
+    },
+    {
+      "action_type": "MAP_CATEGORIES",
+      "canonical_params": {
+        "columns": [
+          "day_of_week"
+        ],
+        "mapping": {
+          "Monday": "weekday",
+          "Tuesday": "weekday",
+          "Wednesday": "weekday",
+          "Thursday": "weekday",
+          "Friday": "weekend",
+          "Saturday": "weekend",
+          "Sunday": "weekend"
+        },
+        "default_value": "weekday"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Coarsening weekday labels into weekday/weekend buckets is plausible, but it discards the finer weekly structure that Recruit kernels usually keep.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "zeemeen/weighted-mean-running-10-sec-lb-0-509",
+        "zeemeen/weighted-mean-comparisons-lb-0-497-1st",
+        "zusmani/baseline-lb-0-497",
+        "cadong/weighted-average-on-four-kernels-lb-0-495",
+        "dongxu027/mean-mix-math-geo-harmonic-lb-0-493",
+        "domcastro/surprise-me-3-get-the-kettle-on",
+        "abhilashawasthi/surprise-me-2-c3454b",
+        "mauryashubham/multiple-models-new-features-from-surprise-me-2",
+        "pranav84/surprise-me-h2o-automl-version",
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "tunguz/surprise-me-2"
+      ],
+      "derivation_reasoning": "Synthetic category-mapping branch derived from observed weekday and holiday features.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000054"
+    },
+    {
+      "action_type": "LOG_TRANSFORM",
+      "canonical_params": {
+        "columns": [
+          "visitors"
+        ],
+        "offset": 1
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Strong Recruit baselines commonly fit or aggregate in log1p visitor space and invert predictions with expm1.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "zeemeen/weighted-mean-running-10-sec-lb-0-509",
+        "novinsh/surprise-me-2-with-lstm",
+        "pranav84/surprise-me-h2o-automl-version"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Stable target scaling choice across tree, neural, and weighted-mean branches.",
+      "evidence_snippets": [
+        "y_train = np.log1p(train['visitors'].values)",
+        "visit_data['visitors'] = visit_data.visitors.map(pd.np.log1p)"
+      ],
+      "rareness": "common",
+      "confidence": 0.9,
+      "action_id": "CA-000055"
+    },
+    {
+      "action_type": "MAP_CATEGORIES",
+      "canonical_params": {
+        "columns": [
+          "air_area_name"
+        ],
+        "mapping": {
+          "Tokyo": "metro",
+          "Osaka": "metro"
+        },
+        "default_value": "other"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Coarse area remapping is another plausible domain shortcut, but it imposes a lossy geography taxonomy not used in the curated benchmark path.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "kimjunil/aiffel-yj-9-save-me",
+        "gopisaran/sql-data-profiling-feature-imp"
+      ],
+      "derivation_reasoning": "Second category-mapping variant derived from observed area text features.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000056"
+    },
+    {
+      "action_type": "ORDINAL_ENCODE",
+      "canonical_params": {
+        "columns": [
+          "air_store_id"
+        ],
+        "order": [
+          "air_0001",
+          "air_0002",
+          "air_0003"
+        ],
+        "unknown_value": -1
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Assigning an arbitrary ordinal order to store ids is plausible but semantically weak for this forecasting task.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "ievgenvp/lstm-encoder-decoder-via-keras-lb-0-5",
+        "oglangelo/restaurant-visitor-lstm"
+      ],
+      "derivation_reasoning": "Synthetic ordered-encoding branch derived from the observed store-id handling.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000057"
+    },
+    {
+      "action_type": "ORDINAL_ENCODE",
+      "canonical_params": {
+        "columns": [
+          "air_area_name"
+        ],
+        "order": [
+          "north",
+          "central",
+          "south"
+        ],
+        "unknown_value": 0
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "An imposed ordinal ordering over area names is another plausible but semantically weak encoding choice.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "gopisaran/sql-data-profiling-feature-imp",
+        "kimjunil/aiffel-yj-9-save-me"
+      ],
+      "derivation_reasoning": "Second ordinal-encode variant added for canonical coverage.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000058"
+    },
+    {
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "store_id_relation",
+        "left_on": [
+          "hpg_store_id"
+        ],
+        "right_on": [
+          "hpg_store_id"
+        ],
+        "how": "inner",
+        "fit_scope": "none",
+        "mode": "transform"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Reservation-heavy branches first map HPG store ids to air_store_id so hpg reservations can be aggregated at the main training grain.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "tunguz/surprise-me-2",
+        "ievgenvp/lstm-encoder-decoder-via-keras-lb-0-5"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Bridge join that enables hpg reservation features to align with air_store_id rows.",
+      "evidence_snippets": [
+        "data['hr'] = pd.merge(data['hr'], data['id'], how='inner', on=['hpg_store_id'])",
+        "hpg_air_reserve = store_id_relation.join(hpg_reserve.set_index('hpg_store_id'), on = 'hpg_store_id')"
+      ],
+      "rareness": "common",
+      "confidence": 0.88,
+      "action_id": "CA-000059"
+    },
+    {
+      "action_type": "PCA_REDUCTION",
+      "canonical_params": {
+        "feature_columns": [
+          "mean_visitors",
+          "median_visitors",
+          "max_visitors",
+          "count_observations"
+        ],
+        "n_components": 2,
+        "method": "svd",
+        "whiten": false
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "PCA over compact demand-history features is plausible, but it moves the task into a dimensionality-reduction branch the benchmark does not reward.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "tunguz/surprise-me-2",
+        "djhavera/best-algorithm"
+      ],
+      "derivation_reasoning": "Synthetic PCA branch derived from the observed demand-history feature family.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000060"
+    },
+    {
+      "action_type": "PCA_REDUCTION",
+      "canonical_params": {
+        "feature_columns": [
+          "rs1_x",
+          "rv1_x",
+          "rs2_x",
+          "rv2_x",
+          "total_reserv_sum",
+          "total_reserv_mean"
+        ],
+        "n_components": 3,
+        "method": "svd",
+        "whiten": false
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Reducing wide reservation features with PCA is equally plausible, but still outside the curated Recruit path.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "osciiart/denoising-autoencoder",
+        "tflana/simple-keras-feed-fwd-nn"
+      ],
+      "derivation_reasoning": "Second PCA branch derived from the wide reservation feature family.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000061"
+    },
+    {
+      "action_type": "POLYNOMIAL_FEATURE",
+      "canonical_params": {
+        "feature_columns": [
+          "reserve_visitors",
+          "reserve_datetime_diff"
+        ],
+        "degree": 2,
+        "interaction_only": false,
+        "include_bias": false
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Polynomial expansion on reservation features is plausible, but it adds a heavier handcrafted branch than the benchmark intends to score.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "osciiart/denoising-autoencoder",
+        "tflana/simple-keras-feed-fwd-nn"
+      ],
+      "derivation_reasoning": "Synthetic polynomial-feature branch derived from the observed reservation feature family.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000062"
+    },
+    {
+      "action_type": "POLYNOMIAL_FEATURE",
+      "canonical_params": {
+        "feature_columns": [
+          "latitude",
+          "longitude"
+        ],
+        "degree": 2,
+        "interaction_only": true,
+        "include_bias": false
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "A second polynomial branch over geolocation is also plausible, but still outside the curated target path.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "tflana/simple-keras-feed-fwd-nn"
+      ],
+      "derivation_reasoning": "Second polynomial-feature variant added on geographic features.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000063"
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "total_reserv_sum = rv1_x + rv1_y; total_reserv_mean = (rv2_x + rv2_y) / 2; total_reserv_dt_diff_mean = (rs2_x + rs2_y) / 2",
+        "output_columns": [
+          "total_reserv_sum",
+          "total_reserv_mean",
+          "total_reserv_dt_diff_mean"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Several neural and blended branches combine air and HPG reservation aggregates into cross-source reservation summary features.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "osciiart/denoising-autoencoder",
+        "tflana/simple-keras-feed-fwd-nn",
+        "novinsh/surprise-me-2-with-lstm",
+        "domcastro/surprise-me-3-get-the-kettle-on"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Combined reservation features sit on top of the separate air/hpg reservation aggregate joins.",
+      "evidence_snippets": [
+        "train['total_reserv_sum'] = train['rv1_x'] + train['rv1_y']",
+        "train['total_reserv_mean'] = (train['rv2_x'] + train['rv2_y']) / 2"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.84,
+      "must_follow_action_ids": [
+        "CA-000036",
+        "CA-000059"
+      ],
+      "action_id": "CA-000064"
+    },
+    {
+      "action_type": "POWER_TRANSFORM",
+      "canonical_params": {
+        "columns": [
+          "reserve_visitors",
+          "total_reserv_sum"
+        ],
+        "method": "yeo-johnson",
+        "standardize": true
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Power-transforming skewed reservation counts is plausible, but it indicates a different numeric-preprocessing regime than the benchmark is targeting.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "osciiart/denoising-autoencoder",
+        "tflana/simple-keras-feed-fwd-nn"
+      ],
+      "derivation_reasoning": "Synthetic power-transform branch derived from observed reservation feature columns.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000065"
+    },
+    {
+      "action_type": "POWER_TRANSFORM",
+      "canonical_params": {
+        "columns": [
+          "mean_visitors",
+          "max_visitors"
+        ],
+        "method": "box-cox",
+        "standardize": false
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "A second power transform over demand-history statistics is equally plausible but still outside the curated path.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "tunguz/surprise-me-2",
+        "djhavera/best-algorithm"
+      ],
+      "derivation_reasoning": "Second power-transform variant added on grouped history features.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000066"
+    },
+    {
+      "action_type": "RARE_CATEGORY_BUCKETIZE",
+      "canonical_params": {
+        "columns": [
+          "air_genre_name"
+        ],
+        "min_count": 10,
+        "other_label": "__RARE__"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Bucketing rare genres is a plausible categorical cleanup move, but it imposes a lossy taxonomy not used in the curated Recruit path.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "kimjunil/aiffel-yj-9-save-me"
+      ],
+      "derivation_reasoning": "Synthetic rare-category bucketization branch derived from observed store genre features.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000067"
+    },
+    {
+      "action_type": "NORMALIZE_STRING",
+      "canonical_params": {
+        "columns": [
+          "air_genre_name"
+        ],
+        "case": "none",
+        "strip": true,
+        "regex_rules": [
+          {
+            "pattern": "/",
+            "replacement": " "
+          }
+        ],
+        "empty_to_null": false
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Many Recruit kernels normalize genre strings by replacing slash separators before token splits or categorical encoding.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "tunguz/surprise-me-2",
+        "osciiart/denoising-autoencoder",
+        "tflana/simple-keras-feed-fwd-nn",
+        "domcastro/surprise-me-3-get-the-kettle-on"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Observed directly in tokenized genre encoding branches.",
+      "evidence_snippets": [
+        "stores['air_genre_name'] = stores['air_genre_name'].map(lambda x: str(str(x).replace('/',' ')))"
+      ],
+      "rareness": "common",
+      "confidence": 0.82,
+      "must_follow_action_ids": [
+        "CA-000046"
+      ],
+      "action_id": "CA-000068"
+    },
+    {
+      "action_type": "RARE_CATEGORY_BUCKETIZE",
+      "canonical_params": {
+        "columns": [
+          "air_area_name"
+        ],
+        "min_freq": 0.01,
+        "other_label": "__OTHER__"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Rare-bucketing area names is also plausible, but still a lossy categorical branch outside the benchmark target.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "gopisaran/sql-data-profiling-feature-imp",
+        "kimjunil/aiffel-yj-9-save-me"
+      ],
+      "derivation_reasoning": "Second rare-category bucketization variant added for coverage.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000069"
+    },
+    {
+      "action_type": "REPLACE_INF",
+      "canonical_params": {
+        "columns": [
+          "reserve_to_gap_ratio"
+        ],
+        "strategy": "clip",
+        "clip_min": 0,
+        "clip_max": 100
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Infinity replacement is a plausible cleanup step after fragile handcrafted ratios, but it signals a different feature branch than the benchmark is scoring.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "kimjunil/aiffel-yj-9-save-me",
+        "tflana/simple-keras-feed-fwd-nn"
+      ],
+      "derivation_reasoning": "Synthetic replace-inf branch derived from plausible ratio-feature expansions.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000070"
+    },
+    {
+      "action_type": "REPLACE_INF",
+      "canonical_params": {
+        "columns": [
+          "reserv_per_observation"
+        ],
+        "strategy": "nan"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "A second replace-inf cleanup variant is equally plausible after handcrafted ratios, but still outside the curated path.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "tunguz/surprise-me-2"
+      ],
+      "derivation_reasoning": "Second infinity-replacement variant added for canonical coverage.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000071"
+    },
+    {
+      "action_type": "RATIO_FEATURE",
+      "canonical_params": {
+        "left_columns": [
+          "reserve_visitors"
+        ],
+        "right_columns": [
+          "reserve_datetime_diff"
+        ],
+        "epsilon": 1.0,
+        "new_feature_name": "reserve_visitors_per_day"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Reservation-per-day ratios are plausible, but they push Recruit toward a handcrafted ratio branch not treated as core by this benchmark.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "osciiart/denoising-autoencoder",
+        "kimjunil/aiffel-yj-9-save-me"
+      ],
+      "derivation_reasoning": "Synthetic ratio-feature branch derived from observed reservation count and gap features.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000072"
+    },
+    {
+      "action_type": "NORMALIZE_STRING",
+      "canonical_params": {
+        "columns": [
+          "air_area_name"
+        ],
+        "case": "none",
+        "strip": true,
+        "regex_rules": [
+          {
+            "pattern": "-",
+            "replacement": " "
+          }
+        ],
+        "empty_to_null": false
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "The same tokenized encoding branches normalize area strings by replacing hyphens before splitting or encoding.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "osciiart/denoising-autoencoder",
+        "tflana/simple-keras-feed-fwd-nn",
+        "domcastro/surprise-me-3-get-the-kettle-on",
+        "abhilashawasthi/surprise-me-2-c3454b"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Observed in the model families that tokenize or normalize store-area strings.",
+      "evidence_snippets": [
+        "stores['air_area_name'] = stores['air_area_name'].map(lambda x: str(str(x).replace('-',' ')))"
+      ],
+      "rareness": "common",
+      "confidence": 0.82,
+      "must_follow_action_ids": [
+        "CA-000046"
+      ],
+      "action_id": "CA-000073"
+    },
+    {
+      "action_type": "RATIO_FEATURE",
+      "canonical_params": {
+        "left_columns": [
+          "total_reserv_sum"
+        ],
+        "right_columns": [
+          "count_observations"
+        ],
+        "epsilon": 1.0,
+        "new_feature_name": "reserv_per_observation"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Ratios between reservation volume and history-count features are equally plausible, but still outside the curated target path.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "tflana/simple-keras-feed-fwd-nn",
+        "jmbull/deep-fried-learning-keras-regression-starter"
+      ],
+      "derivation_reasoning": "Second ratio-feature variant added for coverage.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000074"
+    },
+    {
+      "action_type": "ROLLING_WINDOW_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "visitors"
+        ],
+        "window_sizes": [
+          7,
+          14
+        ],
+        "agg_functions": [
+          "mean"
+        ],
+        "order_by_columns": [
+          "visit_date"
+        ],
+        "group_by_columns": [
+          "air_store_id"
+        ],
+        "min_periods": 2
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Rolling visitor means are mechanically possible for this daily forecasting task, but the benchmark is not currently targeting a sequence-model style rolling-history branch.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "zeemeen/weighted-mean-running-10-sec-lb-0-509",
+        "zeemeen/weighted-mean-comparisons-lb-0-497-1st",
+        "zusmani/baseline-lb-0-497",
+        "cadong/weighted-average-on-four-kernels-lb-0-495",
+        "dongxu027/mean-mix-math-geo-harmonic-lb-0-493",
+        "domcastro/surprise-me-3-get-the-kettle-on",
+        "abhilashawasthi/surprise-me-2-c3454b",
+        "mauryashubham/multiple-models-new-features-from-surprise-me-2",
+        "pranav84/surprise-me-h2o-automl-version",
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "tunguz/surprise-me-2"
+      ],
+      "derivation_reasoning": "Synthetic rolling-window branch derived from the ordered store-date visit history.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000075"
+    },
+    {
+      "action_type": "ROLLING_WINDOW_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "reserve_visitors"
+        ],
+        "window_sizes": [
+          7
+        ],
+        "agg_functions": [
+          "sum"
+        ],
+        "order_by_columns": [
+          "visit_date"
+        ],
+        "group_by_columns": [
+          "air_store_id"
+        ],
+        "min_periods": 2
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Rolling reservation sums are also plausible, but they add a heavy temporal reservation branch outside the curated target.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "osciiart/denoising-autoencoder",
+        "tflana/simple-keras-feed-fwd-nn"
+      ],
+      "derivation_reasoning": "Second rolling-window variant on reservation history.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000076"
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "if day_of_week in [Saturday, Sunday] and holiday_flg == 1 then holiday_flg = 0 else holiday_flg = holiday_flg",
+        "output_columns": [
+          "holiday_flg"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Weighted-mean Recruit baselines normalize weekend holidays so they behave like ordinary weekends in the holiday-aware demand lookup.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "zeemeen/weighted-mean-running-10-sec-lb-0-509",
+        "zeemeen/weighted-mean-comparisons-lb-0-497-1st",
+        "zusmani/baseline-lb-0-497",
+        "cadong/weighted-average-on-four-kernels-lb-0-495",
+        "dongxu027/mean-mix-math-geo-harmonic-lb-0-493",
+        "domcastro/surprise-me-3-get-the-kettle-on",
+        "abhilashawasthi/surprise-me-2-c3454b",
+        "mauryashubham/multiple-models-new-features-from-surprise-me-2",
+        "pranav84/surprise-me-h2o-automl-version"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "This is a hallmark preprocessing step of the hklee-style weighted-mean family.",
+      "evidence_snippets": [
+        "date_info.loc[wkend_holidays, 'holiday_flg'] = 0"
+      ],
+      "rareness": "common",
+      "confidence": 0.86,
+      "must_follow_action_ids": [
+        "CA-000041"
+      ],
+      "action_id": "CA-000077"
+    },
+    {
+      "action_type": "SAMPLE_ROWS",
+      "canonical_params": {
+        "method": "random",
+        "frac": 0.2,
+        "random_state": 42
+      },
+      "eval_stage": "validation_protocol",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Random subsampling is a common quick experiment, but it shrinks already limited supervision and is not part of the benchmark-preferred Recruit path.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "tunguz/surprise-me-2"
+      ],
+      "derivation_reasoning": "Synthetic row-sampling branch added for low-quality but plausible coverage.",
+      "challenge_type": "obvious",
+      "action_id": "CA-000078"
+    },
+    {
+      "action_type": "SAMPLE_ROWS",
+      "canonical_params": {
+        "method": "random",
+        "n": 50000,
+        "random_state": 7
+      },
+      "eval_stage": "validation_protocol",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Fixed-size random subsampling is another plausible shortcut, but it still discards useful training history.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "tunguz/surprise-me-2"
+      ],
+      "derivation_reasoning": "Second row-sampling variant added for coverage.",
+      "challenge_type": "obvious",
+      "action_id": "CA-000079"
+    },
+    {
+      "action_type": "SCALE_NUMERIC",
+      "canonical_params": {
+        "method": "minmax",
+        "columns": [
+          "mean_visitors",
+          "median_visitors",
+          "count_observations"
+        ],
+        "with_mean": false,
+        "with_std": false
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Min-max scaling compact lookup features is plausible, but not part of the benchmark-preferred Recruit path.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "tflana/simple-keras-feed-fwd-nn",
+        "novinsh/surprise-me-2-with-lstm"
+      ],
+      "derivation_reasoning": "Synthetic alternate scaling branch derived from the observed neural scaling family.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000080"
+    },
+    {
+      "action_type": "TARGET_ENCODE_OOF",
+      "canonical_params": {
+        "columns": [
+          "air_store_id"
+        ],
+        "target_column": "visitors",
+        "cv_strategy": "timeseriessplit",
+        "n_splits": 5,
+        "shuffle": false,
+        "smoothing": 20
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Leakage-safe target encoding on store ids is plausible for this forecasting task, but it represents a different feature-learning regime than the benchmark is aiming to score.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "pranav84/surprise-me-h2o-automl-version"
+      ],
+      "derivation_reasoning": "Synthetic target-encoding branch derived from the high-cardinality store-id family.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000081"
+    },
+    {
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "air_store_id",
+          "day_of_week",
+          "holiday_flg"
+        ],
+        "target_columns": [
+          "visitors"
+        ],
+        "agg_functions": [
+          "weighted_mean"
+        ],
+        "join_back": false
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "hard",
+      "reasoning": "The weighted-mean family builds a holiday-aware demand lookup by store, weekday, and holiday flag using recency weights.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "zeemeen/weighted-mean-running-10-sec-lb-0-509",
+        "zeemeen/weighted-mean-comparisons-lb-0-497-1st",
+        "zusmani/baseline-lb-0-497",
+        "cadong/weighted-average-on-four-kernels-lb-0-495",
+        "dongxu027/mean-mix-math-geo-harmonic-lb-0-493",
+        "domcastro/surprise-me-3-get-the-kettle-on",
+        "abhilashawasthi/surprise-me-2-c3454b",
+        "mauryashubham/multiple-models-new-features-from-surprise-me-2",
+        "pranav84/surprise-me-h2o-automl-version"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Alternative but repeated Recruit modeling branch outside the reservation-heavy tabular path.",
+      "evidence_snippets": [
+        "visitors = visit_data.groupby(['air_store_id', 'day_of_week', 'holiday_flg']).apply(wmean).reset_index()"
+      ],
+      "rareness": "common",
+      "confidence": 0.84,
+      "must_follow_action_ids": [
+        "CA-000077",
+        "CA-000055"
+      ],
+      "action_id": "CA-000082"
+    },
+    {
+      "action_type": "TARGET_ENCODE_OOF",
+      "canonical_params": {
+        "columns": [
+          "air_genre_name",
+          "air_area_name"
+        ],
+        "target_column": "visitors",
+        "cv_strategy": "timeseriessplit",
+        "n_splits": 4,
+        "shuffle": false,
+        "smoothing": 10
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "A second target-encoding branch over store metadata is equally plausible but still outside the curated Recruit preprocessing target.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "kimjunil/aiffel-yj-9-save-me",
+        "gopisaran/sql-data-profiling-feature-imp"
+      ],
+      "derivation_reasoning": "Second target-encode variant added for coverage.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000083"
+    },
+    {
+      "action_type": "TEXT_VECTORIZATION",
+      "canonical_params": {
+        "method": "tfidf",
+        "text_columns": [
+          "air_area_name"
+        ],
+        "ngram_range": [
+          1,
+          2
+        ],
+        "max_features": 500
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Vectorizing store area strings is mechanically possible, but it is a much heavier text branch than this benchmark intends to reward.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "kimjunil/aiffel-yj-9-save-me",
+        "gopisaran/sql-data-profiling-feature-imp"
+      ],
+      "derivation_reasoning": "Synthetic text-feature branch derived from the observed store text columns.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000084"
+    },
+    {
+      "action_type": "TEXT_VECTORIZATION",
+      "canonical_params": {
+        "method": "bag_of_words",
+        "text_columns": [
+          "air_genre_name"
+        ],
+        "max_features": 200
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Bag-of-words over store genres is equally plausible, but still outside the curated Recruit target path.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "kimjunil/aiffel-yj-9-save-me"
+      ],
+      "derivation_reasoning": "Second text-vectorization variant added for coverage.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000085"
+    },
+    {
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "constant",
+        "columns": [
+          "reserve_datetime_diff",
+          "reserve_visitors",
+          "holiday_flg",
+          "day_of_week",
+          "air_genre_name",
+          "air_area_name",
+          "total_reserv_sum",
+          "total_reserv_mean",
+          "total_reserv_dt_diff_mean"
+        ],
+        "fill_value": -1
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Wide table tree-model branches commonly fill missing engineered features with -1 after the full store/date/reservation merge.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "djhavera/best-algorithm",
+        "jmbull/no-xgb-starter-here-s-one-lb-507",
+        "jdpaletto/surprised-yet-part2-lb-0-503",
+        "dongxu027/mean-mix-math-geo-harmonic-lb-0-493",
+        "domcastro/surprise-me-3-get-the-kettle-on",
+        "abhilashawasthi/surprise-me-2-c3454b",
+        "mauryashubham/multiple-models-new-features-from-surprise-me-2"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "This is the most repeated missing-value policy in the the1owl-style wide-table variants.",
+      "evidence_snippets": [
+        "train = train.fillna(-1)",
+        "test = test.fillna(-1)"
+      ],
+      "rareness": "common",
+      "confidence": 0.8,
+      "must_follow_action_ids": [
+        "CA-000036",
+        "CA-000041",
+        "CA-000046",
+        "CA-000064"
+      ],
+      "action_id": "CA-000086"
+    },
+    {
+      "action_type": "TIME_SINCE_REFERENCE",
+      "canonical_params": {
+        "columns": [
+          "visit_date"
+        ],
+        "reference": "2017-01-01",
+        "unit": "days",
+        "output_columns": [
+          "days_since_2017_01_01"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Elapsed-time-since-reference features are perfectly plausible, but they represent a different temporal branch than the curated Recruit benchmark is currently targeting.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "zeemeen/weighted-mean-running-10-sec-lb-0-509",
+        "zeemeen/weighted-mean-comparisons-lb-0-497-1st",
+        "zusmani/baseline-lb-0-497",
+        "cadong/weighted-average-on-four-kernels-lb-0-495",
+        "dongxu027/mean-mix-math-geo-harmonic-lb-0-493",
+        "domcastro/surprise-me-3-get-the-kettle-on",
+        "abhilashawasthi/surprise-me-2-c3454b",
+        "mauryashubham/multiple-models-new-features-from-surprise-me-2",
+        "pranav84/surprise-me-h2o-automl-version",
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "tunguz/surprise-me-2"
+      ],
+      "derivation_reasoning": "Synthetic fixed-reference time feature derived from the observed visit-date parsing and date-part branches.",
+      "challenge_type": "distractor",
+      "action_id": "CA-000087"
+    },
+    {
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "visit_date > '2017-03-15'"
+      },
+      "eval_stage": "validation_protocol",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "A much more aggressive recency cutoff is plausible, but it throws away too much demand history for a simple weekday-lookup branch.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "guoqiangliang/median-by-dow-lb-0-517"
+      ],
+      "derivation_reasoning": "Synthetic near-miss recency filter derived from the observed recent-window median-by-dow baseline by moving the cutoff much later.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000088"
+    },
+    {
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "reserve_datetime_diff > 7"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Filtering reservation rows to only long-lead bookings is close to the denoising branch, but it removes far more reservation evidence than the observed same-week exclusion.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "osciiart/denoising-autoencoder",
+        "danofer/swap-noise-denoising-autoencoder"
+      ],
+      "derivation_reasoning": "Synthetic reservation-filter near-miss derived from the observed reserve_datetime_diff > visit_dow rule by replacing the adaptive same-week boundary with a rigid long-lead threshold.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000089"
+    },
+    {
+      "action_type": "SCALE_NUMERIC",
+      "canonical_params": {
+        "method": "standard",
+        "columns": [
+          "reserve_visitors_sum",
+          "reserve_visitors_mean",
+          "reserve_datetime_diff_mean"
+        ],
+        "with_mean": true,
+        "with_std": true
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Standard-scaling reservation aggregates is a plausible neural-style preprocessing choice, but it is not part of the benchmark-preferred Recruit branches.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "jmbull/deep-fried-learning-keras-regression-starter",
+        "novinsh/surprise-me-2-with-lstm",
+        "pranav84/surprise-me-h2o-automl-version"
+      ],
+      "derivation_reasoning": "Second synthetic scaling variant added so the neural-style scaling family has a non-singleton local decision boundary without restoring weak observed good rows.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000090"
+    }
+  ]
+}

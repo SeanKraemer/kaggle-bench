@@ -1,0 +1,78 @@
+{
+  "competition_slug": "santander-customer-transaction-prediction",
+  "dataset": {
+    "provider": "kaggle",
+    "competition": "santander-customer-transaction-prediction",
+    "train_files": [
+      "train.csv"
+    ],
+    "test_files": [
+      "test.csv"
+    ],
+    "lookup_files": [],
+    "sample_submission_files": [
+      "sample_submission.csv"
+    ],
+    "target_column": "target"
+  },
+  "goal": "Suggest preprocessing and feature-engineering actions for predicting whether a customer will make a specific transaction, given 200 anonymous continuous features, under the Kaggle AUC metric.",
+  "task_characteristics": {
+    "ml_domain": "finance",
+    "problem_type": "binary_classification",
+    "table_structure": "single_table",
+    "dataset_size_bucket": "medium",
+    "dataset_size_raw": 200000,
+    "feature_dimensionality_bucket": "high",
+    "feature_dimensionality_raw": 200,
+    "preprocessing_complexity_bucket": "low",
+    "preprocessing_complexity_raw": 3,
+    "analysis_notes": "Santander Customer Transaction Prediction has 200,000 train rows and 200,000 test rows across 202 columns: ID_code (string identifier), 200 anonymous continuous features (var_0 to var_199), and binary target. The target class is severely imbalanced (~10% positive rate). A critical and competition-specific insight is that roughly half the test set consists of artificially generated (synthetic) rows: rows where every feature value appears more than once in the test set are synthetic. The canonical preprocessing pipeline is: (1) drop ID_code, (2) identify real vs synthetic test rows by detecting per-feature unique values, (3) create value-count features for each var_i by counting how often each value appears across train and real (non-synthetic) test rows. These count features dramatically improve AUC by surfacing distributional fingerprints that tree models exploit. All 200 var_* features are already continuous and normalized; no encoding is needed. preprocessing_complexity_raw=3 counts the three effective good units: drop-id, identify-real-test, and value-count-features."
+  },
+  "overview": {
+    "title": "Santander Customer Transaction Prediction",
+    "summary": "Predict whether a customer will make a specific transaction given 200 anonymous continuous features under severe class imbalance",
+    "raw_text": "Santander Bank challenged Kagglers to identify which customers will make a specific transaction in the future. The dataset has 200,000 training rows and 200,000 test rows, each with 200 anonymous numerical features (var_0 to var_199). The target is binary (1 = will transact, 0 = will not), with only 10% positive rate. A key discovery during the competition was that approximately half the test set rows are synthetic (artificially generated) and can be identified because all their feature values appear multiple times in the test set. Top solutions exploited this by building value-count features from the real test rows combined with training data, dramatically improving AUC beyond what raw features alone could achieve.",
+    "host": "Santander via Kaggle",
+    "category": "Featured",
+    "reward": "65,000 Usd",
+    "team_count": 8802,
+    "enabled_date": "2019-01-23T00:00:00.000Z",
+    "new_entrant_deadline": null,
+    "deadline": "2019-04-10T23:59:00.000Z",
+    "url": "https://www.kaggle.com/competitions/santander-customer-transaction-prediction"
+  },
+  "dataset_description": {
+    "summary": "A 200,000-row train.csv with 202 columns (ID_code, target, var_0 through var_199) and a 200,000-row test.csv with 201 columns (no target). Approximately 100,000 test rows are synthetic. No missing values.",
+    "raw_text": "train.csv has one row per customer observation: ID_code (string identifier), target (binary, 0 or 1), and var_0 through var_199 (200 anonymous continuous features, pre-normalized floats). test.csv has the same structure without target. Roughly half the test rows are synthetically generated: they can be identified because every feature value in such rows appears at least twice in the test set (real rows have at least one feature value that is unique in the test set). The 200 features have extremely low pairwise correlation (max ~0.01) and each feature independently separates the two target classes. No missing values exist in either file.",
+    "file_summary": {
+      "total_file_count": 3,
+      "file_types": [
+        {
+          "extension": ".csv",
+          "file_count": 3,
+          "total_size_bytes": 230000000
+        }
+      ]
+    },
+    "column_summary": {
+      "total_column_count": 202,
+      "column_types": [
+        {
+          "column_type": "Continuous",
+          "column_count": 200
+        },
+        {
+          "column_type": "Binary",
+          "column_count": 1
+        },
+        {
+          "column_type": "Id",
+          "column_count": 1
+        }
+      ]
+    }
+  },
+  "metric": {
+    "name": "AUC"
+  }
+}

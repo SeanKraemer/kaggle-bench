@@ -1,0 +1,16 @@
+{
+  "competition_slug": "home-credit-default-risk",
+  "testcase_id": "tc1_from_scratch",
+  "artifact_type": "eval_human_baseline_provenance",
+  "author": "annotator_a",
+  "created_at": "2026-03-31T00:00:00-05:00",
+  "source_mode": "manual_full_bank_review",
+  "related_output": "../tc1_human.json",
+  "source_notebook_artifacts": [
+    "../work.ipynb"
+  ],
+  "time_spent_minutes": 40,
+  "consulted_candidate_bank": true,
+  "consulted_legacy_human_output": true,
+  "notes": "This artifact records an observed Home Credit TC1 human bank-selection run after a complete manual review of the full action bank. The selected rows reflect one human pass under the benchmark action-space constraints and supersede the earlier notebook-faithful re-authoring pass."
+}

@@ -1,0 +1,13 @@
+{
+  "testcase_id": "tc4_mixed_history",
+  "competition_slug": "santander-customer-transaction-prediction",
+  "task_ref": "../task.json",
+  "input": {
+    "scenario": "mixed",
+    "context_action_ids": [
+      "CA-000002",
+      "CA-000005",
+      "CA-000006"
+    ]
+  }
+}

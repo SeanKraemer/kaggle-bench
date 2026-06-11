@@ -1,0 +1,25 @@
+{
+  "version": "v1",
+  "dataset_size": {
+    "metric_name": "largest_relevant_table_row_count",
+    "thresholds": {
+      "small_max": 100000,
+      "medium_max": 500000,
+      "large_max": 2000000
+    }
+  },
+  "feature_dimensionality": {
+    "metric_name": "benchmark_relevant_case_insensitive_column_union_count",
+    "thresholds": {
+      "low_max": 30,
+      "medium_max": 100
+    }
+  },
+  "preprocessing_complexity": {
+    "metric_name": "golden_action_count",
+    "thresholds": {
+      "low_max": 8,
+      "medium_max": 20
+    }
+  }
+}

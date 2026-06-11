@@ -1,0 +1,74 @@
+{
+  "competition_slug": "ashrae-energy-prediction",
+  "dataset": {
+    "provider": "kaggle",
+    "competition": "ashrae-energy-prediction",
+    "train_files": [
+      "train.csv"
+    ],
+    "test_files": [
+      "test.csv"
+    ],
+    "lookup_files": [
+      "building_metadata.csv",
+      "weather_train.csv",
+      "weather_test.csv"
+    ],
+    "sample_submission_files": [
+      "sample_submission.csv"
+    ],
+    "target_column": "meter_reading",
+    "primary_key": "building_id,meter,timestamp"
+  },
+  "goal": "Suggest preprocessing and feature-engineering actions for forecasting meter_reading from the official ASHRAE building and weather tables under the RMSLE metric.",
+  "task_characteristics": {
+    "ml_domain": "energy_forecasting_tabular",
+    "problem_type": "forecasting",
+    "table_structure": "multi_table_lookup",
+    "dataset_size_bucket": "xlarge",
+    "dataset_size_raw": 41697600,
+    "feature_dimensionality_bucket": "low",
+    "feature_dimensionality_raw": 17,
+    "preprocessing_complexity_bucket": "medium",
+    "preprocessing_complexity_raw": 11,
+    "analysis_notes": "Large building-energy forecasting task with a 41.7M-row official test table, a 20.2M-row training table, one building lookup, and split weather lookups keyed by site and timestamp. The benchmark-relevant official column union is only 17, so the task is narrow but operationally heavy. The curated bank keeps 11 rewarded actions across core and model-specific stages; the primary denominator stays conservative around joins, datetime handling, categorical treatment, and missing-value handling."
+  },
+  "dataset_description": {
+    "summary": "Official scope combines one main meter-reading table with building metadata and weather lookups. The benchmark uses only Kaggle-provided CSVs and excludes leak tables, holiday calendars, and public-kernel side inputs.",
+    "raw_text": "train.csv and test.csv provide building-meter-timestamp rows. building_metadata.csv supplies site_id, primary_use, square_feet, year_built, and floor_count by building_id. weather_train.csv and weather_test.csv supply weather signals by site_id and timestamp. sample_submission.csv is the submission index. The benchmark contract is official-only and treats the split train/test weather lookup as a task-local workflow assumption rather than as separate benchmark scenarios.",
+    "file_summary": {
+      "total_file_count": 6,
+      "file_types": [
+        {
+          "extension": ".csv",
+          "file_count": 6,
+          "total_size_bytes": 2610923746
+        }
+      ]
+    },
+    "column_summary": {
+      "total_column_count": 17,
+      "column_types": [
+        {
+          "column_type": "Integer",
+          "column_count": 8
+        },
+        {
+          "column_type": "Decimal",
+          "column_count": 7
+        },
+        {
+          "column_type": "String",
+          "column_count": 1
+        },
+        {
+          "column_type": "DateTime",
+          "column_count": 1
+        }
+      ]
+    }
+  },
+  "metric": {
+    "name": "RMSLE"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "testcase_id": "tc3_fault_injected",
+  "competition_slug": "zillow-prize-1",
+  "task_ref": "../task.json",
+  "input": {
+    "scenario": "fault_injected",
+    "context_action_ids": [
+      "CA-000075",
+      "CA-000025",
+      "CA-000020",
+      "CA-000101"
+    ]
+  }
+}

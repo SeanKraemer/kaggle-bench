@@ -1,0 +1,383 @@
+{
+  "competition_slug": "santander-customer-transaction-prediction",
+  "generated_at": "2026-04-22",
+  "actions": [
+    {
+      "action_id": "CA-000001",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "for col in FEATURES: train[col+'_vc'] = train[col].map(train[col].value_counts()).fillna(0).astype(int); test[col+'_vc'] = test[col].map(train[col].value_counts()).fillna(0).astype(int)",
+        "output_columns": [
+          "var_0_vc",
+          "...",
+          "var_199_vc"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Value-count features computed from training data only miss the real test distribution. This produces systematically lower counts for test rows, degrading the distributional fingerprint signal that top models exploit. The correct approach (CA-000009) uses train + real test rows combined.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss variant of CA-000009 using train-only value counts instead of the correct train + real_test counts.",
+      "derived_from_action_ids": [
+        "CA-000009"
+      ],
+      "challenge_type": "wrong_scope",
+      "conflicts_with_action_ids": [
+        "CA-000009"
+      ]
+    },
+    {
+      "action_id": "CA-000002",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "ID_code"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "ID_code is a unique string row identifier with no relationship to the transaction target. Including it in the feature matrix would cause identifier memorisation and inflate train AUC without generalising to test.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "cdeotte__200-magical-models-santander-0-920",
+        "gpreda__santander-fast-compact-solution",
+        "jesucristo__30-lines-starter-solution-fast",
+        "gpreda__santander-improved-starter-solution"
+      ],
+      "source_profile": "Universal across all high-scoring competition notebooks; every solution drops ID_code before building features.",
+      "context_notes": "Dropping ID_code is the first preprocessing step in virtually every Santander submission. The feature set is defined as all columns except ID_code and target.",
+      "evidence_snippets": [
+        "features = [c for c in train_df.columns if c not in ['ID_code', 'target']]",
+        "train = train.drop(columns=['ID_code']); test = test.drop(columns=['ID_code'])"
+      ],
+      "rareness": "common",
+      "confidence": 1.0
+    },
+    {
+      "action_id": "CA-000003",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "df_all = pd.concat([train[FEATURES], test[FEATURES]]); for col in FEATURES: vc = df_all[col].value_counts(); train[col+'_vc'] = train[col].map(vc).fillna(0).astype(int); test[col+'_vc'] = test[col].map(vc).fillna(0).astype(int)",
+        "output_columns": [
+          "var_0_vc",
+          "...",
+          "var_199_vc"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Value-count features computed from the full test set including synthetic rows inflate counts for synthetic test rows, which appear multiple times by construction. This corrupts the distributional fingerprint and prevents the model from distinguishing real from synthetic customers. The correct approach (CA-000009) uses only real (non-synthetic) test rows.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss variant of CA-000009 using all test rows instead of only real test rows, contaminating counts with synthetic row repetitions.",
+      "derived_from_action_ids": [
+        "CA-000009"
+      ],
+      "challenge_type": "wrong_scope",
+      "conflicts_with_action_ids": [
+        "CA-000009"
+      ]
+    },
+    {
+      "action_id": "CA-000004",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "mean",
+        "columns": [
+          "var_0",
+          "var_1",
+          "var_2",
+          "var_3",
+          "var_4"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "The Santander dataset has no missing values in either train.csv or test.csv. Applying mean imputation is a no-op that adds noise to the pipeline without any benefit.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic distractor representing a common reflexive preprocessing step that is inapplicable to this dataset.",
+      "base_refs": [
+        "artgor__santander-eda-fe-fs-and-models"
+      ],
+      "challenge_type": "inapplicable_step"
+    },
+    {
+      "action_id": "CA-000005",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "test_vals = test[FEATURES].values; unique_count = np.zeros(len(test), dtype=int); for i in range(len(FEATURES)): vals, idx, cnt = np.unique(test_vals[:, i], return_index=True, return_counts=True); unique_count[idx[cnt == 1]] += 1; real_mask = unique_count > 0; real_test = test[real_mask].reset_index(drop=True)",
+        "output_columns": [
+          "real_mask",
+          "real_test"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "hard",
+      "reasoning": "Approximately half the 200,000 test rows are synthetically generated. A synthetic row has all its feature values appearing at least twice in the test set; real rows have at least one feature value that is unique across test. Identifying real vs synthetic rows is a prerequisite for computing correct value-count features (CA-000009).",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "cdeotte__200-magical-models-santander-0-920",
+        "felipemello__step-by-step-guide-to-the-magic-lb-0-922",
+        "dott1718__922-in-3-minutes"
+      ],
+      "source_profile": "Discovered by top competitors (cdeotte, felipemello) during the competition; used by all solutions that achieved AUC > 0.920.",
+      "context_notes": "This step was the key competition insight. Without identifying real test rows, value-count features are computed over the wrong distribution, significantly reducing AUC.",
+      "evidence_snippets": [
+        "# GET INDICIES OF REAL TEST DATA FOR FE",
+        "test_vals = test[FEATURES].values; unique_count = np.zeros(len(test), dtype=int); for i in range(len(FEATURES)): vals, idx, cnt = np.unique(test_vals[:, i], return_index=True, return_counts=True); unique_count[idx[cnt == 1]] += 1; real_mask = unique_count > 0; real_test = test[real_mask].reset_index(drop=True)"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.95,
+      "must_follow_action_ids": [
+        "CA-000002"
+      ]
+    },
+    {
+      "action_id": "CA-000006",
+      "action_type": "PCA_REDUCTION",
+      "canonical_params": {
+        "feature_columns": [
+          "var_0",
+          "var_1",
+          "var_2",
+          "var_3",
+          "var_4",
+          "var_5",
+          "var_6",
+          "var_7",
+          "var_8",
+          "var_9"
+        ],
+        "n_components": 50,
+        "method": "pca"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "PCA on the var_* features destroys the per-feature independence structure that is the core of this competition. Each var_* independently separates the target classes, and value-count features are built per column. After PCA the original per-feature distributions are lost, making value-count features (CA-000009) meaningless and eliminating the competition's key insight.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "darbin__principal-component-analysis-approach",
+        "ashishpatel26__feature-selection-pca-catboost"
+      ],
+      "source_profile": "Exploratory notebooks applying PCA to Santander features as an alternative dimensionality approach, yielding suboptimal AUC compared to value-count approaches.",
+      "context_notes": "PCA was attempted by multiple participants early in the competition before the synthetic-row discovery; it consistently underperformed value-count solutions.",
+      "evidence_snippets": [
+        "from sklearn.decomposition import PCA; pca = PCA(n_components=50); train_pca = pca.fit_transform(train[features])"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.9,
+      "conflicts_with_action_ids": [
+        "CA-000009"
+      ]
+    },
+    {
+      "action_id": "CA-000007",
+      "action_type": "SCALE_NUMERIC",
+      "canonical_params": {
+        "method": "standard",
+        "columns": [
+          "var_0",
+          "var_1",
+          "var_2",
+          "var_3",
+          "var_4"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "The var_* features are already pre-normalized floats. Standard scaling adds no signal and tree-based models (LightGBM, XGBoost) are scale-invariant. Scaling can also obscure the value-count fingerprints that top Santander solutions rely on.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic distractor representing a reflexive normalization step inapplicable to pre-normalized anonymous features in a tree-model context.",
+      "base_refs": [
+        "artgor__santander-eda-fe-fs-and-models"
+      ],
+      "challenge_type": "inapplicable_step"
+    },
+    {
+      "action_id": "CA-000008",
+      "action_type": "LOG_TRANSFORM",
+      "canonical_params": {
+        "columns": [
+          "var_0",
+          "var_1",
+          "var_2",
+          "var_3",
+          "var_4"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "The var_* features are pre-normalized and contain both positive and negative values. Log transformation would fail on negative values and is meaningless for already-normalized features. It adds no signal for tree-based models.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic distractor representing a common feature transformation that is inapplicable to pre-normalized anonymous features with negative values.",
+      "base_refs": [
+        "artgor__santander-eda-fe-fs-and-models"
+      ],
+      "challenge_type": "inapplicable_step"
+    },
+    {
+      "action_id": "CA-000009",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "df_all = pd.concat([train[FEATURES], real_test[FEATURES]], axis=0).reset_index(drop=True); for col in FEATURES: vc = df_all[col].value_counts(); train[col+'_vc'] = train[col].map(vc).fillna(0).astype(int); test[col+'_vc'] = test[col].map(vc).fillna(0).astype(int)",
+        "output_columns": [
+          "var_0_vc",
+          "...",
+          "var_199_vc"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "hard",
+      "reasoning": "Value-count features count how often each var_* value appears in the combined train + real test rows. These features surface distributional fingerprints that tree models exploit to dramatically improve AUC from ~0.90 to ~0.92+. Must use real (non-synthetic) test rows only to avoid count inflation from synthetic row repetitions.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "cdeotte__200-magical-models-santander-0-920",
+        "felipemello__step-by-step-guide-to-the-magic-lb-0-922",
+        "dott1718__922-in-3-minutes"
+      ],
+      "source_profile": "Core feature engineering step used by virtually all top-ranking solutions (AUC > 0.920). Introduced as the 'magic' feature engineering approach during the competition.",
+      "context_notes": "The value-count feature must be computed from train + real_test (not train-only and not full test including synthetics). This three-way distinction (CA-000001 vs CA-000003 vs CA-000009) is the key discriminative challenge in this benchmark.",
+      "evidence_snippets": [
+        "df_all = pd.concat([train[FEATURES], real_test[FEATURES]], axis=0).reset_index(drop=True); for col in FEATURES: vc = df_all[col].value_counts(); train[col+'_vc'] = train[col].map(vc).fillna(0).astype(int); test[col+'_vc'] = test[col].map(vc).fillna(0).astype(int)",
+        "def encode_FE(df, col, test): cv = df[col].value_counts(); nm = col+'_FE'; df[nm] = df[col].map(cv); test[nm] = test[col].map(cv)"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.95,
+      "must_follow_action_ids": [
+        "CA-000005"
+      ],
+      "conflicts_with_action_ids": [
+        "CA-000001",
+        "CA-000003"
+      ]
+    },
+    {
+      "action_id": "CA-000010",
+      "action_type": "CLIP_OUTLIERS",
+      "canonical_params": {
+        "columns": [
+          "var_0",
+          "var_1",
+          "var_2",
+          "var_3",
+          "var_4"
+        ],
+        "method": "winsorize",
+        "lower_quantile": 0.01,
+        "upper_quantile": 0.99
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Winsorizing the var_* features destroys the distributional fingerprints that value-count features exploit. Extreme values in specific features carry predictive information about real customers. Clipping removes this signal.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic distractor representing outlier clipping that would degrade the value-count features central to this benchmark.",
+      "base_refs": [
+        "artgor__santander-eda-fe-fs-and-models"
+      ],
+      "challenge_type": "harmful_transformation"
+    },
+    {
+      "action_id": "CA-000011",
+      "action_type": "SAMPLE_ROWS",
+      "canonical_params": {
+        "method": "random",
+        "frac": 1.0
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Shuffle augmentation of training rows is a training-time technique, not a data preprocessing step. It does not modify the feature matrix and has no effect on evaluation under the Kaggle AUC metric, which is computed on the held-out test set. Including it as a preprocessing action conflates training configuration with feature engineering.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic action representing a training-augmentation technique sometimes confused with preprocessing in Santander solutions. Excluded from primary scope as it is model-specific.",
+      "base_refs": [
+        "brandenkmurray__randomly-shuffled-data-also-works"
+      ],
+      "challenge_type": "wrong_stage"
+    },
+    {
+      "action_id": "CA-000012",
+      "action_type": "FEATURE_SELECTION",
+      "canonical_params": {
+        "method": "variance",
+        "feature_columns": [
+          "var_0",
+          "var_1",
+          "var_2",
+          "var_3",
+          "var_4"
+        ],
+        "threshold": 0.1
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "All 200 var_* features have non-zero variance and each independently discriminates the binary target. Variance-threshold selection would discard informative features without any gain.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic distractor representing reflexive feature selection inapplicable to this dataset where all features are predictive.",
+      "base_refs": [
+        "artgor__santander-eda-fe-fs-and-models"
+      ],
+      "challenge_type": "inapplicable_step"
+    },
+    {
+      "action_id": "CA-000013",
+      "action_type": "BIN_NUMERIC",
+      "canonical_params": {
+        "columns": [
+          "var_0",
+          "var_1",
+          "var_2",
+          "var_3",
+          "var_4"
+        ],
+        "method": "quantile",
+        "bins": 10
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Quantile binning of var_* features discretizes the continuous values and destroys the exact floating-point values that value-count features rely on. After binning, the per-value distributional fingerprints (CA-000009) become meaningless.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic distractor representing binning that would conflict with and undermine the canonical value-count feature engineering approach.",
+      "base_refs": [
+        "artgor__santander-eda-fe-fs-and-models"
+      ],
+      "challenge_type": "harmful_transformation",
+      "conflicts_with_action_ids": [
+        "CA-000009"
+      ]
+    },
+    {
+      "action_id": "CA-000014",
+      "action_type": "CREATE_MISSING_INDICATOR",
+      "canonical_params": {
+        "columns": [
+          "var_0",
+          "var_1",
+          "var_2",
+          "var_3",
+          "var_4"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "The Santander dataset has no missing values in either train.csv or test.csv. Creating missing-value indicator columns produces all-zero features that add noise and consume memory without contributing any signal.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic distractor representing a common defensive preprocessing step that is inapplicable to a dataset with no missingness.",
+      "base_refs": [
+        "artgor__santander-eda-fe-fs-and-models"
+      ],
+      "challenge_type": "inapplicable_step"
+    }
+  ]
+}

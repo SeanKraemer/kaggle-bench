@@ -1,0 +1,41 @@
+{
+  "competition_slug": "santander-customer-transaction-prediction",
+  "testcase_id": "tc1_from_scratch",
+  "agent_name": "human",
+  "run_by": "annotator_b",
+  "run_id": "human_tc1_v1",
+  "artifact_refs": [
+    {
+      "kind": "notebook",
+      "path": "work.ipynb",
+      "description": "manually reproduce the Santander preprocessing pipeline using the candidate action bank."
+    },
+    {
+      "kind": "metadata",
+      "path": "provenance/metadata.json",
+      "description": "Run-level metadata for the human baseline."
+    },
+    {
+      "kind": "trace",
+      "path": "provenance/action_trace.json",
+      "description": "Per-action mapping from CA-IDs to notebook evidence and selection rationale."
+    },
+    {
+      "kind": "notes",
+      "path": "notes.md",
+      "description": "notes for the finalized human baseline."
+    }
+  ],
+  "predicted_add_action_ids": [
+    "CA-000002",
+    "CA-000009"
+  ],
+  "predicted_remove_action_ids": [],
+  "time_spent_seconds": 2700,
+  "token_usage": {
+    "input_tokens": null,
+    "output_tokens": null,
+    "total_tokens": null
+  },
+  "notes": "CA-000005 (identify real vs synthetic test rows) was not selected and value-count features were applied without first isolating real test rows."
+}

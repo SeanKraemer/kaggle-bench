@@ -1,0 +1,57 @@
+{
+  "competition_slug": "amex-default-prediction",
+  "testcase_id": "tc1_from_scratch",
+  "agent_name": "human",
+  "run_by": "Sean Kraemer",
+  "run_id": "human_tc1_sean_kraemer_v4_manual_rebuild",
+  "artifact_refs": [
+    {
+      "kind": "notes",
+      "path": "manual_selection_worksheet.md",
+      "description": "Worksheet that records the plain-English shortlist first and the late bank-id mapping second."
+    },
+    {
+      "kind": "notes",
+      "path": "notes.md",
+      "description": "Human-baseline notes and validation guidance."
+    },
+    {
+      "kind": "notebook",
+      "path": "work.ipynb",
+      "description": "Consulted scratch notebook used to inspect dtypes, missingness, and customer aggregation ideas before late bank-id mapping."
+    },
+    {
+      "kind": "other",
+      "path": "work.py",
+      "description": "Script version of the consulted scratch notebook."
+    },
+    {
+      "kind": "trace",
+      "path": "provenance/action_trace.json",
+      "description": "Audit-ready mapping from each selected bank action to scratch-notebook sections and worksheet alignment."
+    },
+    {
+      "kind": "metadata",
+      "path": "provenance/metadata.json",
+      "description": "Run-level provenance for the manual AMEX baseline."
+    }
+  ],
+  "predicted_add_action_ids": [
+    "CA-000014",
+    "CA-000009",
+    "CA-000049",
+    "CA-000020",
+    "CA-000056",
+    "CA-000001",
+    "CA-000029",
+    "CA-000043"
+  ],
+  "predicted_remove_action_ids": [],
+  "time_spent_seconds": 900,
+  "token_usage": {
+    "input_tokens": null,
+    "output_tokens": null,
+    "total_tokens": null
+  },
+  "notes": "Manual AMEX TC1 baseline. The selection keeps the customer aggregation scaffold plus categorical and missingness handling, while leaving recency deltas and final cleanup out of the baseline."
+}

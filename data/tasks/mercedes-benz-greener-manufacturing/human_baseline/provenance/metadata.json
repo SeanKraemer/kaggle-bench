@@ -1,0 +1,17 @@
+{
+  "competition_slug": "mercedes-benz-greener-manufacturing",
+  "testcase_id": "tc1_from_scratch",
+  "artifact_type": "eval_human_baseline_provenance",
+  "author": "annotator_c",
+  "created_at": "2026-04-24T16:30:00-05:00",
+  "source_mode": "true_bank_id_authoring",
+  "related_output": "../tc1_human.json",
+  "source_notebook_artifacts": [
+    "../work.ipynb"
+  ],
+  "legacy_output_artifacts": [],
+  "time_spent_minutes": 40,
+  "consulted_candidate_bank": true,
+  "consulted_legacy_human_output": false,
+  "notes": "This artifact was authored directly against the Phase 2 Mercedes candidate bank using a new official-only notebook. It is not a migrated or re-authored legacy baseline."
+}

@@ -1,0 +1,54 @@
+{
+  "competition_slug": "mercedes-benz-greener-manufacturing",
+  "testcase_id": "tc1_from_scratch",
+  "artifact_type": "eval_human_baseline_action_trace",
+  "related_output": "../tc1_human.json",
+  "traces": [
+    {
+      "predicted_action_id": "CA-000002",
+      "artifact": "../work.ipynb",
+      "section": "Drop ID",
+      "mapping_rationale": "Direct bank match for removing the identifier column from both train and test feature matrices."
+    },
+    {
+      "predicted_action_id": "CA-000005",
+      "artifact": "../work.ipynb",
+      "section": "Drop Constant Columns",
+      "mapping_rationale": "Direct bank match for removing the deterministic zero-variance official columns before downstream modeling branches."
+    },
+    {
+      "predicted_action_id": "CA-000007",
+      "artifact": "../work.ipynb",
+      "section": "Label Encode Categorical Block",
+      "mapping_rationale": "Direct bank match for label encoding the released object columns X0, X1, X2, X3, X4, X5, X6, and X8 using the combined train/test vocabulary."
+    },
+    {
+      "predicted_action_id": "CA-000014",
+      "artifact": "../work.ipynb",
+      "section": "Robust Scaling Branch",
+      "mapping_rationale": "Direct bank match for a model-specific RobustScaler branch over the repaired numeric matrix."
+    },
+    {
+      "predicted_action_id": "CA-000012",
+      "artifact": "../work.ipynb",
+      "section": "PCA Branch",
+      "mapping_rationale": "Direct bank match for the 12-component PCA branch used in many Mercedes stacked solutions."
+    },
+    {
+      "predicted_action_id": "CA-000019",
+      "artifact": "../work.ipynb",
+      "section": "RFECV Branch",
+      "mapping_rationale": "Direct bank match for an RFECV-style feature-selection branch over the repaired feature matrix."
+    }
+  ],
+  "omitted_notebook_steps": [
+    {
+      "section": "Scope Boundary",
+      "note": "The bank also contains one-hot encoding, SVD, ICA, and min-max scaling alternatives, but this baseline intentionally selects only one row from each equivalence group."
+    },
+    {
+      "section": "Submission Preparation",
+      "note": "Preparing a submission dataframe with ID and predictions is shown as notebook context but is not mapped to a standalone candidate-bank action."
+    }
+  ]
+}

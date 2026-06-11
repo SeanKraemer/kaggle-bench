@@ -1,0 +1,47 @@
+{
+  "competition_slug": "restaurant-revenue-prediction",
+  "testcase_id": "tc1_from_scratch",
+  "agent_name": "human",
+  "run_by": "annotator_c",
+  "run_id": "human_tc1_annotator_c_v1",
+  "artifact_refs": [
+    {
+      "kind": "notebook",
+      "path": "work.ipynb",
+      "description": "Manual official-only notebook used to author the Restaurant Revenue TC1 human baseline."
+    },
+    {
+      "kind": "metadata",
+      "path": "provenance/metadata.json",
+      "description": "Run-level metadata for the canonical Restaurant Revenue human baseline."
+    },
+    {
+      "kind": "trace",
+      "path": "provenance/action_trace.json",
+      "description": "Maps each predicted bank action to the supporting notebook section."
+    },
+    {
+      "kind": "notes",
+      "path": "notes.md",
+      "description": "Author notes for the Restaurant Revenue human baseline."
+    }
+  ],
+  "predicted_add_action_ids": [
+    "CA-000002",
+    "CA-000007",
+    "CA-000004",
+    "CA-000024",
+    "CA-000009",
+    "CA-000016",
+    "CA-000018",
+    "CA-000011"
+  ],
+  "predicted_remove_action_ids": [],
+  "time_spent_seconds": 2400,
+  "token_usage": {
+    "input_tokens": null,
+    "output_tokens": null,
+    "total_tokens": null
+  },
+  "notes": "True bank-id authoring for tc1_from_scratch using an official-only repo-local notebook. The baseline selects a conservative OpenDays-centered primary spine plus the explicitly implemented model-specific branches for an Istanbul indicator, standard scaling over the P-features, and a log1p target transform."
+}

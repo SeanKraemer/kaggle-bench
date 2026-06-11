@@ -1,0 +1,57 @@
+{
+  "competition_slug": "rossmann-store-sales",
+  "testcase_id": "tc1_from_scratch",
+  "artifact_type": "eval_human_baseline_action_trace",
+  "related_output": "../tc1_human.json",
+  "traces": [
+    {
+      "predicted_action_id": "CA-000044",
+      "artifact": "../work.ipynb",
+      "section": "Store Metadata And Calendar Surface",
+      "mapping_rationale": "The notebook treats the store lookup as a prerequisite for any credible Rossmann baseline because the daily train/test tables are missing the static store metadata by themselves."
+    },
+    {
+      "predicted_action_id": "CA-000036",
+      "artifact": "../work.ipynb",
+      "section": "Store Metadata And Calendar Surface",
+      "mapping_rationale": "The notebook explicitly inspects `Date` as a forecasting anchor, so parsing it stays in the final baseline."
+    },
+    {
+      "predicted_action_id": "CA-000021",
+      "artifact": "../work.ipynb",
+      "section": "Store Metadata And Calendar Surface",
+      "mapping_rationale": "Year, month, and day are the minimal calendar parts surfaced in the notebook and belong in a believable first-pass forecasting pipeline."
+    },
+    {
+      "predicted_action_id": "CA-000048",
+      "artifact": "../manual_selection_worksheet.md",
+      "section": "Final Bank Mapping",
+      "mapping_rationale": "After freezing the plain-language shortlist, I kept exactly one closed-store rule and mapped it to the simpler `Open == 1` branch."
+    },
+    {
+      "predicted_action_id": "CA-000006",
+      "artifact": "../work.ipynb",
+      "section": "Closure Handling, Leakage, And Sparse Metadata",
+      "mapping_rationale": "The notebook highlights `CompetitionDistance` as one of the clearest store-metadata gaps, which supports keeping a basic median repair in the manual baseline."
+    },
+    {
+      "predicted_action_id": "CA-000004",
+      "artifact": "../manual_selection_worksheet.md",
+      "section": "Final Bank Mapping",
+      "mapping_rationale": "The shortlist called for one simple encoding strategy over the low-cardinality categorical block; bank alignment mapped that choice to the label-encoding representative."
+    },
+    {
+      "predicted_action_id": "CA-000042",
+      "artifact": "../work.ipynb",
+      "section": "Closure Handling, Leakage, And Sparse Metadata",
+      "mapping_rationale": "The notebook explicitly checks that `Customers` is train-only, so dropping it remains one of the clearest defensible manual decisions."
+    }
+  ],
+  "omitted_steps": [
+    {
+      "artifact": "../manual_selection_worksheet.md",
+      "section": "Intentionally Omitted",
+      "note": "The manual pass stops before competition-timing derivations, the full promo-repair block, the test-side `Open` fill, and the raw-`Date` cleanup."
+    }
+  ]
+}

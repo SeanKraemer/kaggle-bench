@@ -1,0 +1,20 @@
+{
+  "testcase_id": "tc4_mixed_history",
+  "competition_slug": "rossmann-store-sales",
+  "task_ref": "../task.json",
+  "input": {
+    "scenario": "mixed",
+    "context_action_ids": [
+      "CA-000044",
+      "CA-000036",
+      "CA-000021",
+      "CA-000031",
+      "CA-000018",
+      "CA-000052",
+      "CA-000042",
+      "CA-000027",
+      "CA-000053",
+      "CA-000013"
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "testcase_id": "tc2_partial_good",
+  "competition_slug": "sberbank-russian-housing-market",
+  "task_ref": "../task.json",
+  "input": {
+    "scenario": "partial_good",
+    "context_action_ids": [
+      "CA-000001",
+      "CA-000013",
+      "CA-000019"
+    ]
+  }
+}

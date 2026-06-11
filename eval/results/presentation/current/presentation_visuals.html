@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>KaggleBench Results Visuals</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 32px; color: #111827; }
+    h1 { margin-bottom: 4px; }
+    h2 { margin-top: 42px; }
+    svg { max-width: 100%; height: auto; border: 1px solid #e5e7eb; }
+    .note { color: #4b5563; margin-bottom: 24px; }
+  </style>
+</head>
+<body>
+  <h1>KaggleBench Results Visuals</h1>
+  <p class="note">Generated from the current local benchmark artifacts.</p>
+  <h2>Task Completion Heatmap</h2>
+<svg xmlns="http://www.w3.org/2000/svg" width="1092" height="752" viewBox="0 0 1092 752">
+<style>
+.title{font:700 30px Arial,sans-serif;fill:#111827}
+.subtitle{font:400 15px Arial,sans-serif;fill:#4b5563}
+.label{font:700 15px Arial,sans-serif;fill:#111827}
+.small{font:400 12px Arial,sans-serif;fill:#4b5563}
+.score{font:700 24px Arial,sans-serif}
+.best{font-weight:900}
+.n{font:400 12px Arial,sans-serif}
+</style>
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text class="title" x="36" y="48">Task Completion by Scenario</text>
+<text class="subtitle" x="36" y="76">Stage scope: primary; 20 benchmark tasks; scenario cells are task completion, right column is binary success rate.</text>
+<text class="label" text-anchor="middle" x="308.0" y="108">TC1</text>
+<text class="label" text-anchor="middle" x="308.0" y="126">Scratch</text>
+<text class="label" text-anchor="middle" x="464.0" y="108">TC2</text>
+<text class="label" text-anchor="middle" x="464.0" y="126">Good prior</text>
+<text class="label" text-anchor="middle" x="620.0" y="108">TC3</text>
+<text class="label" text-anchor="middle" x="620.0" y="126">Bad prior</text>
+<text class="label" text-anchor="middle" x="776.0" y="108">TC4</text>
+<text class="label" text-anchor="middle" x="776.0" y="126">Mixed</text>
+<text class="label" text-anchor="middle" x="932.0" y="108">Overall</text>
+<text class="label" text-anchor="middle" x="932.0" y="126">Success</text>
+<text class="label" x="36" y="188">Human reference</text>
+<rect x="230" y="142" width="148" height="74" rx="8" fill="#439284" stroke="#ffffff" stroke-width="2"/>
+<text class="score" fill="#111827" text-anchor="middle" x="304.0" y="179">0.89</text>
+<text class="n" fill="#111827" text-anchor="middle" x="304.0" y="200">n=20</text>
+<rect x="386" y="142" width="148" height="74" rx="8" fill="#f3f4f6" stroke="#ffffff" stroke-width="2"/>
+<text class="score" fill="#111827" text-anchor="middle" x="460.0" y="184">n/a</text>
+<rect x="542" y="142" width="148" height="74" rx="8" fill="#f3f4f6" stroke="#ffffff" stroke-width="2"/>
+<text class="score" fill="#111827" text-anchor="middle" x="616.0" y="184">n/a</text>
+<rect x="698" y="142" width="148" height="74" rx="8" fill="#f3f4f6" stroke="#ffffff" stroke-width="2"/>
+<text class="score" fill="#111827" text-anchor="middle" x="772.0" y="184">n/a</text>
+<rect x="854" y="142" width="148" height="74" rx="8" fill="#0f766e" stroke="#ffffff" stroke-width="2"/>
+<text class="score" fill="#111827" text-anchor="middle" x="928.0" y="179">1.00</text>
+<text class="n" fill="#111827" text-anchor="middle" x="928.0" y="200">n=20</text>
+<line x1="36" y1="220" x2="1056" y2="220" stroke="#111827" stroke-width="2" stroke-dasharray="6 5"/>
+<text class="label" x="36" y="270">Rule-based</text>
+<rect x="230" y="224" width="148" height="74" rx="8" fill="#b4cfb5" stroke="#ffffff" stroke-width="2"/>
+<text class="score" fill="#111827" text-anchor="middle" x="304.0" y="261">0.64</text>
+<text class="n" fill="#111827" text-anchor="middle" x="304.0" y="282">n=20</text>
+<rect x="386" y="224" width="148" height="74" rx="8" fill="#cedcc0" stroke="#ffffff" stroke-width="2"/>
+<text class="score" fill="#111827" text-anchor="middle" x="460.0" y="261">0.58</text>
+<text class="n" fill="#111827" text-anchor="middle" x="460.0" y="282">n=20</text>
+<rect x="542" y="224" width="148" height="74" rx="8" fill="#f5ddcc" stroke="#ffffff" stroke-width="2"/>
+<text class="score" fill="#111827" text-anchor="middle" x="616.0" y="261">0.27</text>
+<text class="n" fill="#111827" text-anchor="middle" x="616.0" y="282">n=20</text>
+<rect x="698" y="224" width="148" height="74" rx="8" fill="#f6d9cb" stroke="#ffffff" stroke-width="2"/>
+<text class="score" fill="#111827" text-anchor="middle" x="772.0" y="261">0.22</text>
+<text class="n" fill="#111827" text-anchor="middle" x="772.0" y="282">n=20</text>
+<rect x="854" y="224" width="148" height="74" rx="8" fill="#d7e2c4" stroke="#ffffff" stroke-width="2"/>
+<text class="score" fill="#111827" text-anchor="middle" x="928.0" y="261">0.56</text>
+<text class="n" fill="#111827" text-anchor="middle" x="928.0" y="282">n=80</text>
+<text class="label" x="36" y="352">Single LLM</text>
+<rect x="230" y="306" width="148" height="74" rx="8" fill="#489486" stroke="#ffffff" stroke-width="2"/>
+<text class="score" fill="#111827" text-anchor="middle" x="304.0" y="343">0.88</text>
+<text class="n" fill="#111827" text-anchor="middle" x="304.0" y="364">n=20</text>
+<rect x="386" y="306" width="148" height="74" rx="8" fill="#61a291" stroke="#ffffff" stroke-width="2"/>
+<text class="score" fill="#111827" text-anchor="middle" x="460.0" y="343">0.82</text>
+<text class="n" fill="#111827" text-anchor="middle" x="460.0" y="364">n=20</text>
+<rect x="542" y="306" width="148" height="74" rx="8" fill="#a6c7af" stroke="#111827" stroke-width="4"/>
+<text class="score best" fill="#111827" text-anchor="middle" x="616.0" y="343">0.67</text>
+<text class="n" fill="#111827" text-anchor="middle" x="616.0" y="364">n=20</text>
+<rect x="698" y="306" width="148" height="74" rx="8" fill="#87b6a1" stroke="#111827" stroke-width="4"/>
+<text class="score best" fill="#111827" text-anchor="middle" x="772.0" y="343">0.74</text>
+<text class="n" fill="#111827" text-anchor="middle" x="772.0" y="364">n=20</text>
+<rect x="854" y="306" width="148" height="74" rx="8" fill="#207f75" stroke="#111827" stroke-width="4"/>
+<text class="score best" fill="#111827" text-anchor="middle" x="928.0" y="343">0.96</text>
+<text class="n" fill="#111827" text-anchor="middle" x="928.0" y="364">n=80</text>
+<text class="label" x="36" y="434">Generic agent</text>
+<rect x="230" y="388" width="148" height="74" rx="8" fill="#499587" stroke="#ffffff" stroke-width="2"/>
+<text class="score" fill="#111827" text-anchor="middle" x="304.0" y="425">0.87</text>
+<text class="n" fill="#111827" text-anchor="middle" x="304.0" y="446">n=20</text>
+<rect x="386" y="388" width="148" height="74" rx="8" fill="#6ba895" stroke="#ffffff" stroke-width="2"/>
+<text class="score" fill="#111827" text-anchor="middle" x="460.0" y="425">0.80</text>
+<text class="n" fill="#111827" text-anchor="middle" x="460.0" y="446">n=20</text>
+<rect x="542" y="388" width="148" height="74" rx="8" fill="#a9c9b0" stroke="#ffffff" stroke-width="2"/>
+<text class="score" fill="#111827" text-anchor="middle" x="616.0" y="425">0.66</text>
+<text class="n" fill="#111827" text-anchor="middle" x="616.0" y="446">n=20</text>
+<rect x="698" y="388" width="148" height="74" rx="8" fill="#8cb9a3" stroke="#ffffff" stroke-width="2"/>
+<text class="score" fill="#111827" text-anchor="middle" x="772.0" y="425">0.73</text>
+<text class="n" fill="#111827" text-anchor="middle" x="772.0" y="446">n=20</text>
+<rect x="854" y="388" width="148" height="74" rx="8" fill="#268278" stroke="#ffffff" stroke-width="2"/>
+<text class="score" fill="#111827" text-anchor="middle" x="928.0" y="425">0.95</text>
+<text class="n" fill="#111827" text-anchor="middle" x="928.0" y="446">n=80</text>
+<text class="label" x="36" y="516">Claude Code</text>
+<rect x="230" y="470" width="148" height="74" rx="8" fill="#459385" stroke="#111827" stroke-width="4"/>
+<text class="score best" fill="#111827" text-anchor="middle" x="304.0" y="507">0.88</text>
+<text class="n" fill="#111827" text-anchor="middle" x="304.0" y="528">n=20</text>
+<rect x="386" y="470" width="148" height="74" rx="8" fill="#66a593" stroke="#ffffff" stroke-width="2"/>
+<text class="score" fill="#111827" text-anchor="middle" x="460.0" y="507">0.81</text>
+<text class="n" fill="#111827" text-anchor="middle" x="460.0" y="528">n=20</text>
+<rect x="542" y="470" width="148" height="74" rx="8" fill="#b6d0b5" stroke="#ffffff" stroke-width="2"/>
+<text class="score" fill="#111827" text-anchor="middle" x="616.0" y="507">0.64</text>
+<text class="n" fill="#111827" text-anchor="middle" x="616.0" y="528">n=20</text>
+<rect x="698" y="470" width="148" height="74" rx="8" fill="#9ac1a9" stroke="#ffffff" stroke-width="2"/>
+<text class="score" fill="#111827" text-anchor="middle" x="772.0" y="507">0.70</text>
+<text class="n" fill="#111827" text-anchor="middle" x="772.0" y="528">n=20</text>
+<rect x="854" y="470" width="148" height="74" rx="8" fill="#31887d" stroke="#ffffff" stroke-width="2"/>
+<text class="score" fill="#111827" text-anchor="middle" x="928.0" y="507">0.93</text>
+<text class="n" fill="#111827" text-anchor="middle" x="928.0" y="528">n=80</text>
+<text class="label" x="36" y="598">Proposed agent</text>
+<rect x="230" y="552" width="148" height="74" rx="8" fill="#4b9687" stroke="#ffffff" stroke-width="2"/>
+<text class="score" fill="#111827" text-anchor="middle" x="304.0" y="589">0.87</text>
+<text class="n" fill="#111827" text-anchor="middle" x="304.0" y="610">n=20</text>
+<rect x="386" y="552" width="148" height="74" rx="8" fill="#4d9789" stroke="#111827" stroke-width="4"/>
+<text class="score best" fill="#111827" text-anchor="middle" x="460.0" y="589">0.86</text>
+<text class="n" fill="#111827" text-anchor="middle" x="460.0" y="610">n=20</text>
+<rect x="542" y="552" width="148" height="74" rx="8" fill="#c4d7bb" stroke="#ffffff" stroke-width="2"/>
+<text class="score" fill="#111827" text-anchor="middle" x="616.0" y="589">0.61</text>
+<text class="n" fill="#111827" text-anchor="middle" x="616.0" y="610">n=20</text>
+<rect x="698" y="552" width="148" height="74" rx="8" fill="#adcbb2" stroke="#ffffff" stroke-width="2"/>
+<text class="score" fill="#111827" text-anchor="middle" x="772.0" y="589">0.66</text>
+<text class="n" fill="#111827" text-anchor="middle" x="772.0" y="610">n=20</text>
+<rect x="854" y="552" width="148" height="74" rx="8" fill="#378c7f" stroke="#ffffff" stroke-width="2"/>
+<text class="score" fill="#111827" text-anchor="middle" x="928.0" y="589">0.91</text>
+<text class="n" fill="#111827" text-anchor="middle" x="928.0" y="610">n=80</text>
+<text class="small" x="36" y="696">Lower</text>
+<rect x="82" y="684" width="65" height="14" fill="#f6d7cb"/>
+<rect x="147" y="684" width="65" height="14" fill="#f4f1d0"/>
+<rect x="212" y="684" width="65" height="14" fill="#6ba795"/>
+<text class="small" x="288" y="696">Higher task completion</text>
+<text class="small" x="36" y="720">Human reference uses available human artifacts; Overall Success is pass rate across all testcase groups.</text>
+</svg>
+<h2>Task Completion Grouped Bar</h2>
+<svg xmlns="http://www.w3.org/2000/svg" width="1320" height="680" viewBox="0 0 1320 680">
+<style>
+.title{font:700 30px Arial,sans-serif;fill:#111827}
+.subtitle{font:400 15px Arial,sans-serif;fill:#4b5563}
+.axis{font:400 12px Arial,sans-serif;fill:#4b5563}
+.label{font:700 14px Arial,sans-serif;fill:#111827}
+.legend{font:400 13px Arial,sans-serif;fill:#111827}
+</style>
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text class="title" x="36" y="48">Task Completion by Scenario</text>
+<text class="subtitle" x="36" y="76">Grouped bar view of the same primary scores, with an overall binary success-rate group on the right.</text>
+<line x1="90" y1="538.0" x2="1210" y2="538.0" stroke="#e5e7eb"/>
+<text class="axis" text-anchor="end" x="80" y="542.0">0.0</text>
+<line x1="90" y1="454.0" x2="1210" y2="454.0" stroke="#e5e7eb"/>
+<text class="axis" text-anchor="end" x="80" y="458.0">0.2</text>
+<line x1="90" y1="370.0" x2="1210" y2="370.0" stroke="#e5e7eb"/>
+<text class="axis" text-anchor="end" x="80" y="374.0">0.4</text>
+<line x1="90" y1="286.0" x2="1210" y2="286.0" stroke="#e5e7eb"/>
+<text class="axis" text-anchor="end" x="80" y="290.0">0.6</text>
+<line x1="90" y1="202.0" x2="1210" y2="202.0" stroke="#e5e7eb"/>
+<text class="axis" text-anchor="end" x="80" y="206.0">0.8</text>
+<line x1="90" y1="118.0" x2="1210" y2="118.0" stroke="#e5e7eb"/>
+<text class="axis" text-anchor="end" x="80" y="122.0">1.0</text>
+<line x1="90" y1="538" x2="1210" y2="538" stroke="#111827"/>
+<line x1="90" y1="118" x2="90" y2="538" stroke="#111827"/>
+<rect x="123.5" y="165.9" width="22" height="372.1" fill="#111827" rx="4"/>
+<rect x="150.5" y="269.8" width="22" height="268.2" fill="#8f99a8" rx="4"/>
+<rect x="177.5" y="169.9" width="22" height="368.1" fill="#2563eb" rx="4"/>
+<rect x="204.5" y="171.6" width="22" height="366.4" fill="#0f766e" rx="4"/>
+<rect x="231.5" y="167.2" width="22" height="370.8" fill="#7c3aed" rx="4"/>
+<rect x="258.5" y="172.6" width="22" height="365.4" fill="#e11d48" rx="4"/>
+<text class="label" text-anchor="middle" x="202.0" y="570">TC1</text>
+<text class="label" text-anchor="middle" x="202.0" y="587">Scratch</text>
+<rect x="374.5" y="293.0" width="22" height="245.0" fill="#8f99a8" rx="4"/>
+<rect x="401.5" y="192.8" width="22" height="345.2" fill="#2563eb" rx="4"/>
+<rect x="428.5" y="202.6" width="22" height="335.4" fill="#0f766e" rx="4"/>
+<rect x="455.5" y="197.8" width="22" height="340.2" fill="#7c3aed" rx="4"/>
+<rect x="482.5" y="174.9" width="22" height="363.1" fill="#e11d48" rx="4"/>
+<text class="label" text-anchor="middle" x="426.0" y="570">TC2</text>
+<text class="label" text-anchor="middle" x="426.0" y="587">Good prior</text>
+<rect x="598.5" y="424.8" width="22" height="113.2" fill="#8f99a8" rx="4"/>
+<rect x="625.5" y="256.2" width="22" height="281.8" fill="#2563eb" rx="4"/>
+<rect x="652.5" y="259.4" width="22" height="278.6" fill="#0f766e" rx="4"/>
+<rect x="679.5" y="271.1" width="22" height="266.9" fill="#7c3aed" rx="4"/>
+<rect x="706.5" y="283.8" width="22" height="254.2" fill="#e11d48" rx="4"/>
+<text class="label" text-anchor="middle" x="650.0" y="570">TC3</text>
+<text class="label" text-anchor="middle" x="650.0" y="587">Bad prior</text>
+<rect x="822.5" y="445.4" width="22" height="92.6" fill="#8f99a8" rx="4"/>
+<rect x="849.5" y="228.1" width="22" height="309.9" fill="#2563eb" rx="4"/>
+<rect x="876.5" y="232.4" width="22" height="305.6" fill="#0f766e" rx="4"/>
+<rect x="903.5" y="245.5" width="22" height="292.5" fill="#7c3aed" rx="4"/>
+<rect x="930.5" y="262.9" width="22" height="275.1" fill="#e11d48" rx="4"/>
+<text class="label" text-anchor="middle" x="874.0" y="570">TC4</text>
+<text class="label" text-anchor="middle" x="874.0" y="587">Mixed</text>
+<rect x="1019.5" y="118.0" width="22" height="420.0" fill="#111827" rx="4"/>
+<rect x="1046.5" y="301.8" width="22" height="236.2" fill="#8f99a8" rx="4"/>
+<rect x="1073.5" y="133.8" width="22" height="404.2" fill="#2563eb" rx="4"/>
+<rect x="1100.5" y="139.0" width="22" height="399.0" fill="#0f766e" rx="4"/>
+<rect x="1127.5" y="149.5" width="22" height="388.5" fill="#7c3aed" rx="4"/>
+<rect x="1154.5" y="154.8" width="22" height="383.2" fill="#e11d48" rx="4"/>
+<text class="label" text-anchor="middle" x="1098.0" y="570">Overall</text>
+<text class="label" text-anchor="middle" x="1098.0" y="587">Success</text>
+<rect x="120" y="606" width="16" height="16" fill="#111827" rx="3"/>
+<text class="legend" x="144" y="619">Human reference</text>
+<rect x="310" y="606" width="16" height="16" fill="#8f99a8" rx="3"/>
+<text class="legend" x="334" y="619">Rule-based</text>
+<rect x="500" y="606" width="16" height="16" fill="#2563eb" rx="3"/>
+<text class="legend" x="524" y="619">Single LLM</text>
+<rect x="690" y="606" width="16" height="16" fill="#0f766e" rx="3"/>
+<text class="legend" x="714" y="619">Generic agent</text>
+<rect x="880" y="606" width="16" height="16" fill="#7c3aed" rx="3"/>
+<text class="legend" x="904" y="619">Claude Code</text>
+<rect x="1070" y="606" width="16" height="16" fill="#e11d48" rx="3"/>
+<text class="legend" x="1094" y="619">Proposed agent</text>
+</svg>
+<h2>Trace Cards</h2>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+<style>
+.title{font:700 31px Arial,sans-serif;fill:#111827}
+.subtitle{font:400 16px Arial,sans-serif;fill:#4b5563}
+.cardTitle{font:700 23px Arial,sans-serif;fill:#ffffff}
+.metric{font:700 18px Arial,sans-serif;fill:#111827}
+.section{font:700 14px Arial,sans-serif;fill:#111827}
+.body{font:400 13px Arial,sans-serif;fill:#374151}
+.small{font:400 12px Arial,sans-serif;fill:#6b7280}
+</style>
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text class="title" x="44" y="48">Trace Examples: What the Scores Mean</text>
+<text class="subtitle" x="44" y="76">Use this as a qualitative companion to the numeric results slide.</text>
+<rect x="62" y="104" width="560" height="570" rx="12" fill="#ffffff" stroke="#d1d5db"/>
+<rect x="62" y="104" width="560" height="58" rx="12" fill="#0f766e"/>
+<text class="cardTitle" x="86" y="142">Works well</text>
+<text class="metric" x="86" y="192">recruit-restaurant-visitor-forecasting</text>
+<text class="small" x="86" y="218">tc1 from scratch; context actions: 0</text>
+<text class="metric" x="86" y="254">Completion 0.93 | Add F1 0.86 | Remove recall 1.00</text>
+<text class="section" x="86" y="288">Input -&gt; tool evidence</text>
+<text class="body"><tspan x="86" y="310">Used tools: summarize_context_actions, profile_target_distribution,</tspan><tspan x="86" y="327">inspect_dataset_tables, lookup_actions.</tspan><tspan x="86" y="344">Inspected 7 dataset tables before selecting actions.</tspan><tspan x="86" y="361">Looked up candidate action families: JOIN_LOOKUP, PARSE_DATETIME.</tspan></text>
+<text class="section" x="86" y="406">Decision</text>
+<text class="body"><tspan x="86" y="428">Correct selected actions:</tspan><tspan x="86" y="445">- CA-000023: PARSE_DATETIME (visit_date)</tspan><tspan x="86" y="462">- CA-000005: PARSE_DATETIME (visit_datetime, reserve_datetime)</tspan><tspan x="86" y="479">- CA-000009: TIME_SINCE_REFERENCE (reserve_datetime vs visit_datetime)</tspan><tspan x="86" y="496">- CA-000046: JOIN_LOOKUP (air_store_info)</tspan></text>
+<text class="section" x="86" y="538">Outcome</text>
+<text class="body"><tspan x="86" y="560">Rollback outcome:</tspan><tspan x="86" y="577">- No harmful context actions were expected.</tspan></text>
+<text class="section" x="86" y="614">Lesson learned</text>
+<text class="body"><tspan x="86" y="636">Tool-grounded inspection helped the agent recover relational date,</tspan><tspan x="86" y="653">reservation, store, and calendar preprocessing.</tspan></text>
+<rect x="658" y="104" width="560" height="570" rx="12" fill="#ffffff" stroke="#d1d5db"/>
+<rect x="658" y="104" width="560" height="58" rx="12" fill="#b45309"/>
+<text class="cardTitle" x="682" y="142">Struggles</text>
+<text class="metric" x="682" y="192">lish-moa</text>
+<text class="small" x="682" y="218">tc4 mixed history; context actions: 5</text>
+<text class="metric" x="682" y="254">Completion 0.31 | Add F1 0.29 | Remove recall 0.33</text>
+<text class="section" x="682" y="288">Input -&gt; tool evidence</text>
+<text class="body"><tspan x="682" y="310">Used tools: summarize_context_actions, profile_target_distribution,</tspan><tspan x="682" y="327">inspect_columns, lookup_actions.</tspan><tspan x="682" y="344">Looked up candidate action families: FILTER_ROWS, APPLY_EXPRESSION.</tspan><tspan x="682" y="361">Reviewed 5 existing context actions.</tspan></text>
+<text class="section" x="682" y="406">Decision</text>
+<text class="body"><tspan x="682" y="428">Correct selected actions:</tspan><tspan x="682" y="445">- CA-000034: FILTER_ROWS (cp_type != &#x27;ctl_vehicle&#x27; on training rows</tspan><tspan x="682" y="462">only; preserve all...)</tspan></text>
+<text class="section" x="682" y="538">Outcome</text>
+<text class="body"><tspan x="682" y="560">Missed removals:</tspan><tspan x="682" y="577">- CA-000014: PCA_REDUCTION (g-*, c-*, n=100)</tspan><tspan x="682" y="594">- CA-000030: APPLY_EXPRESSION (for each g-* and c-* column, fit...)</tspan></text>
+<text class="section" x="682" y="614">Lesson learned</text>
+<text class="body"><tspan x="682" y="636">The agent caught one direct conflict, but missed subtler semantic</tspan><tspan x="682" y="653">faults that required stronger rollback checks.</tspan></text>
+</svg>
+
+</body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "testcase_id": "tc4_mixed_history",
+  "competition_slug": "zillow-prize-1",
+  "task_ref": "../task.json",
+  "input": {
+    "scenario": "mixed",
+    "context_action_ids": [
+      "CA-000050",
+      "CA-000029",
+      "CA-000070",
+      "CA-000042",
+      "CA-000066"
+    ]
+  }
+}

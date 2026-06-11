@@ -1,0 +1,14 @@
+{
+  "competition_slug": "ieee-fraud-detection",
+  "testcase_id": "tc1_from_scratch",
+  "artifact_type": "eval_human_baseline_provenance",
+  "author": "annotator_a",
+  "created_at": "2026-04-01T21:15:37-05:00",
+  "source_mode": "manual_action_bank_review",
+  "related_output": "../tc1_human.json",
+  "source_notebook_artifacts": [],
+  "time_spent_minutes": 30,
+  "consulted_candidate_bank": true,
+  "consulted_legacy_human_output": false,
+  "notes": "This provenance record documents a manual TC1 action-bank review by annotator_a. The final add-set was chosen family by family from the current IEEE candidate bank. No legacy notebook was used as primary evidence for the final selection."
+}

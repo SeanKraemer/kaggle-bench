@@ -1,0 +1,68 @@
+{
+  "competition_slug": "restaurant-revenue-prediction",
+  "dataset": {
+    "provider": "kaggle",
+    "competition": "restaurant-revenue-prediction",
+    "train_files": ["train.csv"],
+    "test_files": ["test.csv"],
+    "lookup_files": [],
+    "sample_submission_files": ["sampleSubmission.csv"],
+    "target_column": "revenue",
+    "primary_key": "Id"
+  },
+  "goal": "Suggest preprocessing and feature-engineering actions for predicting restaurant revenue from the official Kaggle train and test tables under the RMSE metric.",
+  "task_characteristics": {
+    "ml_domain": "restaurant_tabular",
+    "problem_type": "regression",
+    "table_structure": "single_table",
+    "dataset_size_bucket": "small",
+    "dataset_size_raw": 100000,
+    "feature_dimensionality_bucket": "medium",
+    "feature_dimensionality_raw": 44,
+    "preprocessing_complexity_bucket": "medium",
+    "preprocessing_complexity_raw": 11,
+    "analysis_notes": "Small single-table restaurant regression task with only 137 training rows but a 100,000-row prediction table. The benchmark-relevant case-insensitive column union is 44 once train, test, and sample-submission columns are combined. Core preprocessing stays conservative around Id removal, Open Date conversion, date-derived feature creation, low-cardinality categorical encoding, and raw date cleanup. The curated bank keeps 11 rewarded actions across core and model-specific stages."
+  },
+  "dataset_description": {
+    "summary": "Official scope consists of one small training table, one large prediction table, and the sample submission index. The benchmark is single-table and official-only: there are no lookup tables, no sanctioned external features, and no hidden relational joins.",
+    "raw_text": "train.csv contains 137 restaurants with target column revenue. test.csv contains 100,000 restaurants with the same predictors except for the target. sampleSubmission.csv defines the prediction index with Id and Prediction columns. The feature set contains one identifier column, one restaurant opening-date column, three low-cardinality text columns (City, City Group, Type), and the obfuscated numeric predictors P1 through P37. The benchmark contract excludes geocoding, city-level external priors, holiday or event calendars, and public-kernel side inputs.",
+    "file_summary": {
+      "total_file_count": 3,
+      "file_types": [
+        {
+          "extension": ".csv",
+          "file_count": 3,
+          "total_size_bytes": 14451771
+        }
+      ]
+    },
+    "column_summary": {
+      "total_column_count": 44,
+      "column_types": [
+        {
+          "column_type": "Id",
+          "column_count": 1
+        },
+        {
+          "column_type": "DateTime",
+          "column_count": 1
+        },
+        {
+          "column_type": "String",
+          "column_count": 3
+        },
+        {
+          "column_type": "Integer",
+          "column_count": 29
+        },
+        {
+          "column_type": "Decimal",
+          "column_count": 10
+        }
+      ]
+    }
+  },
+  "metric": {
+    "name": "RMSE"
+  }
+}

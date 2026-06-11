@@ -1,0 +1,97 @@
+{
+  "competition_slug": "recruit-restaurant-visitor-forecasting",
+  "dataset": {
+    "provider": "kaggle",
+    "competition": "recruit-restaurant-visitor-forecasting",
+    "train_files": [
+      "air_visit_data.csv.zip"
+    ],
+    "test_files": [],
+    "lookup_files": [
+      "air_reserve.csv.zip",
+      "air_store_info.csv.zip",
+      "date_info.csv.zip",
+      "hpg_reserve.csv.zip",
+      "hpg_store_info.csv.zip",
+      "store_id_relation.csv.zip"
+    ],
+    "sample_submission_files": [
+      "sample_submission.csv.zip"
+    ],
+    "data_dictionary_files": [],
+    "target_column": "visitors",
+    "primary_key": "id"
+  },
+  "goal": "Suggest preprocessing and feature-engineering actions for forecasting daily restaurant visitors from Recruit reservation, visitation, store, and calendar tables under the RMSLE evaluation metric.",
+  "task_characteristics": {
+    "ml_domain": "restaurant_demand_forecasting",
+    "problem_type": "forecasting",
+    "table_structure": "multi_table_relational",
+    "dataset_size_bucket": "xlarge",
+    "dataset_size_raw": 2000320,
+    "feature_dimensionality_bucket": "low",
+    "feature_dimensionality_raw": 17,
+    "preprocessing_complexity_bucket": "medium",
+    "preprocessing_complexity_raw": 12,
+    "analysis_notes": "Multi-table restaurant demand forecasting task built from eight zipped CSV files spanning two reservation ecosystems plus calendar and store lookups. The largest benchmark-relevant table is hpg_reserve.csv with 2,000,320 reservation rows, pushing the task into the xlarge bucket despite a low 17-column case-insensitive union. The prediction index covers 821 air stores across 39 future dates, while the historical air_visit_data table covers 829 stores from 2016-01-01 through 2017-04-22. The current curated new-eval bank keeps 20 good actions overall, of which 12 are core_preprocessing actions around reservation lead-time, grouped store-date reservation aggregates, visit-date decomposition, store-weekday visitor histories, and lookup joins; the raw complexity value is normalized to that primary-effective core count."
+  },
+  "overview": {
+    "title": "Recruit Restaurant Visitor Forecasting",
+    "summary": "Predict how many future visitors a restaurant will receive",
+    "raw_text": "Historical public references describe this as a Featured Kaggle forecasting competition sponsored by Recruit Holdings. Participants used reservation, visitation, store, and holiday/calendar tables from two Japanese restaurant platforms to predict future daily visitor counts for selected air stores. Public historical references indicate a $25,000 prize pool, 2,158 teams, and RMSLE scoring. The exact launch timestamp was not preserved in the local collection artifacts used for authoring this task, so enabled_date is normalized to the earliest observed public notebook run timestamp as a lower-bound proxy rather than a claimed official launch time.",
+    "host": "Recruit Holdings",
+    "category": "Featured",
+    "reward": "$25,000",
+    "team_count": 2158,
+    "enabled_date": "2017-11-28T22:54:13.863000Z",
+    "new_entrant_deadline": "2018-01-30T00:00:00.000Z",
+    "deadline": "2018-02-06T00:00:00.000Z",
+    "url": "https://www.kaggle.com/competitions/recruit-restaurant-visitor-forecasting"
+  },
+  "dataset_description": {
+    "summary": "Eight zipped CSV tables combine daily air visitor counts, air/hpg reservation logs, store metadata, a cross-system id bridge, a holiday calendar, and a submission index for 39 future forecast dates.",
+    "raw_text": "The downloadable competition data consists of eight .csv.zip files. air_visit_data.csv.zip is the supervised history table with 252,108 rows of daily visitor counts for 829 air restaurants from 2016-01-01 through 2017-04-22. sample_submission.csv.zip provides 32,019 forecast targets, covering 821 air restaurants across 39 dates from 2017-04-23 through 2017-05-31, with each prediction row keyed by an id formed from air_store_id and visit_date. Reservation evidence comes from air_reserve.csv.zip (92,378 rows across 314 air stores) and hpg_reserve.csv.zip (2,000,320 rows across 13,325 hpg stores), linked through store_id_relation.csv.zip for the 150 stores that appear in both systems. air_store_info.csv.zip and hpg_store_info.csv.zip provide genre, area, latitude, and longitude metadata, while date_info.csv.zip provides day-of-week and Japanese holiday flags for 517 calendar dates. Across the benchmark-relevant files, the case-insensitive raw column union is 17 columns.",
+    "file_summary": {
+      "total_file_count": 8,
+      "file_types": [
+        {
+          "extension": ".csv.zip",
+          "file_count": 8,
+          "total_size_bytes": 27296473
+        }
+      ]
+    },
+    "column_summary": {
+      "total_column_count": 17,
+      "column_types": [
+        {
+          "column_type": "Id",
+          "column_count": 3
+        },
+        {
+          "column_type": "DateTime",
+          "column_count": 4
+        },
+        {
+          "column_type": "Integer",
+          "column_count": 2
+        },
+        {
+          "column_type": "Decimal",
+          "column_count": 2
+        },
+        {
+          "column_type": "String",
+          "column_count": 5
+        },
+        {
+          "column_type": "Boolean",
+          "column_count": 1
+        }
+      ]
+    }
+  },
+  "metric": {
+    "name": "Root Mean Squared Logarithmic Error"
+  }
+}

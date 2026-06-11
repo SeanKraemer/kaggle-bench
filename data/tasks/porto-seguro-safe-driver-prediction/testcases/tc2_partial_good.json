@@ -1,0 +1,13 @@
+{
+  "testcase_id": "tc2_partial_good",
+  "competition_slug": "porto-seguro-safe-driver-prediction",
+  "task_ref": "../task.json",
+  "input": {
+    "scenario": "partial_good",
+    "context_action_ids": [
+      "CA-000019",
+      "CA-000029",
+      "CA-000003"
+    ]
+  }
+}

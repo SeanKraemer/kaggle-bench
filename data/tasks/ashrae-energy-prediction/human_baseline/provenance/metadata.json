@@ -1,0 +1,14 @@
+{
+  "competition_slug": "ashrae-energy-prediction",
+  "testcase_id": "tc1_from_scratch",
+  "artifact_type": "eval_human_baseline_provenance",
+  "author": "annotator_c",
+  "created_at": "2026-04-15T00:00:00-05:00",
+  "source_mode": "true_bank_id_authoring",
+  "related_output": "../tc1_human.json",
+  "source_notebook_artifacts": ["../work.ipynb"],
+  "time_spent_minutes": 45,
+  "consulted_candidate_bank": true,
+  "consulted_legacy_human_output": false,
+  "notes": "True bank-id authoring against the Phase 2 ASHRAE candidate bank using a repo-local official-only notebook that implements the selected preprocessing spine and model-specific branches."
+}

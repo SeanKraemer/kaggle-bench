@@ -1,0 +1,67 @@
+{
+  "competition_slug": "home-credit-default-risk",
+  "testcase_id": "tc1_from_scratch",
+  "agent_name": "human",
+  "run_by": "annotator_a",
+  "run_id": "human_tc1_annotator_a_v3",
+  "artifact_refs": [
+    {
+      "kind": "notebook",
+      "path": "work.ipynb",
+      "description": "Manual notebook used to build the Home Credit TC1 human baseline."
+    },
+    {
+      "kind": "metadata",
+      "path": "provenance/metadata.json",
+      "description": "Run-level metadata for the re-authored Home Credit human baseline."
+    },
+    {
+      "kind": "trace",
+      "path": "provenance/action_trace.json",
+      "description": "Links each selected bank action to notebook evidence and mapping rationale."
+    },
+    {
+      "kind": "notes",
+      "path": "notes.md",
+      "description": "Author notes for the Home Credit human baseline."
+    },
+    {
+      "kind": "other",
+      "path": "../tc1_human_bank_review_workbench.md",
+      "description": "Full-bank review workbench used during final manual TC1 action selection."
+    }
+  ],
+  "predicted_add_action_ids": [
+    "CA-000002",
+    "CA-000004",
+    "CA-000009",
+    "CA-000010",
+    "CA-000014",
+    "CA-000017",
+    "CA-000019",
+    "CA-000020",
+    "CA-000024",
+    "CA-000034",
+    "CA-000038",
+    "CA-000043",
+    "CA-000049",
+    "CA-000056",
+    "CA-000061",
+    "CA-000069",
+    "CA-000079",
+    "CA-000076",
+    "CA-000078",
+    "CA-000087",
+    "CA-000092",
+    "CA-000121",
+    "CA-000128"
+  ],
+  "predicted_remove_action_ids": [],
+  "time_spent_seconds": 2400,
+  "token_usage": {
+    "input_tokens": null,
+    "output_tokens": null,
+    "total_tokens": null
+  },
+  "notes": "Observed TC1 human bank-selection run after full-bank manual review. The selected add-side list records one human pass under the same action-bank constraints used for agents and is no longer restricted to notebook-faithful bank mappings."
+}

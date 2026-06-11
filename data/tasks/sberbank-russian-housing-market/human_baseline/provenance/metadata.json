@@ -1,0 +1,16 @@
+{
+  "competition_slug": "sberbank-russian-housing-market",
+  "testcase_id": "tc1_from_scratch",
+  "artifact_type": "eval_human_baseline_provenance",
+  "author": "annotator_a",
+  "created_at": "2026-04-01T00:00:00-05:00",
+  "source_mode": "manual_label_in_progress",
+  "related_output": "../tc1_human.json",
+  "source_notebook_artifacts": [
+    "../work.ipynb"
+  ],
+  "time_spent_minutes": 30,
+  "consulted_candidate_bank": true,
+  "consulted_legacy_human_output": false,
+  "notes": "This artifact records the in-progress Sberbank TC1 human labeling pass authored by annotator_a. The selected action set reflects the current manual review state and is not yet a finalized benchmark submission."
+}

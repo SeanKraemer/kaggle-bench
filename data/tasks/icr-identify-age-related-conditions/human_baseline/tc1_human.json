@@ -1,0 +1,46 @@
+{
+  "competition_slug": "icr-identify-age-related-conditions",
+  "testcase_id": "tc1_from_scratch",
+  "agent_name": "human",
+  "run_by": "annotator_c",
+  "run_id": "human_tc1_annotator_c_v1",
+  "artifact_refs": [
+    {
+      "kind": "notebook",
+      "path": "work.ipynb",
+      "description": "Manual notebook used to author the ICR TC1 human baseline directly against bank ids."
+    },
+    {
+      "kind": "metadata",
+      "path": "provenance/metadata.json",
+      "description": "Run-level provenance metadata for the canonical human baseline."
+    },
+    {
+      "kind": "trace",
+      "path": "provenance/action_trace.json",
+      "description": "Maps each selected bank action to a notebook section and rationale."
+    },
+    {
+      "kind": "notes",
+      "path": "notes.md",
+      "description": "Author notes for the canonical human baseline."
+    }
+  ],
+  "predicted_add_action_ids": [
+    "CA-000002",
+    "CA-000006",
+    "CA-000004",
+    "CA-000008",
+    "CA-000010",
+    "CA-000012",
+    "CA-000014"
+  ],
+  "predicted_remove_action_ids": [],
+  "time_spent_seconds": 2700,
+  "token_usage": {
+    "input_tokens": null,
+    "output_tokens": null,
+    "total_tokens": null
+  },
+  "notes": "True bank-id authoring for TC1 from scratch. The baseline selects the conservative core spine plus one validation-side greeks branch and one model-family branch (standard scaling plus selective log transform). Workflow assumptions such as trimming trailing whitespace from BD / CD / CW / FD headers are documented in notes and notebook content but intentionally omitted from predicted_add_action_ids because the current bank has no rename-columns action."
+}

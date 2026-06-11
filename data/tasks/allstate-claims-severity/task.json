@@ -1,0 +1,78 @@
+{
+  "competition_slug": "allstate-claims-severity",
+  "dataset": {
+    "provider": "kaggle",
+    "competition": "allstate-claims-severity",
+    "train_files": [
+      "train.csv"
+    ],
+    "test_files": [
+      "test.csv"
+    ],
+    "lookup_files": [],
+    "sample_submission_files": [
+      "sample_submission.csv"
+    ],
+    "target_column": "loss"
+  },
+  "goal": "Suggest preprocessing and feature-engineering actions for predicting the severity (loss) of insurance claims given anonymized categorical and continuous features, under the Kaggle MAE metric.",
+  "task_characteristics": {
+    "ml_domain": "insurance",
+    "problem_type": "regression",
+    "table_structure": "single_table",
+    "dataset_size_bucket": "medium",
+    "dataset_size_raw": 188318,
+    "feature_dimensionality_bucket": "high",
+    "feature_dimensionality_raw": 131,
+    "preprocessing_complexity_bucket": "low",
+    "preprocessing_complexity_raw": 3,
+    "analysis_notes": "Allstate Claims Severity is a medium-sized single-table regression task with 188,318 training rows and 131 benchmark-relevant input columns: id (integer row identifier), 116 anonymized categorical features (cat1-cat116, string-valued A/B or multi-level), and 14 anonymized continuous features (cont1-cont14, float-valued in [0,1]). The train file also contains the target loss, a positive and heavily right-skewed claim amount. The benchmark keeps three effective primary good units: drop the identifier, encode all categorical predictors, and log-transform the target. Categorical encoding preserves a label-encoding / one-hot OR alternative, and target transformation preserves a log / log1p OR alternative. preprocessing_complexity_raw=3 is retained from the migrated draft as the count of distinct effective good units."
+  },
+  "overview": {
+    "title": "Allstate Claims Severity",
+    "summary": "Predict the severity (loss amount) of insurance claims from anonymized categorical and continuous features",
+    "raw_text": "Allstate, a personal insurer in the United States, challenged Kagglers to predict the cost (loss) of insurance claims based on anonymized features. The training set contains 188,318 rows, 131 input columns (id, 116 categorical features, and 14 continuous features), and the target loss. The evaluation metric is mean absolute error (MAE). Strong public notebooks commonly used gradient-boosted tree models with encoded categorical features and a log-transformed target to handle the right-skewed loss distribution.",
+    "host": "Allstate via Kaggle",
+    "category": "Recruitment",
+    "reward": "Jobs",
+    "team_count": 3045,
+    "enabled_date": "2016-10-04T00:00:00.000Z",
+    "new_entrant_deadline": null,
+    "deadline": "2016-12-12T23:59:00.000Z",
+    "url": "https://www.kaggle.com/competitions/allstate-claims-severity"
+  },
+  "dataset_description": {
+    "summary": "A 188,318-row train.csv with 132 columns (id, 116 categorical cat1\u2013cat116, 14 continuous cont1\u2013cont14, target loss) and a 125,546-row test.csv with the same structure minus loss. No missing values.",
+    "raw_text": "train.csv has one row per insurance claim: id (integer identifier), cat1 through cat116 (anonymized categorical variables, string-valued; cat1\u2013cat72 are binary A/B, cat73\u2013cat116 have more levels), cont1 through cont14 (anonymized continuous variables, float-valued roughly in [0,1]), and loss (the target, a positive float representing claim cost). test.csv has the same structure without loss. No missing values in either file. The target loss is heavily right-skewed (mean ~3,037, median ~1,201, max ~121,012), making log transformation of the target a dominant preprocessing step among top solutions.",
+    "file_summary": {
+      "total_file_count": 3,
+      "file_types": [
+        {
+          "extension": ".csv",
+          "file_count": 3,
+          "total_size_bytes": 95000000
+        }
+      ]
+    },
+    "column_summary": {
+      "total_column_count": 131,
+      "column_types": [
+        {
+          "column_type": "Categorical",
+          "column_count": 116
+        },
+        {
+          "column_type": "Continuous",
+          "column_count": 14
+        },
+        {
+          "column_type": "Id",
+          "column_count": 1
+        }
+      ]
+    }
+  },
+  "metric": {
+    "name": "MAE"
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "competition_slug": "optiver-trading-at-the-close",
+  "testcase_id": "tc1_from_scratch",
+  "agent_name": "human",
+  "run_by": "Sean Kraemer",
+  "run_id": "human_tc1_sean_kraemer_v3_manual_rebuild",
+  "artifact_refs": [
+    {
+      "kind": "notebook",
+      "path": "work.ipynb",
+      "description": "Evidence-only notebook used to inspect the Optiver data and freeze a plain-language shortlist before bank alignment."
+    },
+    {
+      "kind": "notes",
+      "path": "manual_selection_worksheet.md",
+      "description": "Authoritative shortlist-to-bank mapping for the Optiver human baseline."
+    },
+    {
+      "kind": "notes",
+      "path": "notes.md",
+      "description": "Author notes for the Optiver human baseline."
+    },
+    {
+      "kind": "trace",
+      "path": "provenance/action_trace.json",
+      "description": "Links each selected bank action to notebook evidence or worksheet sections."
+    },
+    {
+      "kind": "metadata",
+      "path": "provenance/metadata.json",
+      "description": "Run-level provenance for the Optiver human baseline."
+    }
+  ],
+  "predicted_add_action_ids": [
+    "CA-000001",
+    "CA-000020",
+    "CA-000031",
+    "CA-000043",
+    "CA-000049",
+    "CA-000051",
+    "CA-000061",
+    "CA-000065"
+  ],
+  "predicted_remove_action_ids": [],
+  "time_spent_seconds": 2400,
+  "token_usage": {
+    "input_tokens": null,
+    "output_tokens": null,
+    "total_tokens": null
+  },
+  "notes": "Manual Optiver TC1 baseline. The final selection keeps the simple auction defaults, first-order microstructure features, one lag family, one stock-prior strategy, and clock features while leaving memory downcasting out of the baseline."
+}

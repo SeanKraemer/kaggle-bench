@@ -1,0 +1,18 @@
+{
+  "testcase_id": "tc4_mixed_history",
+  "competition_slug": "ieee-fraud-detection",
+  "task_ref": "../task.json",
+  "input": {
+    "scenario": "mixed",
+    "context_action_ids": [
+      "CA-000005",
+      "CA-000010",
+      "CA-000020",
+      "CA-000030",
+      "CA-000066",
+      "CA-000071",
+      "CA-000041",
+      "CA-000047"
+    ]
+  }
+}

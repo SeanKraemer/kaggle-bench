@@ -1,0 +1,14 @@
+{
+  "testcase_id": "tc3_fault_injected",
+  "competition_slug": "optiver-trading-at-the-close",
+  "task_ref": "../task.json",
+  "input": {
+    "scenario": "fault_injected",
+    "context_action_ids": [
+      "CA-000055",
+      "CA-000013",
+      "CA-000056",
+      "CA-000002"
+    ]
+  }
+}

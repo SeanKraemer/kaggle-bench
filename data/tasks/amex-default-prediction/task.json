@@ -1,0 +1,83 @@
+{
+  "competition_slug": "amex-default-prediction",
+  "dataset": {
+    "provider": "kaggle",
+    "competition": "amex-default-prediction",
+    "train_files": [
+      "train_data.csv",
+      "train_labels.csv"
+    ],
+    "test_files": [
+      "test_data.csv"
+    ],
+    "sample_submission_files": [
+      "sample_submission.csv"
+    ],
+    "target_column": "target",
+    "primary_key": "customer_ID"
+  },
+  "goal": "Suggest preprocessing and feature-engineering actions for predicting customer default from American Express monthly statement data under the AMEX competition metric.",
+  "task_characteristics": {
+    "ml_domain": "finance_tabular",
+    "problem_type": "binary_classification",
+    "table_structure": "single_table",
+    "dataset_size_bucket": "xlarge",
+    "dataset_size_raw": 11363762,
+    "feature_dimensionality_bucket": "high",
+    "feature_dimensionality_raw": 192,
+    "preprocessing_complexity_bucket": "medium",
+    "preprocessing_complexity_raw": 14,
+    "analysis_notes": "Large single-table finance classification task with repeated monthly customer statements. The largest benchmark-relevant raw table is the 11,363,762-row test statement table, so the task clearly falls in the xlarge bucket. The benchmark-relevant column union is 192 columns: 189 raw statement features plus `customer_ID`, `S_2`, and `target`. `preprocessing_complexity_raw` tracks primary effective good units after equivalence-group collapse and excludes `model_specific_preprocessing` rows; after curation this task has 14 such units, which remains medium complexity under the shared threshold policy."
+  },
+  "dataset_description": {
+    "summary": "The competition data is centered on one very large monthly statement table for train and test, keyed by `customer_ID`, plus a separate `train_labels.csv` file with the binary default target and a `sample_submission.csv` file. In the raw files, each customer has up to 13 monthly rows ordered by `S_2`, the train/test statement tables together expose 189 statement features, and the benchmark-relevant case-insensitive column union is 192 columns once `customer_ID`, `S_2`, and `target` are included.",
+    "raw_text": "The released competition data is centered on one very large long-form monthly statement table for train and test, keyed by `customer_ID` and ordered by the statement-date column `S_2`. Labels are provided separately in `train_labels.csv`. Each customer contributes up to 13 monthly snapshots across 189 statement features, so the dominant preprocessing pattern is to collapse the long history to one row per customer via aggregation, recency-aware feature engineering, and selective missingness handling.",
+    "file_summary": {
+      "total_file_count": 4,
+      "file_types": [
+        {
+          "extension": ".csv",
+          "file_count": 4,
+          "total_size_bytes": 53579717018
+        }
+      ]
+    },
+    "column_summary": {
+      "total_column_count": 192,
+      "column_types": [
+        {
+          "column_type": "Numeric",
+          "column_count": 179
+        },
+        {
+          "column_type": "Categorical",
+          "column_count": 11
+        },
+        {
+          "column_type": "Id",
+          "column_count": 1
+        },
+        {
+          "column_type": "DateTime",
+          "column_count": 1
+        }
+      ]
+    }
+  },
+  "metric": {
+    "name": "AMEX Weighted Gini + Top 4% Capture"
+  },
+  "overview": {
+    "title": "American Express - Default Prediction",
+    "summary": "Predict whether a credit-card customer will default from repeated monthly statement history.",
+    "raw_text": "American Express - Default Prediction is a Kaggle Featured competition on customer-level credit default prediction from repeated monthly statement rows. Each customer has up to 13 monthly snapshots ordered by `S_2`, and the task rewards preprocessing pipelines that turn that long statement history into customer-level features without losing recency-sensitive behavior.",
+    "host": "Kaggle",
+    "category": "Featured",
+    "reward": "100,000 Usd",
+    "team_count": 4875,
+    "enabled_date": "2022-05-25T00:00:00.000Z",
+    "new_entrant_deadline": "2022-08-17T23:59:00.000Z",
+    "deadline": "2022-08-24T23:59:00.000Z",
+    "url": "https://www.kaggle.com/competitions/amex-default-prediction"
+  }
+}

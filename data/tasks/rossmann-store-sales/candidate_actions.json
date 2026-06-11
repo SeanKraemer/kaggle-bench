@@ -1,0 +1,1607 @@
+{
+  "competition_slug": "rossmann-store-sales",
+  "generated_at": "2026-04-02T10:00:26-05:00",
+  "actions": [
+    {
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "Store",
+          "Date"
+        ],
+        "reason": "synthetic_harmful_pruning"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Drops an entity/time key that is still needed for joins, grouping, or temporal feature construction.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000004: Drops an entity/time key that is still needed for joins, grouping, or temporal feature construction.",
+      "challenge_type": "destructive_pruning",
+      "action_id": "CA-000001",
+      "derived_from_action_ids": [
+        "CA-000042"
+      ]
+    },
+    {
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "Promo",
+          "StateHoliday",
+          "SchoolHoliday"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Drops three core holiday and promotion context columns before the benchmark's dominant promo and calendar feature blocks can use them.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "fault_actions.json#FA-000006"
+      ],
+      "derivation_reasoning": "Migrated legacy fault action FA-000006 into the action-bank benchmark.",
+      "challenge_type": "legacy_fault",
+      "action_id": "CA-000002"
+    },
+    {
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "most_frequent",
+        "columns": [
+          "Promo2SinceWeek",
+          "Promo2SinceYear"
+        ],
+        "fill_value": 0,
+        "mode": "fit_transform",
+        "fit_scope": "all_data"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Mode-filling the Promo2 timing fields invents the most common continuing-promo schedule for stores that were never in Promo2.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic Rossmann near-miss: copies the modal Promo2 timing into missing rows instead of preserving the explicit no-promo state.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000003",
+      "derived_from_action_ids": [
+        "CA-000052"
+      ]
+    },
+    {
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "label",
+        "columns": [
+          "StateHoliday",
+          "StoreType",
+          "Assortment"
+        ],
+        "mode": "fit_transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Map the main low-cardinality categorical store and holiday columns to numeric codes for tree-based models.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "apoorvaappz/rossmann-store-sales",
+        "aswathikv/rossmanstoresales",
+        "sudharsan1297/rossmann-store-sales-final",
+        "swinalmeshram/rossmann-sales",
+        "yazeedalsahouri03/rossmann-store-sales-prediction"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Equivalent alternative to the one-hot store/holiday encoding branch. The benchmark scores either encoding strategy as satisfying the Rossmann low-cardinality categorical-prep need.",
+      "evidence_snippets": [
+        "data_merged['StateHoliday'] = data_merged['StateHoliday'].map({'0':0, 0:0,'a':1,'b':2,'c':3}).astype(int)",
+        "data_merged['StoreType'] = data_merged['StoreType'].map({'c':0, 'a':1,'d':2,'b':3}).astype(int)",
+        "data_merged['Assortment'] = data_merged['Assortment'].map({'a':0, 'c':1,'b':2}).astype(int)"
+      ],
+      "rareness": "common",
+      "confidence": 0.9,
+      "must_follow_action_ids": [
+        "CA-000044"
+      ],
+      "action_id": "CA-000004",
+      "equivalence_group": "rossmann_store_categorical_encoding_strategy"
+    },
+    {
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "constant",
+        "columns": [
+          "CompetitionOpenSinceMonth",
+          "CompetitionOpenSinceYear"
+        ],
+        "mode": "fit_transform",
+        "fit_scope": "all_data",
+        "fill_value": 0
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Zero-filling competition open month and year turns missing competitor timing into impossible calendar values before the age feature is derived.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic Rossmann near-miss: replaces missing competitor timing with impossible zero calendar values.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000005",
+      "derived_from_action_ids": [
+        "CA-000031"
+      ]
+    },
+    {
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "median",
+        "columns": [
+          "CompetitionDistance"
+        ],
+        "mode": "fit_transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Impute the sparse `CompetitionDistance` values with a central numeric default before modeling.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "omarelgabry/a-journey-through-rossmann-stores",
+        "stefanozakher94/eda-and-forecasting-with-rfregressor-final-updated",
+        "viniciusmoura1/rossman-project"
+      ],
+      "source_profile": "explanatory_style",
+      "context_notes": "Many beginner notebooks use the column maximum. The benchmark keeps the median variant because it is schema-supported, conservative, and still well represented in the reviewed pool.",
+      "evidence_snippets": [
+        "df_store['CompetitionDistance'].fillna(df_store['CompetitionDistance'].median(), inplace = True)",
+        "store[\"CompetitionDistance\"].fillna(store[\"CompetitionDistance\"].median(), inplace = True)"
+      ],
+      "rareness": "common",
+      "confidence": 0.75,
+      "must_follow_action_ids": [
+        "CA-000044"
+      ],
+      "action_id": "CA-000006"
+    },
+    {
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "count",
+        "columns": [
+          "StateHoliday",
+          "StoreType",
+          "Assortment"
+        ],
+        "mode": "fit_transform",
+        "fit_scope": "all_data",
+        "output_columns": [
+          "StateHoliday_count",
+          "StoreType_count",
+          "Assortment_count"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Count-encoding the low-cardinality store and holiday categoricals collapses clean nominal identities into global prevalence features.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic Rossmann near-miss: swaps the store/holiday categorical-prep block for leakage-prone count encodings.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000007",
+      "derived_from_action_ids": [
+        "CA-000004"
+      ]
+    },
+    {
+      "action_type": "PARSE_DATETIME",
+      "canonical_params": {
+        "columns": [
+          "Store",
+          "Date"
+        ],
+        "format": "%Y-%m",
+        "mode": "fit_transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Parses the wrong columns or uses a brittle datetime format assumption.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000014: Parses the wrong columns or uses a brittle datetime format assumption.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000008",
+      "derived_from_action_ids": [
+        "CA-000036"
+      ]
+    },
+    {
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "Date"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Removes the only raw calendar column before datetime parsing or date-part feature engineering can happen.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "fault_actions.json#FA-000002"
+      ],
+      "derivation_reasoning": "Migrated legacy fault action FA-000002 into the action-bank benchmark.",
+      "challenge_type": "legacy_fault",
+      "action_id": "CA-000009"
+    },
+    {
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "Sales == 0"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Dropping every zero-sales row removes valid open-day observations and distorts the training distribution beyond the intended closed-store cleanup.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic Rossmann destructive filter: removes all zero-sales examples instead of only the deterministic closed-store regime.",
+      "challenge_type": "destructive_filter",
+      "action_id": "CA-000010",
+      "derived_from_action_ids": [
+        "CA-000048"
+      ]
+    },
+    {
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "most_frequent",
+        "columns": [
+          "CompetitionOpenSinceMonth",
+          "CompetitionOpenSinceYear"
+        ],
+        "mode": "fit_transform",
+        "fit_scope": "all_data"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Mode-imputing competition open month and year copies another store's competitor launch timing into missing rows.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic Rossmann near-miss: borrows the modal competition-open calendar instead of preserving store-specific uncertainty.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000011",
+      "derived_from_action_ids": [
+        "CA-000031"
+      ]
+    },
+    {
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "constant",
+        "columns": [
+          "CompetitionDistance"
+        ],
+        "mode": "fit_transform",
+        "fit_scope": "all_data",
+        "fill_value": 0
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Zero-filling CompetitionDistance implies the competitor is effectively adjacent to the store, overstating competition pressure.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic Rossmann near-miss: replaces missing competitor distance with an implausible zero-distance assumption.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000012",
+      "derived_from_action_ids": [
+        "CA-000006"
+      ]
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "int(Promo2 == 1)",
+        "output_columns": [
+          "IsPromoMonth"
+        ],
+        "mode": "fit_transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Marking every Promo2 store-day as a promo month ignores the store-specific PromoInterval calendar entirely.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic Rossmann near-miss: collapses the promo-month logic to `Promo2 == 1` and ignores the repeating schedule.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000013",
+      "derived_from_action_ids": [
+        "CA-000035"
+      ]
+    },
+    {
+      "action_type": "DATE_PART_FEATURE",
+      "canonical_params": {
+        "date_columns": [
+          "Date"
+        ],
+        "parts": [
+          "day"
+        ],
+        "drop_original": false,
+        "mode": "fit_transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Extracts a weaker or overly destructive calendar representation than the benchmark-preferred date block.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000003: Extracts a weaker or overly destructive calendar representation than the benchmark-preferred date block.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000014",
+      "derived_from_action_ids": [
+        "CA-000021"
+      ]
+    },
+    {
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "constant",
+        "columns": [
+          "Promo2SinceWeek",
+          "Promo2SinceYear"
+        ],
+        "fill_value": -1,
+        "mode": "fit_transform",
+        "fit_scope": "all_data"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Filling missing Promo2 timing fields with `-1` manufactures impossible promo week and year values.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic Rossmann near-miss: injects impossible negative Promo2 timing values.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000015",
+      "derived_from_action_ids": [
+        "CA-000052"
+      ]
+    },
+    {
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "constant",
+        "columns": [
+          "PromoInterval"
+        ],
+        "fill_value": "Jan,Apr,Jul,Oct",
+        "mode": "fit_transform",
+        "fit_scope": "all_data"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Filling missing PromoInterval with a real quarter schedule assigns continuing-promo months to stores that have no promo program.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic Rossmann near-miss: forces missing PromoInterval rows onto a specific quarterly schedule.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000016",
+      "derived_from_action_ids": [
+        "CA-000018"
+      ]
+    },
+    {
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "constant",
+        "columns": [
+          "Open"
+        ],
+        "fill_value": 1,
+        "mode": "transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Fill the 11 missing `Open` values in the test set with `1` so those future rows are treated as open by default.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "apoorvaappz/rossmann-store-sales",
+        "aswathikv/rossmanstoresales",
+        "stefanozakher94/eda-and-forecasting-with-rfregressor-final-updated",
+        "sudharsan1297/rossmann-store-sales-final"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Narrow test-horizon repair retained for all-stage scoring only; the core benchmark does not require this implementation-specific `Open` patch as an independent unit.",
+      "evidence_snippets": [
+        "test_merged['Open'] = test_merged['Open'].fillna(1)",
+        "df_test.fillna(1, inplace = True) #11rows with Nans decided to leave them open"
+      ],
+      "rareness": "common",
+      "confidence": 0.9,
+      "action_id": "CA-000017"
+    },
+    {
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "constant",
+        "columns": [
+          "PromoInterval"
+        ],
+        "fill_value": "0",
+        "mode": "fit_transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Replace missing `PromoInterval` with a sentinel string before promo-schedule feature engineering.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "ananya77041/randomforestpython",
+        "muhamadiqbalputra/rossman-store-sales-beginner-guide",
+        "sammyshen/exploratory-and-randomforest",
+        "stefanozakher94/eda-and-forecasting-with-rfregressor-final-updated"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Some notebooks use the mode instead of a sentinel. The benchmark keeps the explicit 'no promo schedule' fill because it aligns with the later promo-month feature block.",
+      "evidence_snippets": [
+        "df_store.PromoInterval.fillna(0,inplace=True)",
+        "df_store['PromoInterval'] = df_store['PromoInterval'].fillna('0')",
+        "else: return(np.repeat(0,12).tolist())"
+      ],
+      "rareness": "common",
+      "confidence": 0.75,
+      "must_follow_action_ids": [
+        "CA-000044"
+      ],
+      "action_id": "CA-000018"
+    },
+    {
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "Open == 0"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Applies an over-aggressive row filter that removes valid training examples.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000007: Applies an over-aggressive row filter that removes valid training examples.",
+      "challenge_type": "destructive_filter",
+      "action_id": "CA-000019",
+      "derived_from_action_ids": [
+        "CA-000048"
+      ]
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "max(0, 12 * (year - CompetitionOpenSinceYear) + (month - CompetitionOpenSinceMonth))",
+        "output_columns": [
+          "CompetitionOpenMonths"
+        ],
+        "mode": "fit_transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Combine competitor opening year/month with the current row date to measure how long nearby competition has been active.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "ananya77041/randomforestpython",
+        "ercfermi/exploratory-analysis-rossmann",
+        "stefanozakher94/eda-and-forecasting-with-rfregressor-final-updated"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Depends on the store metadata join, parsed date parts, and repaired competition-open month/year fields before the months-since-competition feature is well defined.",
+      "evidence_snippets": [
+        "data['CompetitionOpen'] = 12 * (data.year - data.CompetitionOpenSinceYear) + (data.month - data.CompetitionOpenSinceMonth)",
+        "df_train_store['CompetitionOpenSince'] = np.where((df_train_store['CompetitionOpenSinceMonth']==0) & (df_train_store['CompetitionOpenSinceYear']==0) , 0,(df_train_store.Month - df_train_store.CompetitionOpenSinceMonth) + (12 * (df_train_store.Year - df_train_store.CompetitionOpenSinceYear)))"
+      ],
+      "rareness": "common",
+      "confidence": 0.75,
+      "must_follow_action_ids": [
+        "CA-000044",
+        "CA-000036",
+        "CA-000021",
+        "CA-000031"
+      ],
+      "action_id": "CA-000020"
+    },
+    {
+      "action_type": "DATE_PART_FEATURE",
+      "canonical_params": {
+        "date_columns": [
+          "Date"
+        ],
+        "parts": [
+          "year",
+          "month",
+          "day"
+        ],
+        "drop_original": false,
+        "mode": "fit_transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Expand the parsed `Date` into explicit calendar components, especially year, month, and day.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "ananya77041/randomforestpython",
+        "apoorvaappz/rossmann-store-sales",
+        "aswathikv/rossmanstoresales",
+        "raddar/random-forest-example",
+        "sudharsan1297/rossmann-store-sales-final"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Rossmann already exposes `DayOfWeek`, so the most stable additional calendar block is `year`, `month`, and `day`. Some notebooks also add `week`, but that is not as universal in the selected pool.",
+      "evidence_snippets": [
+        "data_merged['day'] = data_merged['Date'].dt.day",
+        "data_merged['year'] = data_merged['Date'].dt.year",
+        "train$month <- as.integer(format(train$Date, \"%m\"))"
+      ],
+      "rareness": "common",
+      "confidence": 0.9,
+      "must_follow_action_ids": [
+        "CA-000036"
+      ],
+      "action_id": "CA-000021"
+    },
+    {
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "store",
+        "left_on": "Store",
+        "right_on": "Store",
+        "how": "right",
+        "fit_scope": "none",
+        "mode": "transform"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Uses a join strategy that drops rows or reshapes the training table in a harmful way.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000013: Uses a join strategy that drops rows or reshapes the training table in a harmful way.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000022",
+      "derived_from_action_ids": [
+        "CA-000044"
+      ]
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "int(month in [1, 4, 7, 10])",
+        "output_columns": [
+          "IsPromoMonth"
+        ],
+        "mode": "fit_transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Applying one global quarter schedule to every store ignores the store-specific PromoInterval pattern.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic Rossmann near-miss: hard-codes one quarter mapping for all stores instead of reading PromoInterval.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000023",
+      "derived_from_action_ids": [
+        "CA-000035"
+      ]
+    },
+    {
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "mean",
+        "columns": [
+          "Open"
+        ],
+        "fill_value": 1,
+        "mode": "transform",
+        "fit_scope": "all_data"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Mean-imputing the binary Open flag creates a brittle fractional repair instead of the explicit open-by-default Rossmann fix.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic Rossmann near-miss: treats the binary test-horizon Open repair as a numeric mean-imputation problem.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000024",
+      "derived_from_action_ids": [
+        "CA-000017"
+      ]
+    },
+    {
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "constant",
+        "columns": [
+          "CompetitionOpenSinceMonth",
+          "CompetitionOpenSinceYear",
+          "Promo2SinceWeek",
+          "Promo2SinceYear"
+        ],
+        "fill_value": 0,
+        "mode": "fit_transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Zero-fills all competition and continuing-promo timing fields wholesale, collapsing real store history into a synthetic no-timing state.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "fault_actions.json#FA-000005"
+      ],
+      "derivation_reasoning": "Migrated legacy fault action FA-000005 into the action-bank benchmark.",
+      "challenge_type": "legacy_fault",
+      "action_id": "CA-000025"
+    },
+    {
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "SchoolHoliday == 0"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Filtering to school-holiday rows throws away most of the sales history and biases the model toward one calendar regime.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic Rossmann destructive filter: keeps only school-holiday rows.",
+      "challenge_type": "destructive_filter",
+      "action_id": "CA-000026",
+      "derived_from_action_ids": [
+        "CA-000048"
+      ]
+    },
+    {
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "constant",
+        "columns": [
+          "Open"
+        ],
+        "fill_value": 0,
+        "mode": "transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Treats the 11 missing test-set `Open` rows as closed stores, which biases the future horizon toward deterministic zero-sales behavior.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "fault_actions.json#FA-000003"
+      ],
+      "derivation_reasoning": "Migrated legacy fault action FA-000003 into the action-bank benchmark.",
+      "challenge_type": "legacy_fault",
+      "action_id": "CA-000027"
+    },
+    {
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "mean",
+        "columns": [
+          "CompetitionDistance"
+        ],
+        "mode": "fit_transform",
+        "fit_scope": "all_data"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Mean-imputing CompetitionDistance on all data blends train and forecast-horizon metadata into one leakage-prone default.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic Rossmann near-miss: uses a full-dataset mean competitor distance instead of a train-side conservative fill.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000028",
+      "derived_from_action_ids": [
+        "CA-000006"
+      ]
+    },
+    {
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "mean",
+        "columns": [
+          "CompetitionOpenSinceMonth",
+          "CompetitionOpenSinceYear"
+        ],
+        "mode": "fit_transform",
+        "fit_scope": "all_data"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Mean-imputing competition open month and year creates fractional calendar values that later timing features cannot interpret cleanly.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic Rossmann near-miss: replaces discrete competition calendar fields with averaged pseudo-dates.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000029",
+      "derived_from_action_ids": [
+        "CA-000031"
+      ]
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "max(0, 12 * (CompetitionOpenSinceYear - year) + (CompetitionOpenSinceMonth - month))",
+        "output_columns": [
+          "CompetitionOpenMonths"
+        ],
+        "mode": "fit_transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Reversing the competition-age subtraction makes not-yet-open competitors look long-established once the result is clamped.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic Rossmann near-miss: flips the sign of the competition-age calculation.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000030",
+      "derived_from_action_ids": [
+        "CA-000020"
+      ]
+    },
+    {
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "most_frequent",
+        "columns": [
+          "CompetitionOpenSinceMonth",
+          "CompetitionOpenSinceYear"
+        ],
+        "mode": "fit_transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Fill missing competitor opening month/year values with the modal store metadata values before deriving competition-age features.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "apoorvaappz/rossmann-store-sales",
+        "aswathikv/rossmanstoresales",
+        "sudharsan1297/rossmann-store-sales-final",
+        "swinalmeshram/rossmann-sales"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "A few notebooks use zero instead. The benchmark normalizes the shared mode-imputation pattern because it is common in the selected classical tree-model notebooks.",
+      "evidence_snippets": [
+        "store['CompetitionOpenSinceMonth'] = store['CompetitionOpenSinceMonth'].fillna(store['CompetitionOpenSinceMonth'].mode().iloc[0])",
+        "store['CompetitionOpenSinceYear'] = store['CompetitionOpenSinceYear'].fillna(store['CompetitionOpenSinceYear'].mode().iloc[0])"
+      ],
+      "rareness": "common",
+      "confidence": 0.75,
+      "must_follow_action_ids": [
+        "CA-000044"
+      ],
+      "action_id": "CA-000031"
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "int((PromoInterval == 'Jan,Apr,Jul,Oct' and month in [2, 5, 8, 11]) or (PromoInterval == 'Feb,May,Aug,Nov' and month in [3, 6, 9, 12]) or (PromoInterval == 'Mar,Jun,Sept,Dec' and month in [1, 4, 7, 10]))",
+        "output_columns": [
+          "IsPromoMonth"
+        ],
+        "mode": "fit_transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Shifting every PromoInterval quarter by one month mislabels the active promo window throughout the year.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic Rossmann near-miss: offsets each promo quarter by one month.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000032",
+      "derived_from_action_ids": [
+        "CA-000035"
+      ]
+    },
+    {
+      "action_type": "DATE_PART_FEATURE",
+      "canonical_params": {
+        "date_columns": [
+          "Date"
+        ],
+        "parts": [
+          "dayofweek",
+          "day"
+        ],
+        "drop_original": true,
+        "mode": "fit_transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Extracts a weaker or overly destructive calendar representation than the benchmark-preferred date block.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000003: Extracts a weaker or overly destructive calendar representation than the benchmark-preferred date block.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000033",
+      "derived_from_action_ids": [
+        "CA-000021"
+      ]
+    },
+    {
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "constant",
+        "columns": [
+          "Open"
+        ],
+        "fill_value": 0,
+        "mode": "transform",
+        "fit_scope": "all_data"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Filling the missing test Open values with `0` treats unknown future stores as closed and biases predictions toward zero-sales behavior.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic Rossmann near-miss: turns the test-horizon Open repair into a closed-store assumption.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000034",
+      "derived_from_action_ids": [
+        "CA-000017"
+      ]
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "int((PromoInterval == 'Jan,Apr,Jul,Oct' and month in [1, 4, 7, 10]) or (PromoInterval == 'Feb,May,Aug,Nov' and month in [2, 5, 8, 11]) or (PromoInterval == 'Mar,Jun,Sept,Dec' and month in [3, 6, 9, 12]))",
+        "output_columns": [
+          "IsPromoMonth"
+        ],
+        "mode": "fit_transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Translate the repeating promo schedule string into a month-aligned feature that indicates whether the current row falls in an active promo month.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "ananya77041/randomforestpython",
+        "muhamadiqbalputra/rossman-store-sales-beginner-guide",
+        "sammyshen/exploratory-and-randomforest"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Depends on the joined store metadata, parsed row month, and filled PromoInterval schedule before the promo-month indicator can be computed.",
+      "evidence_snippets": [
+        "store_cols2['PromoInterval'] = store_cols2['PromoInterval'].str.split(',')",
+        "store_cols2['PromoInterval'] = store_cols2['PromoInterval'].apply(bulan_to_angka)",
+        "data['p_1'] = data.PromoInterval.apply(lambda x: x[:3] if type(x) == str else 0)"
+      ],
+      "rareness": "common",
+      "confidence": 0.75,
+      "must_follow_action_ids": [
+        "CA-000044",
+        "CA-000036",
+        "CA-000021",
+        "CA-000018"
+      ],
+      "action_id": "CA-000035"
+    },
+    {
+      "action_type": "PARSE_DATETIME",
+      "canonical_params": {
+        "columns": [
+          "Date"
+        ],
+        "format": "%Y-%m-%d",
+        "mode": "fit_transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Parse the raw `Date` string column into a datetime type before deriving calendar features.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "apoorvaappz/rossmann-store-sales",
+        "aswathikv/rossmanstoresales",
+        "mdniazulislamroky/a-beginner-s-guide-to-predict-rossman-store-sales",
+        "sudharsan1297/rossmann-store-sales-final",
+        "viniciusmoura1/rossman-project"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Nearly every Rossmann notebook converts `Date` early. Some readers use `parse_dates` at load time, while others call `pd.to_datetime` after reading the CSV.",
+      "evidence_snippets": [
+        "data['Date'] = pd.to_datetime(data['Date'],format = '%Y-%m-%d')",
+        "train['Date']=pd.to_datetime(train['Date'],format='%Y-%m-%d')",
+        "reduced_train_df['Date'] = pd.to_datetime(reduced_train_df['Date'])"
+      ],
+      "rareness": "common",
+      "confidence": 0.9,
+      "action_id": "CA-000036"
+    },
+    {
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "freq",
+        "columns": [
+          "StateHoliday",
+          "StoreType",
+          "Assortment"
+        ],
+        "mode": "fit_transform",
+        "fit_scope": "all_data",
+        "output_columns": [
+          "StateHoliday_freq",
+          "StoreType_freq",
+          "Assortment_freq"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Frequency-encoding store and holiday categoricals replaces compact nominal identities with global prevalence statistics.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic Rossmann near-miss: swaps the rewarded store/holiday categorical block for frequency encodings.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000037",
+      "derived_from_action_ids": [
+        "CA-000004"
+      ]
+    },
+    {
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "most_frequent",
+        "columns": [
+          "PromoInterval"
+        ],
+        "fill_value": "0",
+        "mode": "fit_transform",
+        "fit_scope": "all_data"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Mode-filling PromoInterval assigns the most common continuing-promo schedule to stores that do not have one.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic Rossmann near-miss: borrows the modal PromoInterval instead of preserving the explicit no-schedule sentinel.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000038",
+      "derived_from_action_ids": [
+        "CA-000018"
+      ]
+    },
+    {
+      "action_type": "DATE_PART_FEATURE",
+      "canonical_params": {
+        "date_columns": [
+          "Date"
+        ],
+        "parts": [
+          "week"
+        ],
+        "drop_original": false,
+        "mode": "fit_transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Extracts a weaker or overly destructive calendar representation than the benchmark-preferred date block.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000003: Extracts a weaker or overly destructive calendar representation than the benchmark-preferred date block.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000039",
+      "derived_from_action_ids": [
+        "CA-000021"
+      ]
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "abs(12 * (year - CompetitionOpenSinceYear) + (month - CompetitionOpenSinceMonth))",
+        "output_columns": [
+          "CompetitionOpenMonths"
+        ],
+        "mode": "fit_transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Taking the absolute competition-age difference makes future competitor openings look like already-active competition.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic Rossmann near-miss: removes the directionality from the competition-age calculation.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000040",
+      "derived_from_action_ids": [
+        "CA-000020"
+      ]
+    },
+    {
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "label",
+        "columns": [
+          "StateHoliday",
+          "StoreType",
+          "Assortment"
+        ],
+        "mode": "fit_transform",
+        "fit_scope": "all_data"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Fitting the label encoding on all data leaks the full category universe into train-side preprocessing choices.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic Rossmann near-miss: keeps label encoding but fits it against all available data instead of the safe train-side path.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000041",
+      "derived_from_action_ids": [
+        "CA-000004"
+      ]
+    },
+    {
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "Customers"
+        ],
+        "reason": "drop_train_only_leakage_feature"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Remove `Customers` from the modeling matrix because it is available in train only and would leak unavailable future information into the benchmark pipeline.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "ananya77041/randomforestpython",
+        "aswathikv/rossmanstoresales",
+        "raddar/random-forest-example",
+        "stefanozakher94/eda-and-forecasting-with-rfregressor-final-updated",
+        "sudharsan1297/rossmann-store-sales-final"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "This is one of the most benchmark-critical Rossmann cleanup steps because `Customers` is strongly predictive but absent from the competition test matrix.",
+      "evidence_snippets": [
+        "X = data_merged.drop(['Sales','Date','Customers'],axis=1)",
+        "features = df_train_store.drop(['Customers', 'Sales', 'SalesperCustomer'], axis = 1)",
+        "X_train = data.drop(['Sales', 'Customers'], axis = 1)"
+      ],
+      "rareness": "common",
+      "confidence": 0.9,
+      "action_id": "CA-000042"
+    },
+    {
+      "action_type": "PARSE_DATETIME",
+      "canonical_params": {
+        "columns": [
+          "Date",
+          "Store"
+        ],
+        "format": "%d/%m/%Y",
+        "mode": "fit_transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Parses the wrong columns or uses a brittle datetime format assumption.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000014: Parses the wrong columns or uses a brittle datetime format assumption.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000043",
+      "derived_from_action_ids": [
+        "CA-000036"
+      ]
+    },
+    {
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "store",
+        "left_on": "Store",
+        "right_on": "Store",
+        "how": "left",
+        "fit_scope": "none",
+        "mode": "transform"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Join the daily train/test rows with the static `store.csv` metadata on `Store` before feature engineering.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "apoorvaappz/rossmann-store-sales",
+        "aswathikv/rossmanstoresales",
+        "mdniazulislamroky/a-beginner-s-guide-to-predict-rossman-store-sales",
+        "stefanozakher94/eda-and-forecasting-with-rfregressor-final-updated",
+        "swinalmeshram/rossmann-sales"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "This is the dominant Rossmann preprocessing move. Inner joins appear in a few side paths, but the stable benchmark form is a left join that preserves the full store-day table.",
+      "evidence_snippets": [
+        "data_merged = data.merge(store, on ='Store', how='left')",
+        "df_train_store = pd.merge(df_train, df_store, how = 'left', on = 'Store')",
+        "train_merged_df = raw_train_df.merge(raw_store_df, how='left', on='Store')"
+      ],
+      "rareness": "common",
+      "confidence": 0.9,
+      "action_id": "CA-000044"
+    },
+    {
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "Date"
+        ],
+        "reason": "drop_raw_date_after_feature_derivation"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Drop the raw `Date` column after the calendar and temporal interaction features have been extracted.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "ananya77041/randomforestpython",
+        "apoorvaappz/rossmann-store-sales",
+        "aswathikv/rossmanstoresales",
+        "raddar/random-forest-example",
+        "sudharsan1297/rossmann-store-sales-final"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Model-cleanup step retained for all-stage scoring only; many Rossmann pipelines keep the raw datetime or let the model library handle it after feature extraction.",
+      "evidence_snippets": [
+        "features= data_merged.columns.drop(['Sales','Date'])",
+        "df=df.drop('Date',1)",
+        "train <- train[,-c(3,8)]"
+      ],
+      "rareness": "common",
+      "confidence": 0.9,
+      "invalidates_action_ids": [
+        "CA-000021",
+        "CA-000036"
+      ],
+      "action_id": "CA-000045",
+      "must_follow_action_ids": [
+        "CA-000036",
+        "CA-000021"
+      ]
+    },
+    {
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "Store"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Drops the store identifier before the `store.csv` lookup join can attach store metadata.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "fault_actions.json#FA-000001"
+      ],
+      "derivation_reasoning": "Migrated legacy fault action FA-000001 into the action-bank benchmark.",
+      "challenge_type": "legacy_fault",
+      "action_id": "CA-000046"
+    },
+    {
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "mean",
+        "columns": [
+          "PromoInterval"
+        ],
+        "fill_value": "0",
+        "mode": "fit_transform",
+        "fit_scope": "all_data"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Mean-imputing PromoInterval is semantically invalid for a repeating schedule string and collapses missingness into a meaningless pseudo-category.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic Rossmann near-miss: treats the promo schedule text like a numeric column.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000047",
+      "derived_from_action_ids": [
+        "CA-000018"
+      ]
+    },
+    {
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "Open == 1"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Restrict the training rows to days where the store was open so the model does not waste capacity on the deterministic closed-store zero-sales regime.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "ananya77041/randomforestpython",
+        "mdniazulislamroky/a-beginner-s-guide-to-predict-rossman-store-sales",
+        "muhamadiqbalputra/rossman-store-sales-beginner-guide",
+        "raddar/random-forest-example"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Equivalent alternative to dropping only the deterministic `(Open == 0 and Sales == 0)` rows. Either strategy removes the closed-store zero-sales regime from the core Rossmann slice.",
+      "evidence_snippets": [
+        "train <- train[ which(train$Open=='1'),]",
+        "reduced_train_df = train_merged_df[ train_merged_df.Open == 1 ].copy()",
+        "data = data[data['Open'] != 0]"
+      ],
+      "rareness": "common",
+      "confidence": 0.75,
+      "action_id": "CA-000048",
+      "equivalence_group": "rossmann_open_store_filter_strategy"
+    },
+    {
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "store",
+        "left_on": "Store",
+        "right_on": "Store",
+        "how": "outer",
+        "fit_scope": "none",
+        "mode": "transform"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Uses a join strategy that drops rows or reshapes the training table in a harmful way.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000013: Uses a join strategy that drops rows or reshapes the training table in a harmful way.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000049",
+      "derived_from_action_ids": [
+        "CA-000044"
+      ]
+    },
+    {
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "mean",
+        "columns": [
+          "Promo2SinceWeek",
+          "Promo2SinceYear"
+        ],
+        "fill_value": 0,
+        "mode": "fit_transform",
+        "fit_scope": "all_data"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Mean-imputing Promo2 timing fields creates fractional promo week and year values for stores with no continuing-promo history.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic Rossmann near-miss: averages Promo2 timing fields into non-calendar values.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000050",
+      "derived_from_action_ids": [
+        "CA-000052"
+      ]
+    },
+    {
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "most_frequent",
+        "columns": [
+          "Open"
+        ],
+        "fill_value": 1,
+        "mode": "transform",
+        "fit_scope": "all_data"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Mode-filling the missing Open values makes the repair depend on the observed class balance instead of the explicit Rossmann default.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic Rossmann near-miss: replaces the deterministic open-by-default fix with a data-dependent class-mode fill.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000051",
+      "derived_from_action_ids": [
+        "CA-000017"
+      ]
+    },
+    {
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "constant",
+        "columns": [
+          "Promo2SinceWeek",
+          "Promo2SinceYear"
+        ],
+        "fill_value": 0,
+        "mode": "fit_transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Fill the store-level Promo2 timing fields with zero when the store is not in the continuing promotion program.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "apoorvaappz/rossmann-store-sales",
+        "aswathikv/rossmanstoresales",
+        "muhamadiqbalputra/rossman-store-sales-beginner-guide",
+        "stefanozakher94/eda-and-forecasting-with-rfregressor-final-updated",
+        "swinalmeshram/rossmann-sales"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "The exact treatment varies slightly across notebooks, but zero-filling the Promo2 timing fields is the most consistent representation of 'no continuing promo schedule'.",
+      "evidence_snippets": [
+        "store['Promo2SinceWeek'] = store['Promo2SinceWeek'].fillna(0)",
+        "store['Promo2SinceYear'] = store['Promo2SinceYear'].fillna(0)",
+        "df_store.Promo2SinceWeek.fillna(0,inplace=True)"
+      ],
+      "rareness": "common",
+      "confidence": 0.9,
+      "must_follow_action_ids": [
+        "CA-000044"
+      ],
+      "action_id": "CA-000052"
+    },
+    {
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "max(0, 12 * (year - CompetitionOpenSinceYear) + month)",
+        "output_columns": [
+          "CompetitionOpenMonths"
+        ],
+        "mode": "fit_transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Ignoring CompetitionOpenSinceMonth inflates competition age whenever the competitor opened late in the year.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic Rossmann near-miss: drops the competition open month from the age calculation.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000053",
+      "derived_from_action_ids": [
+        "CA-000020"
+      ]
+    },
+    {
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "most_frequent",
+        "columns": [
+          "CompetitionDistance"
+        ],
+        "mode": "fit_transform",
+        "fit_scope": "all_data"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Mode-imputing CompetitionDistance snaps every missing store to one competitor distance and erases local heterogeneity.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic Rossmann near-miss: replaces missing competitor distances with one global mode value.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000054",
+      "derived_from_action_ids": [
+        "CA-000006"
+      ]
+    },
+    {
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "store",
+        "left_on": "Store",
+        "right_on": "Store",
+        "how": "inner",
+        "fit_scope": "none",
+        "mode": "transform"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Uses a join strategy that drops rows or reshapes the training table in a harmful way.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic near-miss of legacy good action GA-000013: Uses a join strategy that drops rows or reshapes the training table in a harmful way.",
+      "challenge_type": "near_miss",
+      "action_id": "CA-000055",
+      "derived_from_action_ids": [
+        "CA-000044"
+      ]
+    },
+    {
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "Promo == 1"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Keeps only promotion days and discards the rest of the sales history, which destroys the benchmark's store-day forecasting semantics.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "fault_actions.json#FA-000004"
+      ],
+      "derivation_reasoning": "Migrated legacy fault action FA-000004 into the action-bank benchmark.",
+      "challenge_type": "legacy_fault",
+      "action_id": "CA-000056"
+    },
+    {
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "onehot",
+        "columns": [
+          "StateHoliday",
+          "StoreType",
+          "Assortment"
+        ],
+        "output_columns": [
+          "StateHoliday_0",
+          "StateHoliday_a",
+          "StateHoliday_b",
+          "StateHoliday_c",
+          "StoreType_a",
+          "StoreType_b",
+          "StoreType_c",
+          "StoreType_d",
+          "Assortment_a",
+          "Assortment_b",
+          "Assortment_c"
+        ],
+        "mode": "fit_transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "One-hot encode the main low-cardinality store and holiday columns when the downstream model prefers sparse indicator inputs.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "apoorvaappz/rossmann-store-sales",
+        "aswathikv/rossmanstoresales",
+        "sudharsan1297/rossmann-store-sales-final"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Equivalent alternative to label encoding for benchmark scoring. Either one-hot or label encoding satisfies the Rossmann low-cardinality categorical-prep need.",
+      "evidence_snippets": [
+        "train = pd.get_dummies(train, columns=['StateHoliday', 'StoreType', 'Assortment'])",
+        "test = pd.get_dummies(test, columns=['StateHoliday', 'StoreType', 'Assortment'])"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.6,
+      "must_follow_action_ids": [
+        "CA-000044"
+      ],
+      "equivalence_group": "rossmann_store_categorical_encoding_strategy",
+      "action_id": "CA-000057"
+    },
+    {
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "not (Open == 0 and Sales == 0)"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Drop only the deterministic closed-and-zero-sales rows while leaving ambiguous open-day low-sales cases in the training set.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "ananya77041/randomforestpython",
+        "mdniazulislamroky/a-beginner-s-guide-to-predict-rossman-store-sales"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Equivalent alternative to the stricter `Open == 1` filter. Either anti-closure strategy satisfies the Rossmann closed-store cleanup need.",
+      "evidence_snippets": [
+        "train = train[~((train['Open'] == 0) & (train['Sales'] == 0))]",
+        "data = data[(data.Open != 0) | (data.Sales != 0)]"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.6,
+      "equivalence_group": "rossmann_open_store_filter_strategy",
+      "action_id": "CA-000058"
+    },
+    {
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "Store"
+        ],
+        "target_columns": [
+          "Sales"
+        ],
+        "agg_functions": [
+          "mean"
+        ],
+        "join_back": true,
+        "how": "left",
+        "prefix": "store_"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Joining the full-dataset mean Sales per Store back onto every row leaks target information from the forecasting horizon into the features.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000044",
+        "CA-000021"
+      ],
+      "derivation_reasoning": "Synthetic Rossmann leakage variant: aggregates the target by Store and joins it back as a feature.",
+      "challenge_type": "target_leakage",
+      "action_id": "CA-000059"
+    },
+    {
+      "action_type": "LAG_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "Sales"
+        ],
+        "lag_periods": [
+          -1
+        ],
+        "order_by_columns": [
+          "Date"
+        ],
+        "group_by_columns": [
+          "Store"
+        ],
+        "fill_value": 0
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Using a negative lag on Sales injects each store's future target into the current row.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000021"
+      ],
+      "derivation_reasoning": "Synthetic Rossmann leakage variant: uses a future Sales lead as if it were an ordinary lag feature.",
+      "challenge_type": "target_leakage",
+      "action_id": "CA-000060"
+    },
+    {
+      "action_type": "ROLLING_WINDOW_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "Customers"
+        ],
+        "window_sizes": [
+          7
+        ],
+        "agg_functions": [
+          "mean"
+        ],
+        "order_by_columns": [
+          "Date"
+        ],
+        "group_by_columns": [
+          "Store"
+        ],
+        "min_periods": 2
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "A rolling Customers feature depends on a train-only column that is absent from the competition test matrix, so it leaks unavailable information into forecasting features.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000042"
+      ],
+      "derivation_reasoning": "Synthetic Rossmann leakage variant: builds a rolling feature from the train-only Customers column.",
+      "challenge_type": "train_only_leakage",
+      "action_id": "CA-000061"
+    }
+  ]
+}

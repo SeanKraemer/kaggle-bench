@@ -1,0 +1,100 @@
+{
+  "competition_slug": "competitive-data-science-predict-future-sales",
+  "testcase_id": "tc1_from_scratch",
+  "artifact_type": "eval_human_baseline_action_trace",
+  "related_output": "../tc1_human.json",
+  "traces": [
+    {
+      "predicted_action_id": "CA-000001",
+      "artifact": "../work.ipynb",
+      "section": "Parse Raw Sales Date",
+      "mapping_rationale": "Direct bank match for normalizing the raw `dd.mm.yyyy` date string before time-aware preprocessing."
+    },
+    {
+      "predicted_action_id": "CA-000003",
+      "artifact": "../work.ipynb",
+      "section": "Trim Gross Sales Anomalies",
+      "mapping_rationale": "Selected as the conservative outlier-trimming step for extreme item-price and item-count spikes before monthly aggregation."
+    },
+    {
+      "predicted_action_id": "CA-000005",
+      "artifact": "../work.ipynb",
+      "section": "Aggregate Daily Sales To Monthly Target",
+      "mapping_rationale": "Direct bank match for summing `item_cnt_day` by `date_block_num`, `shop_id`, and `item_id` to define the monthly target table."
+    },
+    {
+      "predicted_action_id": "CA-000007",
+      "artifact": "../work.ipynb",
+      "section": "Join Item Lookup Metadata",
+      "mapping_rationale": "Selected to recover `item_category_id` from `items.csv` before category-aware feature branches."
+    },
+    {
+      "predicted_action_id": "CA-000009",
+      "artifact": "../work.ipynb",
+      "section": "Clip Monthly Target",
+      "mapping_rationale": "Selected as the standard competition target clipping step for monthly demand values in `[0, 20]`."
+    },
+    {
+      "predicted_action_id": "CA-000011",
+      "artifact": "../work.ipynb",
+      "section": "Create Shop-Item Lags",
+      "mapping_rationale": "Direct bank match for the standard `1,2,3,6,12` month target lag family at the shop-item level."
+    },
+    {
+      "predicted_action_id": "CA-000013",
+      "artifact": "../work.ipynb",
+      "section": "Fill Missing Target Lags With Zero",
+      "mapping_rationale": "Selected to fill missing direct target-lag values with zero as the baseline no-prior-demand value."
+    },
+    {
+      "predicted_action_id": "CA-000015",
+      "artifact": "../work.ipynb",
+      "section": "Drop Lag Warmup Months",
+      "mapping_rationale": "Selected to drop the first 12 warmup months after introducing 12-step lag features."
+    },
+    {
+      "predicted_action_id": "CA-000017",
+      "artifact": "../work.ipynb",
+      "section": "Join Item Category Lookup",
+      "mapping_rationale": "Selected to join `item_categories.csv` before deriving compact category text features."
+    },
+    {
+      "predicted_action_id": "CA-000019",
+      "artifact": "../work.ipynb",
+      "section": "Join Shop Lookup",
+      "mapping_rationale": "Selected to join `shops.csv` so shop-name text can be reduced into city-level categorical signals."
+    },
+    {
+      "predicted_action_id": "CA-000021",
+      "artifact": "../work.ipynb",
+      "section": "Extract City And Category Subtypes",
+      "mapping_rationale": "Selected as the text-derived feature block that maps raw shop and category names into `city`, `type`, and `subtype`."
+    },
+    {
+      "predicted_action_id": "CA-000023",
+      "artifact": "../work.ipynb",
+      "section": "Encode Derived Categoricals",
+      "mapping_rationale": "Selected to encode the compact derived categorical features for tree-style reference models."
+    },
+    {
+      "predicted_action_id": "CA-000025",
+      "artifact": "../work.ipynb",
+      "section": "Create First-Sale And Last-Sale Recency Features",
+      "mapping_rationale": "Selected to add first-sale and last-sale recency signals on top of the monthly forecasting table."
+    }
+  ],
+  "omitted_notebook_steps": [
+    {
+      "section": "Complete Shop-Item-Month Grid",
+      "note": "Strong notebooks frequently materialize the full month grid with `product(...)`, but the current benchmark treats that as a documented workflow assumption rather than a standalone scored bank row."
+    },
+    {
+      "section": "Grouped Mean History Families",
+      "note": "The notebooks often build many additional lagged group means, such as month-item, month-shop, and month-category averages, but the current conservative bank does not score those as separate good rows."
+    },
+    {
+      "section": "Price Trend Features",
+      "note": "Price-trend and revenue-trend branches were intentionally excluded from the current bank to keep the official-only benchmark spine narrower and easier to score."
+    }
+  ]
+}

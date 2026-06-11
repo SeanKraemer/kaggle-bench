@@ -1,0 +1,70 @@
+{
+  "competition_slug": "sberbank-russian-housing-market",
+  "testcase_id": "tc1_from_scratch",
+  "agent_name": "human",
+  "run_by": "annotator_a",
+  "run_id": "human_tc1_annotator_a_working_v1",
+  "artifact_refs": [
+    {
+      "kind": "notebook",
+      "path": "work.ipynb",
+      "description": "Scratch notebook placeholder for the in-progress Sberbank TC1 human labeling pass."
+    },
+    {
+      "kind": "metadata",
+      "path": "provenance/metadata.json",
+      "description": "Run-level metadata for the in-progress Sberbank TC1 human baseline."
+    },
+    {
+      "kind": "trace",
+      "path": "provenance/action_trace.json",
+      "description": "Action-by-action trace for the current manually selected Sberbank bank rows."
+    },
+    {
+      "kind": "notes",
+      "path": "notes.md",
+      "description": "Working notes for the in-progress Sberbank TC1 human baseline."
+    }
+  ],
+  "predicted_add_action_ids": [
+    "CA-000001",
+    "CA-000002",
+    "CA-000004",
+    "CA-000014",
+    "CA-000015",
+    "CA-000013",
+    "CA-000019",
+    "CA-000033",
+    "CA-000034",
+    "CA-000035",
+    "CA-000036",
+    "CA-000037",
+    "CA-000038",
+    "CA-000046",
+    "CA-000049",
+    "CA-000061",
+    "CA-000064",
+    "CA-000067",
+    "CA-000071",
+    "CA-000082",
+    "CA-000080",
+    "CA-000085",
+    "CA-000088",
+    "CA-000090",
+    "CA-000081",
+    "CA-000117",
+    "CA-000100",
+    "CA-000105",
+    "CA-000110",
+    "CA-000115",
+    "CA-000120"
+  ],
+  "predicted_remove_action_ids": [],
+  "time_spent_seconds": 1800,
+  "token_usage": {
+    "input_tokens": null,
+    "output_tokens": null,
+    "total_tokens": null
+  },
+  "notes": "Working human baseline for Sberbank TC1 authored by annotator_a. The selected add-action set reflects the current manual review state and may still change before the labeling pass is finalized."
+}

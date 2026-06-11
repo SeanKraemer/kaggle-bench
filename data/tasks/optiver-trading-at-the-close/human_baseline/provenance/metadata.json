@@ -1,0 +1,18 @@
+{
+  "competition_slug": "optiver-trading-at-the-close",
+  "testcase_id": "tc1_from_scratch",
+  "artifact_type": "eval_human_baseline_provenance",
+  "author": "Sean Kraemer",
+  "created_at": "2026-04-23T11:47:21-05:00",
+  "source_mode": "manual_competition_reasoning_then_bank_alignment",
+  "related_output": "../tc1_human.json",
+  "supporting_artifacts": [
+    "../work.ipynb",
+    "../manual_selection_worksheet.md",
+    "../notes.md"
+  ],
+  "time_spent_minutes": 40,
+  "consulted_candidate_bank": true,
+  "consulted_legacy_human_output": false,
+  "notes": "Provenance for the Optiver TC1 human baseline. The notebook was used for dataset inspection and plain-language reasoning, and the candidate bank was consulted afterward to align that shortlist to current ids."
+}

@@ -1,0 +1,15 @@
+{
+  "testcase_id": "tc2_partial_good",
+  "competition_slug": "competitive-data-science-predict-future-sales",
+  "task_ref": "../task.json",
+  "input": {
+    "scenario": "partial_good",
+    "context_action_ids": [
+      "CA-000001",
+      "CA-000003",
+      "CA-000005",
+      "CA-000007",
+      "CA-000009"
+    ]
+  }
+}

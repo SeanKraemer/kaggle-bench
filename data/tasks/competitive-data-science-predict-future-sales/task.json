@@ -1,0 +1,40 @@
+{
+  "competition_slug": "competitive-data-science-predict-future-sales",
+  "dataset": {
+    "provider": "kaggle",
+    "competition": "competitive-data-science-predict-future-sales",
+    "train_files": [
+      "sales_train.csv"
+    ],
+    "test_files": [
+      "test.csv"
+    ],
+    "lookup_files": [
+      "items.csv",
+      "item_categories.csv",
+      "shops.csv"
+    ],
+    "sample_submission_files": [
+      "sample_submission.csv"
+    ],
+    "data_dictionary_files": [],
+    "target_column": "item_cnt_month",
+    "primary_key": "ID"
+  },
+  "goal": "Suggest preprocessing and feature-engineering actions for forecasting next-month item_cnt_month for each shop-item pair from Kaggle's Predict Future Sales retail time-series data under the competition RMSE metric.",
+  "task_characteristics": {
+    "ml_domain": "retail_time_series_tabular",
+    "problem_type": "forecasting",
+    "table_structure": "multi_table_relational",
+    "dataset_size_bucket": "xlarge",
+    "dataset_size_raw": 2935849,
+    "feature_dimensionality_bucket": "low",
+    "feature_dimensionality_raw": 12,
+    "preprocessing_complexity_bucket": "medium",
+    "preprocessing_complexity_raw": 13,
+    "analysis_notes": "Large relational retail forecasting task centered on 2,935,849 daily transaction rows in sales_train.csv plus small lookup tables for items, item categories, and shops. The benchmark-relevant case-insensitive column union across official CSVs is 12 columns. The curated phase-2 bank keeps the official-only monthly forecasting spine conservative: parse the raw date string, filter only gross sales anomalies, aggregate daily sales to monthly item_cnt_month at the shop-item-month level, add item lookup metadata, clip the monthly target to the competition's standard [0, 20] range, build shop-item lags, zero-fill lag gaps, and drop the first 12 months once 12-step lags are introduced. A broader city/category-text branch remains in the bank as model-specific preprocessing rather than part of the primary headline score."
+  },
+  "metric": {
+    "name": "RMSE"
+  }
+}

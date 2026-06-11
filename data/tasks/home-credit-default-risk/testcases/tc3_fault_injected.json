@@ -1,0 +1,14 @@
+{
+  "testcase_id": "tc3_fault_injected",
+  "competition_slug": "home-credit-default-risk",
+  "task_ref": "../task.json",
+  "input": {
+    "scenario": "fault_injected",
+    "context_action_ids": [
+      "CA-000005",
+      "CA-000097",
+      "CA-000025",
+      "CA-000057"
+    ]
+  }
+}

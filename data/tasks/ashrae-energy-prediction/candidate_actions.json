@@ -1,0 +1,1064 @@
+{
+  "competition_slug": "ashrae-energy-prediction",
+  "generated_at": "2026-04-14T00:00:00Z",
+  "actions": [
+    {
+      "action_id": "CA-000001",
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "meter_reading > 0",
+        "fit_scope": "train_only",
+        "mode": "transform"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "A global zero-reading filter discards legitimate observations and turns a localized data-quality issue into destructive preprocessing.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "gunesevitan/ashrae-lightgbm-1-048-no-leak",
+        "jesucristo/starter-great-energy-predictor"
+      ],
+      "derivation_reasoning": "Derived from notebook discussion around suspicious zero segments by escalating that idea into an over-aggressive train-wide row filter.",
+      "challenge_type": "destructive"
+    },
+    {
+      "action_id": "CA-000002",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "building_metadata",
+        "left_on": "building_id",
+        "right_on": "building_id",
+        "how": "left",
+        "select_columns": [
+          "site_id",
+          "primary_use",
+          "square_feet",
+          "year_built",
+          "floor_count"
+        ],
+        "fit_scope": "none",
+        "mode": "transform"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Official building metadata is joined onto meter rows so downstream steps can access site_id, primary_use, square_feet, and sparse building attributes.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "ryches/simple-lgbm-solution",
+        "jesucristo/starter-great-energy-predictor",
+        "vikassingh1996/ashrae-great-energy-insightful-eda-fe-lgbm"
+      ],
+      "source_profile": "official_csv_baseline",
+      "context_notes": "Core official-only join that unlocks both primary_use handling and the later weather join via site_id.",
+      "evidence_snippets": [
+        "train = train.merge(building_df, left_on = \"building_id\", right_on = \"building_id\", how = \"left\")",
+        "test = test.merge(building_df, left_on = \"building_id\", right_on = \"building_id\", how = \"left\")",
+        "train = train.merge(building, on = 'building_id', how = 'left')"
+      ],
+      "rareness": "common",
+      "confidence": 0.97
+    },
+    {
+      "action_id": "CA-000003",
+      "action_type": "SCALE_NUMERIC",
+      "canonical_params": {
+        "method": "standard",
+        "columns": [
+          "building_id",
+          "site_id"
+        ],
+        "fit_scope": "train_only",
+        "mode": "fit_transform"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Scaling identifier columns treats them like meaningful continuous magnitudes and adds needless fit-time state to pure keys.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "hmendonca/starter-eda-and-feature-selection-ashrae3",
+        "caesarlupum/ashrae-ligthgbm-simple-fe-and-mlops-mlfoundry"
+      ],
+      "derivation_reasoning": "Synthetic scaling distractor derived from notebooks that do scale dense numeric features, but redirected onto identifier columns where the transformation is semantically poor.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000004",
+      "action_type": "LOG_TRANSFORM",
+      "canonical_params": {
+        "columns": [
+          "meter_reading"
+        ],
+        "fit_scope": "train_only",
+        "mode": "fit_transform"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Many ASHRAE pipelines train in log1p target space to align the modeling pipeline with RMSLE-style error geometry.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "ryches/simple-lgbm-solution",
+        "jesucristo/starter-great-energy-predictor",
+        "vikassingh1996/ashrae-great-energy-insightful-eda-fe-lgbm",
+        "gouherdanishiitkgp/ashrae-basic-eda-and-feature-engineering"
+      ],
+      "source_profile": "official_csv_baseline",
+      "context_notes": "Benchmark-local model-specific row that touches the training target rather than the feature matrix; kept out of the primary denominator.",
+      "evidence_snippets": [
+        "target = np.log1p(train[\"meter_reading\"])",
+        "train['meter_reading'] = np.log1p(train['meter_reading'])"
+      ],
+      "rareness": "common",
+      "confidence": 0.9,
+      "notes": "Target-space transform retained as a model-specific pipeline action."
+    },
+    {
+      "action_id": "CA-000005",
+      "action_type": "DATE_PART_FEATURE",
+      "canonical_params": {
+        "date_columns": [
+          "timestamp"
+        ],
+        "parts": [
+          "minute"
+        ],
+        "drop_original": false,
+        "fit_scope": "none",
+        "mode": "transform"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "The data are hourly, so extracting minute adds a constant zero feature instead of recovering useful seasonal structure.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000014"
+      ],
+      "derivation_reasoning": "Derived from the rewarded timestamp-part action by switching to a formally valid but practically useless hourly component.",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000006",
+      "action_type": "PARSE_DATETIME",
+      "canonical_params": {
+        "columns": [
+          "timestamp"
+        ],
+        "errors": "coerce",
+        "fit_scope": "none",
+        "mode": "transform"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Timestamp strings are parsed before downstream temporal feature extraction.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "ryches/simple-lgbm-solution",
+        "jesucristo/starter-great-energy-predictor",
+        "vikassingh1996/ashrae-great-energy-insightful-eda-fe-lgbm",
+        "gouherdanishiitkgp/ashrae-basic-eda-and-feature-engineering"
+      ],
+      "source_profile": "official_csv_baseline",
+      "context_notes": "Parsing is a prerequisite for stable date-part extraction and safe dropping of the raw timestamp field.",
+      "evidence_snippets": [
+        "train[\"timestamp\"] = pd.to_datetime(train[\"timestamp\"])",
+        "test[\"timestamp\"] = pd.to_datetime(test[\"timestamp\"])",
+        "df['timestamp'] = pd.to_datetime(df['timestamp'],format = \"%Y-%m-%d %H:%M:%S\")"
+      ],
+      "rareness": "common",
+      "confidence": 0.96
+    },
+    {
+      "action_id": "CA-000007",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "onehot",
+        "columns": [
+          "building_id"
+        ],
+        "fit_scope": "train_only",
+        "mode": "fit_transform"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "One-hot expanding 1,449 building identifiers creates a very wide sparse branch with weak portability and a poor compute tradeoff for this benchmark.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000016"
+      ],
+      "derivation_reasoning": "Derived from observed one-hot encoding of the low-cardinality meter column by redirecting the same family to the much higher-cardinality building_id column.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000008",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "row_id"
+        ],
+        "fit_scope": "none",
+        "mode": "transform"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "The submission row key is removed before modeling because it is not a predictive feature.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "vikassingh1996/ashrae-great-energy-insightful-eda-fe-lgbm",
+        "gouherdanishiitkgp/ashrae-basic-eda-and-feature-engineering",
+        "tunguz/simple-linear-regression-benchmark"
+      ],
+      "source_profile": "official_csv_baseline",
+      "context_notes": "Test-only submission key cleanup step; useful but excluded from the primary denominator.",
+      "evidence_snippets": [
+        "test = test_processed.drop(['row_id'], axis = 1)",
+        "test_df = test_df.drop(['timestamp','row_id'],axis = 1)",
+        "test_df.drop(\"row_id\", axis=1, inplace=True)"
+      ],
+      "rareness": "common",
+      "confidence": 0.86
+    },
+    {
+      "action_id": "CA-000009",
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "building_id"
+        ],
+        "target_columns": [
+          "meter_reading"
+        ],
+        "agg_functions": [
+          "mean"
+        ],
+        "join_back": true,
+        "how": "left",
+        "fit_scope": "train_only",
+        "mode": "fit_transform"
+      },
+      "eval_stage": "validation_protocol",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Joining target-derived means back onto the same training rows is a leakage-style shortcut rather than legitimate preprocessing.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "gouherdanishiitkgp/ashrae-basic-eda-and-feature-engineering",
+        "kaushal2896/ashrae-eda-fe-lightgbm-1-12"
+      ],
+      "derivation_reasoning": "Synthetic grouped-feature distractor derived from observed aggregation notebooks, but redirected onto the target column in a leak-prone way.",
+      "challenge_type": "leakage"
+    },
+    {
+      "action_id": "CA-000010",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "weather_by_split",
+        "left_on": [
+          "site_id",
+          "timestamp"
+        ],
+        "right_on": [
+          "site_id",
+          "timestamp"
+        ],
+        "how": "left",
+        "select_columns": [
+          "air_temperature",
+          "cloud_coverage",
+          "dew_temperature",
+          "precip_depth_1_hr",
+          "sea_level_pressure",
+          "wind_direction",
+          "wind_speed"
+        ],
+        "fit_scope": "none",
+        "mode": "transform"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Weather signals are joined onto the meter rows by site and timestamp using the official train/test split-matched lookup tables.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "ryches/simple-lgbm-solution",
+        "jesucristo/starter-great-energy-predictor",
+        "vikassingh1996/ashrae-great-energy-insightful-eda-fe-lgbm"
+      ],
+      "source_profile": "official_csv_baseline",
+      "context_notes": "Task-local conceptual join row: weather_train is used for train rows and weather_test for test rows. This step depends on site_id coming from building_metadata.",
+      "evidence_snippets": [
+        "train = train.merge(weather_train, left_on = [\"site_id\", \"timestamp\"], right_on = [\"site_id\", \"timestamp\"], how = \"left\")",
+        "test = test.merge(weather_test, left_on = [\"site_id\", \"timestamp\"], right_on = [\"site_id\", \"timestamp\"], how = \"left\")",
+        "train = train.merge(weather_train, on = ['site_id', 'timestamp'], how = 'left')"
+      ],
+      "rareness": "common",
+      "confidence": 0.95,
+      "must_follow_action_ids": [
+        "CA-000002"
+      ],
+      "notes": "Represents the split-matched official weather join across train and test."
+    },
+    {
+      "action_id": "CA-000011",
+      "action_type": "CYCLICAL_ENCODE",
+      "canonical_params": {
+        "columns": [
+          "hour"
+        ],
+        "period": 12,
+        "method": "sin_cos",
+        "fit_scope": "none",
+        "mode": "transform"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Encoding hour on a 12-step cycle folds distinct daily positions together and misrepresents the 24-hour periodicity.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "kaushal2896/ashrae-eda-fe-lightgbm-1-12"
+      ],
+      "derivation_reasoning": "Derived from observed cyclical hour encoding by assigning the wrong period.",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000012",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "label",
+        "columns": [
+          "primary_use"
+        ],
+        "fit_scope": "train_only",
+        "mode": "fit_transform"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "The building-level string feature primary_use is encoded to a model-consumable categorical representation.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "ryches/simple-lgbm-solution",
+        "jesucristo/starter-great-energy-predictor",
+        "vikassingh1996/ashrae-great-energy-insightful-eda-fe-lgbm",
+        "gouherdanishiitkgp/ashrae-basic-eda-and-feature-engineering"
+      ],
+      "source_profile": "official_csv_baseline",
+      "context_notes": "Label-style encoding is the most common official-only branch in the selected corpus and depends on the building metadata join.",
+      "evidence_snippets": [
+        "le = LabelEncoder()",
+        "train[\"primary_use\"] = le.fit_transform(train[\"primary_use\"])",
+        "test[\"primary_use\"] = le.transform(test[\"primary_use\"])",
+        "df_building_metadata[\"primary_use\"] = le.fit_transform(df_building_metadata[\"primary_use\"])"
+      ],
+      "rareness": "common",
+      "confidence": 0.94,
+      "must_follow_action_ids": [
+        "CA-000002"
+      ]
+    },
+    {
+      "action_id": "CA-000013",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "primary_use"
+        ],
+        "fit_scope": "none",
+        "mode": "transform"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Dropping primary_use throws away the main building-category signal that the benchmark expects the agent to preserve and encode.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000012"
+      ],
+      "derivation_reasoning": "Synthetic destructive alternative derived from the rewarded primary_use encoding path.",
+      "challenge_type": "destructive",
+      "must_follow_action_ids": [
+        "CA-000002"
+      ],
+      "invalidates_action_ids": [
+        "CA-000012"
+      ]
+    },
+    {
+      "action_id": "CA-000014",
+      "action_type": "DATE_PART_FEATURE",
+      "canonical_params": {
+        "date_columns": [
+          "timestamp"
+        ],
+        "parts": [
+          "hour",
+          "dayofweek",
+          "month"
+        ],
+        "drop_original": false,
+        "fit_scope": "none",
+        "mode": "transform"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Stable hour-, weekday-, and month-level temporal features are derived from timestamp for recurring daily and seasonal structure.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "ryches/simple-lgbm-solution",
+        "jesucristo/starter-great-energy-predictor",
+        "vikassingh1996/ashrae-great-energy-insightful-eda-fe-lgbm",
+        "gouherdanishiitkgp/ashrae-basic-eda-and-feature-engineering"
+      ],
+      "source_profile": "official_csv_baseline",
+      "context_notes": "The primary benchmark row keeps a conservative subset of the frequently observed timestamp parts.",
+      "evidence_snippets": [
+        "train[\"hour\"] = train[\"timestamp\"].dt.hour",
+        "train[\"weekend\"] = train[\"timestamp\"].dt.weekday",
+        "train[\"month\"] = train[\"timestamp\"].dt.month",
+        "df_train['dayofweek'] = df_train['timestamp'].dt.dayofweek",
+        "df_train['hourofday'] = df_train['timestamp'].dt.hour"
+      ],
+      "rareness": "common",
+      "confidence": 0.93,
+      "must_follow_action_ids": [
+        "CA-000006"
+      ]
+    },
+    {
+      "action_id": "CA-000015",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "weather_by_split",
+        "left_on": [
+          "site_id",
+          "timestamp"
+        ],
+        "right_on": [
+          "site_id",
+          "timestamp"
+        ],
+        "how": "inner",
+        "select_columns": [
+          "air_temperature",
+          "cloud_coverage",
+          "dew_temperature",
+          "precip_depth_1_hr",
+          "sea_level_pressure",
+          "wind_direction",
+          "wind_speed"
+        ],
+        "fit_scope": "none",
+        "mode": "transform"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "An inner weather join can silently drop meter rows whenever the official weather table has gaps or timestamp mismatches.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000010"
+      ],
+      "derivation_reasoning": "Derived from the rewarded weather lookup action by changing the join type from left to inner.",
+      "challenge_type": "near_miss",
+      "must_follow_action_ids": [
+        "CA-000002"
+      ],
+      "conflicts_with_action_ids": [
+        "CA-000010"
+      ]
+    },
+    {
+      "action_id": "CA-000016",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "onehot",
+        "columns": [
+          "meter"
+        ],
+        "fit_scope": "train_only",
+        "mode": "fit_transform"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Some official-only pipelines explicitly expand the low-cardinality meter code into indicator columns.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "vikassingh1996/ashrae-great-energy-insightful-eda-fe-lgbm",
+        "drcapa/ashrae-datagenerator-lstm"
+      ],
+      "source_profile": "alternative_model_branch",
+      "context_notes": "Valid non-primary branch for models that prefer explicit low-cardinality indicator features.",
+      "evidence_snippets": [
+        "one_hot_train = pd.get_dummies(train['meter'])",
+        "one_hot_test = pd.get_dummies(test['meter'])",
+        "train_data = pd.get_dummies(train_data, columns=['meter'])"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.74
+    },
+    {
+      "action_id": "CA-000017",
+      "action_type": "LAG_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "meter_reading"
+        ],
+        "lag_periods": [
+          1,
+          24
+        ],
+        "order_by_columns": [
+          "timestamp"
+        ],
+        "fit_scope": "train_only",
+        "mode": "fit_transform"
+      },
+      "eval_stage": "validation_protocol",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Lagging meter_reading without grouping by entity creates cross-building target leakage and is not a deterministic official-only baseline path.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "nz0722/aligned-timestamp-lgbm-by-meter-type",
+        "yamsam/new-ucf-starter-kernel"
+      ],
+      "derivation_reasoning": "Synthetic lag branch derived from observed time-series notebooks but kept deliberately ungrouped so it leaks information across unrelated rows.",
+      "challenge_type": "leakage"
+    },
+    {
+      "action_id": "CA-000018",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "timestamp"
+        ],
+        "fit_scope": "none",
+        "mode": "transform"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "After deriving date parts, many pipelines remove the raw timestamp column before fitting tabular models.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "ryches/simple-lgbm-solution",
+        "jesucristo/starter-great-energy-predictor",
+        "vikassingh1996/ashrae-great-energy-insightful-eda-fe-lgbm",
+        "gouherdanishiitkgp/ashrae-basic-eda-and-feature-engineering"
+      ],
+      "source_profile": "official_csv_baseline",
+      "context_notes": "Common cleanup step after timestamp parsing and date-part derivation; excluded from the primary denominator to keep core scope conservative.",
+      "evidence_snippets": [
+        "train = train.drop(\"timestamp\", axis = 1)",
+        "train.drop(columns=['meter', 'timestamp', 'weekday_name'], axis = 1, inplace = True)",
+        "test_df = test_df.drop(['timestamp','row_id'],axis = 1)"
+      ],
+      "rareness": "common",
+      "confidence": 0.88,
+      "must_follow_action_ids": [
+        "CA-000006",
+        "CA-000014"
+      ]
+    },
+    {
+      "action_id": "CA-000019",
+      "action_type": "PARSE_DATETIME",
+      "canonical_params": {
+        "columns": [
+          "timestamp"
+        ],
+        "format": "%m/%d/%Y %H:%M:%S",
+        "errors": "coerce",
+        "fit_scope": "none",
+        "mode": "transform"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Using a U.S.-style month-first format against the ISO timestamps can coerce valid values to missing and break later date features.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000006"
+      ],
+      "derivation_reasoning": "Derived from the rewarded datetime parse by supplying an incompatible format string.",
+      "challenge_type": "near_miss",
+      "conflicts_with_action_ids": [
+        "CA-000006"
+      ]
+    },
+    {
+      "action_id": "CA-000020",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "median",
+        "columns": [
+          "floor_count",
+          "year_built",
+          "air_temperature",
+          "cloud_coverage",
+          "dew_temperature",
+          "precip_depth_1_hr",
+          "sea_level_pressure",
+          "wind_direction",
+          "wind_speed"
+        ],
+        "fit_scope": "train_only",
+        "mode": "fit_transform"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Median-style scalar filling is a common official-only way to stabilize sparse building and weather columns after the joins.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "vikassingh1996/ashrae-great-energy-insightful-eda-fe-lgbm",
+        "gouherdanishiitkgp/ashrae-basic-eda-and-feature-engineering",
+        "kaushal2896/ashrae-eda-fe-lightgbm-1-12"
+      ],
+      "source_profile": "eda_plus_baseline",
+      "context_notes": "Primary benchmark row uses conservative scalar imputation rather than grouped interpolation or leak-aware correction branches.",
+      "evidence_snippets": [
+        "train[i].fillna(train[i].median(), inplace = True)",
+        "test[i].fillna(test[i].median(), inplace = True)",
+        "test_df.fillna(test_df.median(),inplace=True)"
+      ],
+      "rareness": "common",
+      "confidence": 0.81,
+      "must_follow_action_ids": [
+        "CA-000002",
+        "CA-000010"
+      ]
+    },
+    {
+      "action_id": "CA-000021",
+      "action_type": "ROLLING_WINDOW_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "meter_reading"
+        ],
+        "window_sizes": [
+          24
+        ],
+        "agg_functions": [
+          "mean"
+        ],
+        "order_by_columns": [
+          "timestamp"
+        ],
+        "fit_scope": "train_only",
+        "mode": "fit_transform"
+      },
+      "eval_stage": "validation_protocol",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "A rolling average of meter_reading without entity grouping leaks target history across unrelated buildings and is outside the benchmark's official-only spine.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "nz0722/aligned-timestamp-lgbm-by-meter-type",
+        "yamsam/new-ucf-starter-kernel"
+      ],
+      "derivation_reasoning": "Synthetic rolling-feature distractor derived from observed time-series notebooks, but intentionally left ungrouped so it behaves like leakage.",
+      "challenge_type": "leakage"
+    },
+    {
+      "action_id": "CA-000022",
+      "action_type": "LOG_TRANSFORM",
+      "canonical_params": {
+        "columns": [
+          "square_feet"
+        ],
+        "fit_scope": "train_only",
+        "mode": "fit_transform"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Square-footage is frequently log-transformed as a skew-reduction branch after building metadata is joined.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "vikassingh1996/ashrae-great-energy-insightful-eda-fe-lgbm",
+        "gouherdanishiitkgp/ashrae-basic-eda-and-feature-engineering",
+        "hmendonca/starter-eda-and-feature-selection-ashrae3"
+      ],
+      "source_profile": "feature_engineering_branch",
+      "context_notes": "Observed but non-primary numeric-transform branch for the building area feature.",
+      "evidence_snippets": [
+        "train['square_feet'] = np.log1p(train['square_feet'])",
+        "test['square_feet'] = np.log1p(test['square_feet'])",
+        "train_df['square_feet'] =  np.log1p(train_df['square_feet'])"
+      ],
+      "rareness": "common",
+      "confidence": 0.82,
+      "must_follow_action_ids": [
+        "CA-000002"
+      ]
+    },
+    {
+      "action_id": "CA-000023",
+      "action_type": "CREATE_MISSING_INDICATOR",
+      "canonical_params": {
+        "columns": [
+          "building_id",
+          "site_id"
+        ],
+        "fit_scope": "none",
+        "mode": "transform"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Building and site identifiers are effectively dense keys here, so missingness flags on them add noise rather than useful signal.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "gouherdanishiitkgp/ashrae-basic-eda-and-feature-engineering",
+        "ryches/simple-lgbm-solution"
+      ],
+      "derivation_reasoning": "Synthetic missing-indicator distractor derived from notebooks that inspect missingness but redirected onto dense identifier columns.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000024",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "building_metadata",
+        "left_on": "building_id",
+        "right_on": "building_id",
+        "how": "inner",
+        "select_columns": [
+          "site_id",
+          "primary_use",
+          "square_feet",
+          "year_built",
+          "floor_count"
+        ],
+        "fit_scope": "none",
+        "mode": "transform"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "An inner building join risks dropping rows instead of preserving the full benchmark prediction scope.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000002"
+      ],
+      "derivation_reasoning": "Derived from the rewarded building metadata join by swapping the join type from left to inner.",
+      "challenge_type": "near_miss",
+      "conflicts_with_action_ids": [
+        "CA-000002"
+      ]
+    },
+    {
+      "action_id": "CA-000025",
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "building_id"
+        ],
+        "target_columns": [
+          "air_temperature"
+        ],
+        "agg_functions": [
+          "mean"
+        ],
+        "join_back": true,
+        "how": "left",
+        "fit_scope": "train_only",
+        "mode": "fit_transform"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Aggregating weather by building_id ignores the official weather key structure and smears time-varying site-level information into a blunt building statistic.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "gouherdanishiitkgp/ashrae-basic-eda-and-feature-engineering"
+      ],
+      "derivation_reasoning": "Synthetic grouped-weather distractor derived from observed weather aggregation ideas, but attached to the wrong grouping key.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000026",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "constant",
+        "columns": [
+          "floor_count",
+          "year_built",
+          "air_temperature",
+          "cloud_coverage",
+          "dew_temperature",
+          "precip_depth_1_hr",
+          "sea_level_pressure",
+          "wind_direction",
+          "wind_speed"
+        ],
+        "constant_value": -999,
+        "fit_scope": "train_only",
+        "mode": "fit_transform"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "A blanket -999 fill mixes several physical measurement scales with a sentinel that many models will overinterpret.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000020"
+      ],
+      "derivation_reasoning": "Derived from the rewarded scalar-imputation row by swapping the strategy to a harsh constant sentinel.",
+      "challenge_type": "near_miss",
+      "conflicts_with_action_ids": [
+        "CA-000020"
+      ]
+    },
+    {
+      "action_id": "CA-000027",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "air_temperature",
+          "cloud_coverage",
+          "dew_temperature"
+        ],
+        "fit_scope": "none",
+        "mode": "transform"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Dropping the main weather measurements defeats the purpose of the official weather join and removes the task's most salient auxiliary signals.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000010",
+        "CA-000020"
+      ],
+      "derivation_reasoning": "Synthetic destructive branch derived from the rewarded weather-join and missing-handling path by deleting the joined weather signal block.",
+      "challenge_type": "destructive",
+      "invalidates_action_ids": [
+        "CA-000010",
+        "CA-000020"
+      ]
+    },
+    {
+      "action_id": "CA-000028",
+      "action_type": "CYCLICAL_ENCODE",
+      "canonical_params": {
+        "columns": [
+          "month"
+        ],
+        "period": 24,
+        "method": "sin_cos",
+        "fit_scope": "none",
+        "mode": "transform"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Month is a 12-step cycle, so using period 24 mis-scales the seasonal wraparound.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "kaushal2896/ashrae-eda-fe-lightgbm-1-12"
+      ],
+      "derivation_reasoning": "Derived from observed cyclic-time feature ideas by assigning the wrong period to month.",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000029",
+      "action_type": "LAG_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "air_temperature"
+        ],
+        "lag_periods": [
+          24
+        ],
+        "order_by_columns": [
+          "timestamp"
+        ],
+        "group_by_columns": [
+          "building_id"
+        ],
+        "fit_scope": "train_only",
+        "mode": "fit_transform"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Air temperature is keyed by site and time, so building_id-based lags create arbitrary building-level copies of a site weather process.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "nz0722/aligned-timestamp-lgbm-by-meter-type"
+      ],
+      "derivation_reasoning": "Synthetic lag distractor derived from observed time-series feature notebooks but attached to the wrong entity grouping.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000030",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "most_frequent",
+        "columns": [
+          "floor_count",
+          "year_built",
+          "air_temperature",
+          "cloud_coverage",
+          "dew_temperature",
+          "precip_depth_1_hr",
+          "sea_level_pressure",
+          "wind_direction",
+          "wind_speed"
+        ],
+        "fit_scope": "train_only",
+        "mode": "fit_transform"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Most-frequent filling is a poor fit for mostly continuous weather variables and sparse building numerics.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000020"
+      ],
+      "derivation_reasoning": "Derived from the rewarded median-imputation row by replacing the strategy with a category-like fill better suited to discrete features.",
+      "challenge_type": "near_miss",
+      "conflicts_with_action_ids": [
+        "CA-000020"
+      ]
+    },
+    {
+      "action_id": "CA-000031",
+      "action_type": "SCALE_NUMERIC",
+      "canonical_params": {
+        "method": "minmax",
+        "columns": [
+          "hour",
+          "dayofweek",
+          "month",
+          "meter"
+        ],
+        "fit_scope": "train_only",
+        "mode": "fit_transform"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Min-max scaling low-cardinality calendar and code-like variables blurs their categorical semantics without solving a clear task-local problem.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "hmendonca/starter-eda-and-feature-selection-ashrae3",
+        "caesarlupum/ashrae-ligthgbm-simple-fe-and-mlops-mlfoundry"
+      ],
+      "derivation_reasoning": "Synthetic scaling distractor derived from notebooks that scale dense numeric blocks, but redirected onto low-cardinality calendar/code columns.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000032",
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "site_id != 0",
+        "fit_scope": "none",
+        "mode": "transform"
+      },
+      "eval_stage": "validation_protocol",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Dropping all site-0 rows turns a localized edge case into broad train/test scope distortion.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "gunesevitan/ashrae-lightgbm-1-048-no-leak",
+        "jesucristo/starter-great-energy-predictor"
+      ],
+      "derivation_reasoning": "Derived from notebooks that investigate site-0 anomalies, but escalated into an unjustified whole-site filter.",
+      "challenge_type": "destructive"
+    },
+    {
+      "action_id": "CA-000033",
+      "action_type": "ROLLING_WINDOW_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "air_temperature"
+        ],
+        "window_sizes": [
+          168
+        ],
+        "agg_functions": [
+          "mean"
+        ],
+        "order_by_columns": [
+          "timestamp"
+        ],
+        "group_by_columns": [
+          "building_id"
+        ],
+        "fit_scope": "train_only",
+        "mode": "fit_transform"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "A week-long rolling air-temperature average grouped by building_id ignores the official site-level weather structure and creates arbitrary per-building weather summaries.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "nz0722/aligned-timestamp-lgbm-by-meter-type"
+      ],
+      "derivation_reasoning": "Synthetic rolling-weather distractor derived from observed time-series feature engineering, but coupled to the wrong grouping key.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000034",
+      "action_type": "CREATE_MISSING_INDICATOR",
+      "canonical_params": {
+        "columns": [
+          "square_feet",
+          "meter"
+        ],
+        "fit_scope": "none",
+        "mode": "transform"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "These columns are effectively dense in the benchmark scope, so adding missingness flags to them mostly injects useless feature noise.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "gouherdanishiitkgp/ashrae-basic-eda-and-feature-engineering"
+      ],
+      "derivation_reasoning": "Synthetic missing-indicator distractor derived from notebook missingness analysis, but redirected onto dense columns.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000035",
+      "action_type": "DATE_PART_FEATURE",
+      "canonical_params": {
+        "date_columns": [
+          "timestamp"
+        ],
+        "parts": [
+          "week"
+        ],
+        "drop_original": false,
+        "fit_scope": "none",
+        "mode": "transform"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Week-of-year alone is a much weaker recovery of temporal structure than the standard hour/dayofweek/month branch used by the benchmark.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000014"
+      ],
+      "derivation_reasoning": "Derived from the rewarded date-part row by collapsing the temporal signal into a much coarser single component.",
+      "challenge_type": "near_miss"
+    }
+  ]
+}

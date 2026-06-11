@@ -1,0 +1,14 @@
+{
+  "testcase_id": "tc3_fault_injected",
+  "competition_slug": "rossmann-store-sales",
+  "task_ref": "../task.json",
+  "input": {
+    "scenario": "fault_injected",
+    "context_action_ids": [
+      "CA-000046",
+      "CA-000009",
+      "CA-000027",
+      "CA-000056"
+    ]
+  }
+}

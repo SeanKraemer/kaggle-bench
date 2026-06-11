@@ -1,0 +1,14 @@
+{
+  "testcase_id": "tc2_partial_good",
+  "competition_slug": "optiver-trading-at-the-close",
+  "task_ref": "../task.json",
+  "input": {
+    "scenario": "partial_good",
+    "context_action_ids": [
+      "CA-000001",
+      "CA-000020",
+      "CA-000031",
+      "CA-000061"
+    ]
+  }
+}

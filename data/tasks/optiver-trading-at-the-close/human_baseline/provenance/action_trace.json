@@ -1,0 +1,63 @@
+{
+  "competition_slug": "optiver-trading-at-the-close",
+  "testcase_id": "tc1_from_scratch",
+  "artifact_type": "eval_human_baseline_action_trace",
+  "related_output": "../tc1_human.json",
+  "traces": [
+    {
+      "predicted_action_id": "CA-000061",
+      "artifact": "../work.ipynb",
+      "section": "Auction Missingness And Basic Price Cleanup",
+      "mapping_rationale": "The notebook keeps the simplest far-price default rather than escalating immediately to a more involved grouped repair."
+    },
+    {
+      "predicted_action_id": "CA-000020",
+      "artifact": "../work.ipynb",
+      "section": "Auction Missingness And Basic Price Cleanup",
+      "mapping_rationale": "The same missingness pass treats the standard near-price default as part of the minimal Optiver cleanup layer."
+    },
+    {
+      "predicted_action_id": "CA-000001",
+      "artifact": "../work.ipynb",
+      "section": "Core Microstructure, Temporal Dependence, And Priors",
+      "mapping_rationale": "The notebook keeps the first-order imbalance block as the clearest reusable market-microstructure feature family."
+    },
+    {
+      "predicted_action_id": "CA-000043",
+      "artifact": "../work.ipynb",
+      "section": "Core Microstructure, Temporal Dependence, And Priors",
+      "mapping_rationale": "Pairwise price dislocations stay in the final selection because they are still first-order enough to feel manual and defensible."
+    },
+    {
+      "predicted_action_id": "CA-000065",
+      "artifact": "../manual_selection_worksheet.md",
+      "section": "Final Bank Mapping",
+      "mapping_rationale": "The shortlist kept one simpler imbalance-ratio feature, and bank alignment mapped that choice to the current representative row."
+    },
+    {
+      "predicted_action_id": "CA-000031",
+      "artifact": "../work.ipynb",
+      "section": "Core Microstructure, Temporal Dependence, And Priors",
+      "mapping_rationale": "I kept one lag family as the main temporal signal instead of selecting multiple overlapping temporal branches."
+    },
+    {
+      "predicted_action_id": "CA-000049",
+      "artifact": "../manual_selection_worksheet.md",
+      "section": "Final Bank Mapping",
+      "mapping_rationale": "The shortlist kept one stock-prior strategy, and bank alignment mapped that decision to the composite prior row."
+    },
+    {
+      "predicted_action_id": "CA-000051",
+      "artifact": "../work.ipynb",
+      "section": "Clock Features, Memory Discipline, And Manual Takeaways",
+      "mapping_rationale": "Compact clock features from the integer time columns remain part of the first-pass Optiver baseline."
+    }
+  ],
+  "omitted_steps": [
+    {
+      "artifact": "../manual_selection_worksheet.md",
+      "section": "Intentionally Omitted",
+      "note": "The manual pass stops before memory downcasting, grouped-median repair, higher-order interactions, and the broader rolling-window branch."
+    }
+  ]
+}

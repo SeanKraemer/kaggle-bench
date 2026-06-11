@@ -1,0 +1,15 @@
+{
+  "testcase_id": "tc4_mixed_history",
+  "competition_slug": "spaceship-titanic",
+  "task_ref": "../task.json",
+  "input": {
+    "scenario": "mixed",
+    "context_action_ids": [
+      "CA-000033",
+      "CA-000013",
+      "CA-000026",
+      "CA-000044",
+      "CA-000048"
+    ]
+  }
+}

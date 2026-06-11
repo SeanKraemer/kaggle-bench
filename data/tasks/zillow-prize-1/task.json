@@ -1,0 +1,339 @@
+{
+  "competition_slug": "zillow-prize-1",
+  "dataset": {
+    "provider": "kaggle",
+    "competition": "zillow-prize-1",
+    "train_files": [
+      "train_2016_v2.csv",
+      "train_2017.csv"
+    ],
+    "test_files": [],
+    "lookup_files": [
+      "properties_2016.csv",
+      "properties_2017.csv"
+    ],
+    "sample_submission_files": [
+      "sample_submission.csv"
+    ],
+    "data_dictionary_files": [
+      "zillow_data_dictionary.xlsx"
+    ],
+    "target_column": "logerror",
+    "primary_key": "parcelid"
+  },
+  "goal": "Suggest preprocessing and feature-engineering actions for predicting logerror on Zillow property transaction data under the ZillowMAE evaluation metric.",
+  "task_characteristics": {
+    "ml_domain": "real_estate_tabular",
+    "problem_type": "regression",
+    "table_structure": "multi_table_lookup",
+    "dataset_size_bucket": "xlarge",
+    "dataset_size_raw": 2985217,
+    "feature_dimensionality_bucket": "medium",
+    "feature_dimensionality_raw": 66,
+    "preprocessing_complexity_bucket": "medium",
+    "preprocessing_complexity_raw": 16,
+    "analysis_notes": "Large real-estate regression task with multiple lookup tables, heavy missingness, time-based transaction context, roughly 167,888 training transaction rows across 2016 and 2017, and about 2.99M property rows per yearly lookup table. The benchmark-relevant CSV union is 66 case-insensitive columns, so the task is moderately wide rather than extremely wide. After golden-action curation, the benchmark keeps 16 preprocessing actions. There is no explicit test feature table beyond the sample submission prediction index."
+  },
+  "overview": {
+    "title": "Zillow Prize: Zillow's Home Value Prediction (Zestimate)",
+    "summary": "Can you improve the algorithm that changed the world of real estate?",
+    "raw_text": "Description\n\nPlanet Aerial Imagery\n\nZillow’s Zestimate home valuation has shaken up the U.S. real estate industry since first released 11 years ago.\n\nA home is often the largest and most expensive purchase a person makes in his or her lifetime. Ensuring homeowners have a trusted way to monitor this asset is incredibly important. The Zestimate was created to give consumers as much information as possible about homes and the housing market, marking the first time consumers had access to this type of home value information at no cost.\n\n“Zestimates” are estimated home values based on 7.5 million statistical and machine learning models that analyze hundreds of data points on each property. And, by continually improving the median margin of error (from 14% at the onset to 5% today), Zillow has since become established as one of the largest, most trusted marketplaces for real estate information in the U.S. and a leading example of impactful machine learning.\n\nZillow Prize, a competition with a one million dollar grand prize, is challenging the data science community to help push the accuracy of the Zestimate even further. Winning algorithms stand to impact the home values of 110M homes across the U.S.\n\nIn this million-dollar competition, participants will develop an algorithm that makes predictions about the future sale prices of homes. The contest is structured into two rounds, the qualifying round which opens May 24, 2017 and the private round for the 100 top qualifying teams that opens on Feb 1st, 2018. In the qualifying round, you’ll be building a model to improve the Zestimate residual error. In the final round, you’ll build a home valuation algorithm from the ground up, using external data sources to help engineer new features that give your model an edge over the competition.\n\nBecause real estate transaction data is public information, there will be a three-month sales tracking period after each competition round closes where your predictions will be evaluated against the actual sale prices of the homes. The final leaderboard won’t be revealed until the close of the sales tracking period.\n\nEvaluation\n\nSubmissions are evaluated on Mean Absolute Error between the predicted log error and the actual log error. The log error is defined as $$logerror=log(Zestimate)-log(SalePrice)$$ and it is recorded in the transactions training data. If a transaction didn't happen for a property during that period of time, that row is ignored and not counted in the calculation of MAE.\n\nSubmission File\n\nFor each property (unique parcelid), you must predict a log error for each time point. You should be predicting 6 timepoints: October 2016 (201610), November 2016 (201611), December 2016 (201612), October 2017 (201710), November 2017 (201711), and December 2017 (201712). The file should contain a header and have the following format:\n\nParcelId,201610,201611,201612,201710,201711,201712\n10754147,0.1234,1.2234,-1.3012,1.4012,0.8642-3.1412\n10759547,0,0,0,0,0,0\netc.\n\nNote that the actual log errors are accurate the 4th decimal places, so you can adjust your decimal formats to limit the size of your submission file.\n\nPrizes\n\nThe conditions below are non-exclusive. Review the rules for full list of conditions to receive a prize.\n\nFirst Round Prizes: $50,000 U.S. Dollars (\"USD\") total\n\n- First Place Prize - $25,000 USD\n\n- Second Place Prize - $15,000 USD\n\n- Third Place Prize - $10,000 USD\n\nAs a condition to receipt of a prize, each First Round prize winner must agree to grant Sponsor a non-exclusive license to their winning Submission.\n\nSecond Round Prizes: $1,150,000 USD Total\n\n- First Place Prize - $1,000,000 USD\n\n- Second Place Prize - $100,000 USD\n\n- Third Place Prize - $50,000 USD\n\nAs a condition of receipt of a prize, each Second Round prize winner must (1) beat the Zillow benchmark model (as described below) and (2) deliver the final model’s software code as used to generate their winning Submission and associated documentation (consistent with the winning model documentation template available on the Kaggle wiki at https://www.kaggle.com/wiki/WinningModelDocumentationTemplate) to the Sponsor. The delivered software code must be capable of generating the winning Submission and contain a description of resources required to build and/or run the executable code successfully. For clarity, if no Participants beat the Zillow benchmark model, Sponsor is not required to award any prizes in the Second Round.\n\nWINNING THE SECOND ROUND AND $1 MILLION DOLLARS\n\nTo be one of the three winners in the second round, you must achieve both of the following:\n\n- Beat a Zillow benchmark model trained on the same competition data when making predictions on sales during the Second Round Sales Tracking Period; and\n\n- Be one of the top three teams on the private leaderboard after the final private leaderboard update\n\nTimeline\n\nThis is a two-round competition consisting of a First Round (Qualifying round) and a Second Round. In order to be eligible to participate in the Second Round, a Team/Participant’s Submission must finish in the top 100 on the public leaderboard, and follow the instructions in the Competition Rules.\n\nThe following are the important time points for the First Round:\n\n- First Round Start Date: 5/24/2017 12:01 AM United States Pacific Time (\"PT\")\n\n- Rules Acceptance/Team Merger Deadline: 10/2/2017 11:59 PM PT\n\n- Release of 2017 Training data: 10/2/2017\n\n- Submission Deadline: 10/16/2017 11:59 PM PT After this date, we will not be taking any more submissions. You can sit back and watch the leaderboard unfold. Remember to select your two best submissions to be rescored.\n\n- Sales Tracking Start Date: 10/17/2017\n\n- Leaderboard update 1 (October sales): 11/17/2017\n\n- Sales Tracking End Date: 12/15/2017\n\n- Leaderboard update 2 (November sales): 12/18/2017\n\n- Leaderboard update 3 (December sales): 1/10/2018\n\n- First Round Winners & Second Round Qualifiers Announcement: 1/10/2018\n\n- First Round Winners model upload & documentation submission deadline: 1/17/2018\n\nThe following are the important time points for the Second Round:\n\n- Second Round Start Date: 2/1/2018 08:00 AM PT\n\n- Second Round Team Merger Deadline: 7/15/2018\n\n- Second Round Submission Deadline: 7/31/2018 11:59 PM PT After this date, we will not be taking any more submissions. Remember to select your two best submissions to be rescored.\n\n- Second Round Model Upload Deadline: 8/15/2018 11:59 PM PT Remember to select the model(s) that reproduce your two best submissions to be rescored.\n\n- Second Round Sales Tracking Start Date: 9/1/2018\n\n- Second Round Sales Tracking End Date: 10/31/2018 11:59 PM PT\n\n- Second Round Winners Announcement: on or around 1/15/2019\n\nSponsor reserves the right to update the competition timeline if they deem it necessary.\n\nCompetition Overview\n\nRules and Guidelines\n\nThe Zillow Prize contest competition, sponsored by Zillow, Inc. (“Sponsor”) is open to all individuals over the age of 18 at the time of entry. The competition will contain two rounds, one public and one private.. Each round will have separate datasets, submission deadlines and instructions on how to participate. The instructions on how to participate in each round are listed below. Capitalized terms used but not defined herein have the meanings assigned to them in the Zillow Prize competition Official Rules.\n\nOVERALL COMPETITION OVERVIEW:\n\nFirst Round: May 24, 2017 – January 17, 2018 Pacific Time (“PT”). Total Prizes: $50,000\n\nSecond Round: February 1, 2018 – January 15, 2019 PT. Total Prizes: $1,150,000\n\nFirst Round (Public) - HOW TO PARTICIPATE:\n\n- Register as an individual Participant or Team Participant with Kaggle, providing Participant’s email address, phone number, team profile and any other requested information.\n\n- Download the public city/county assessor data file posted by Sponsor and use the sale price for each property as a training target.\n\n- Follow the submission file instructions on the “Evaluation” tab to submit Submissions.\n\n- Download the updated data file posted by Sponsor on October 2, 2017 to create the final Submission.\n\n- First Round Submission Deadline: October 16, 2017 PT.\n\n- First Round Sales Tracking Period: October 17, 2017 – December 15, 2017.\n\n- First Round Winners & Second Round Qualifiers Announced: on or around January 17, 2018.\n\nSecond Round (Private) - HOW TO PARTICIPATE:\n\nOnly the 100 Teams/Participants with the highest scoring Submissions from the First Round may be eligible to compete in the Second Round.\n\n- Each individual Participant or Team Participant must:\n\n- sign a “Participant Agreement”, which includes a non-disclosure requirement, assignment to Sponsor of all intellectual property created for the Competition, and an Affidavit of Eligibility and Liability/Publicity Release\n\n- provide a valid government-issued ID from their country of citizenship\n\n- provide a current physical mailing address\n\n- Upon completion of the above listed requirements, download the proprietary data file provided by Sponsor and use the new data file to improve the Participant’s predictive model from the First Round.\n\n- Follow the submission file instructions on the “Evaluation” tab to submit Submission(s). For the Second Round, each Submission will include the predictive entry and the underlying code used to create the entry.\n\n- Second Round Submission Deadline: June 29, 2018.\n\n- Second Round Sales Tracking Period: August 1, 2018 – October 31, 2018.\n\n- Second Round Winners Announced: on or about January 15, 2019.\n\nEach Participant in the Second Round – not just the Second Round winners - must agree to assign to Sponsor all right, title, and interest in all Submissions, including, without limitation, any source codes, algorithms, information, and data included in the Submission(s) or used in the development of the Submission(s), and all associated copyrights, trademarks, patents, trade secrets and other intellectual property rights in the Submission(s).\n\nDuring the Second Round, all competition forums, code (including portions thereof), and any other information related to the creation of Submissions (“Kernels”) will be confidential. Participants are prohibited from sharing Kernels with any individual or entity other than with members of a Participant’s Team or with other Second Round Participants within the Kaggle private forum.\n\nCONTEST CRITERIA:\n\n- There will be three cash prize winners in the First Round: (a) first place prize of $25,000 U.S. Dollars (“USD”); (b) second place prize of $15,000 USD; and (c) third place prize of $10,000 USD. The 100 teams (including the three cash prize winners) with the highest scoring Submissions in the First Round will be invited to advance to and participate in the Second Round.\n\n- There will be up to three cash prize winners in the Second Round: (a) first place prize of $1,000,000 U.S. Dollars (“USD”); (b) second place prize of $100,000 USD; and (c) third place prize of $50,000 USD. However, to be eligible to win a prize in the Second Round, the Participant must beat the “Zillow benchmark model”, which Sponsor will calculate using the formula set forth on the “Evaluation Tab” and based on the actual sales price during the Sales Tracking Period for all homes provided in the Second Round data set. For clarity, if no Participants beat the Zillow benchmark, Sponsor is not required to award any prizes in the Second Round. Additional details on the Zillow benchmark model and how to be a winner in the Second Round is set forth on the “Prize” tab.\n\nELIGIBILITY NOTE:\n\nMembers of the following entities are not eligible to participate in either round of the Zillow Prize Contest: (1) any commercial entity that engages in the sale, valuation or analytics of residential or commercial real estate; (2) any entity that offers services in the leasing and property management space (including vacation rentals); and (3) any entity that monetizes residential real estate related data. Officers, directors, employees and advisory board members (and their immediate families and members of the same household) of Sponsor, Kaggle and each of Sponsor’s and Kaggle’s respective affiliates, subsidiaries, agents, judges and advertising and promotion agencies. In addition, you are not eligible to participate in the Zillow Prize Contest if you are (a) a resident of a country designated as an embargoed country by the United States Treasury’s Office of Foreign Assets Control (see https://www.treasury.gov/resource-center/sanctions/Programs/Pages/Programs.aspx for additional information) or (b) are an individual that appears on the United States Treasury’s Office of Foreign Assets Control Specially Designated Nationals and Blocked Persons List (see http://www.treasury.gov/resource-center/sanctions/SDN-List/Pages/default.aspx for additional information).",
+    "host": "Zillow",
+    "category": "Featured",
+    "reward": "1,200,000 Usd",
+    "team_count": 3770,
+    "enabled_date": "2017-05-24T12:00:13.743Z",
+    "new_entrant_deadline": "2017-10-03T06:59:00.000Z",
+    "deadline": "2018-01-10T15:59:00.000Z",
+    "url": "https://www.kaggle.com/competitions/zillow-prize-1"
+  },
+  "dataset_description": {
+    "summary": "The downloadable competition data consists of two transaction training tables (`train_2016_v2.csv` with 90,275 rows and `train_2017.csv` with 77,613 rows) keyed by `parcelid` with target `logerror`, two large property lookup tables (`properties_2016.csv`, `properties_2017.csv`) with 2,985,217 rows and 58 columns each, a `sample_submission.csv` file that defines the prediction index and six target months, and one Excel data dictionary. Across the benchmark-relevant CSVs, the case-insensitive column union is 66 columns. Kaggle's Data tab text refers to `train_2016.csv`, but the actual downloadable file is `train_2016_v2.csv`.",
+    "raw_text": "Data Description\n\nIn this competition, Zillow is asking you to predict the log-error between their Zestimate and the actual sale price, given all the features of a home. The log error is defined as\n\n$$logerror=log(Zestimate)-log(SalePrice)$$\n\nand it is recorded in the transactions file train.csv. In this competition, you are going to predict the logerror for the months in Fall 2017. Since all the real estate transactions in the U.S. are publicly available, we will close the competition (no longer accepting submissions) before the evaluation period begins.\n\nTrain/Test split\n\n- You are provided with a full list of real estate properties in three counties (Los Angeles, Orange and Ventura, California) data in 2016.\n\n- The train data has all the transactions before October 15, 2016, plus some of the transactions after October 15, 2016.\n\n- The test data in the public leaderboard has the rest of the transactions between October 15 and December 31, 2016.\n\n- The rest of the test data, which is used for calculating the private leaderboard, is all the properties in October 15, 2017, to December 15, 2017. This period is called the \"sales tracking period\", during which we will not be taking any submissions.\n\n- You are asked to predict 6 time points for all properties: October 2016 (201610), November 2016 (201611), December 2016 (201612), October 2017 (201710), November 2017 (201711), and December 2017 (201712).\n\n- Not all the properties are sold in each time period. If a property was not sold in a certain time period, that particular row will be ignored when calculating your score.\n\n- If a property is sold multiple times within 31 days, we take the first reasonable value as the ground truth. By \"reasonable\", we mean if the data seems wrong, we will take the transaction that has a value that makes more sense.\n\nFile descriptions\n\n- properties_2016.csv - all the properties with their home features for 2016. Note: Some 2017 new properties don't have any data yet except for their parcelid's. Those data points should be populated when properties_2017.csv is available.\n\n- properties_2017.csv - all the properties with their home features for 2017 (released on 10/2/2017)\n\n- train_2016.csv - the training set with transactions from 1/1/2016 to 12/31/2016\n\n- train_2017.csv - the training set with transactions from 1/1/2017 to 9/15/2017 (released on 10/2/2017)\n\n- sample_submission.csv - a sample submission file in the correct format\n\nData fields\n\n- Please refer to zillow_data_dictionary.xlsx",
+    "file_summary": {
+      "total_file_count": 6,
+      "file_types": [
+        {
+          "extension": ".csv",
+          "file_count": 5,
+          "total_size_bytes": 1366885832
+        },
+        {
+          "extension": ".xlsx",
+          "file_count": 1,
+          "total_size_bytes": 19229
+        }
+      ]
+    },
+    "column_summary": {
+      "total_column_count": 66,
+      "column_types": [
+        {
+          "column_type": "Integer",
+          "column_count": 30
+        },
+        {
+          "column_type": "Decimal",
+          "column_count": 12
+        },
+        {
+          "column_type": "Id",
+          "column_count": 18
+        },
+        {
+          "column_type": "String",
+          "column_count": 2
+        },
+        {
+          "column_type": "Boolean",
+          "column_count": 3
+        },
+        {
+          "column_type": "DateTime",
+          "column_count": 1
+        }
+      ]
+    },
+    "feature_list": {
+      "source_file": "zillow_data_dictionary.xlsx",
+      "source_sheet": "Data Dictionary",
+      "features": [
+        {
+          "name": "'airconditioningtypeid'",
+          "description": " Type of cooling system present in the home (if any)"
+        },
+        {
+          "name": "'architecturalstyletypeid'",
+          "description": " Architectural style of the home (i.e. ranch, colonial, split-level, etc…)"
+        },
+        {
+          "name": "'basementsqft'",
+          "description": " Finished living area below or partially below ground level"
+        },
+        {
+          "name": "'bathroomcnt'",
+          "description": " Number of bathrooms in home including fractional bathrooms"
+        },
+        {
+          "name": "'bedroomcnt'",
+          "description": " Number of bedrooms in home "
+        },
+        {
+          "name": "'buildingqualitytypeid'",
+          "description": " Overall assessment of condition of the building from best (lowest) to worst (highest)"
+        },
+        {
+          "name": "'buildingclasstypeid'",
+          "description": "The building framing type (steel frame, wood frame, concrete/brick) "
+        },
+        {
+          "name": "'calculatedbathnbr'",
+          "description": " Number of bathrooms in home including fractional bathroom"
+        },
+        {
+          "name": "'decktypeid'",
+          "description": "Type of deck (if any) present on parcel"
+        },
+        {
+          "name": "'threequarterbathnbr'",
+          "description": " Number of 3/4 bathrooms in house (shower + sink + toilet)"
+        },
+        {
+          "name": "'finishedfloor1squarefeet'",
+          "description": " Size of the finished living area on the first (entry) floor of the home"
+        },
+        {
+          "name": "'calculatedfinishedsquarefeet'",
+          "description": " Calculated total finished living area of the home "
+        },
+        {
+          "name": "'finishedsquarefeet6'",
+          "description": "Base unfinished and finished area"
+        },
+        {
+          "name": "'finishedsquarefeet12'",
+          "description": "Finished living area"
+        },
+        {
+          "name": "'finishedsquarefeet13'",
+          "description": "Perimeter  living area"
+        },
+        {
+          "name": "'finishedsquarefeet15'",
+          "description": "Total area"
+        },
+        {
+          "name": "'finishedsquarefeet50'",
+          "description": " Size of the finished living area on the first (entry) floor of the home"
+        },
+        {
+          "name": "'fips'",
+          "description": " Federal Information Processing Standard code -  see https://en.wikipedia.org/wiki/FIPS_county_code for more details"
+        },
+        {
+          "name": "'fireplacecnt'",
+          "description": " Number of fireplaces in a home (if any)"
+        },
+        {
+          "name": "'fireplaceflag'",
+          "description": " Is a fireplace present in this home "
+        },
+        {
+          "name": "'fullbathcnt'",
+          "description": " Number of full bathrooms (sink, shower + bathtub, and toilet) present in home"
+        },
+        {
+          "name": "'garagecarcnt'",
+          "description": " Total number of garages on the lot including an attached garage"
+        },
+        {
+          "name": "'garagetotalsqft'",
+          "description": " Total number of square feet of all garages on lot including an attached garage"
+        },
+        {
+          "name": "'hashottuborspa'",
+          "description": " Does the home have a hot tub or spa"
+        },
+        {
+          "name": "'heatingorsystemtypeid'",
+          "description": " Type of home heating system"
+        },
+        {
+          "name": "'latitude'",
+          "description": " Latitude of the middle of the parcel multiplied by 10e6"
+        },
+        {
+          "name": "'longitude'",
+          "description": " Longitude of the middle of the parcel multiplied by 10e6"
+        },
+        {
+          "name": "'lotsizesquarefeet'",
+          "description": " Area of the lot in square feet"
+        },
+        {
+          "name": "'numberofstories'",
+          "description": " Number of stories or levels the home has"
+        },
+        {
+          "name": "'parcelid'",
+          "description": " Unique identifier for parcels (lots) "
+        },
+        {
+          "name": "'poolcnt'",
+          "description": " Number of pools on the lot (if any)"
+        },
+        {
+          "name": "'poolsizesum'",
+          "description": " Total square footage of all pools on property"
+        },
+        {
+          "name": "'pooltypeid10'",
+          "description": " Spa or Hot Tub"
+        },
+        {
+          "name": "'pooltypeid2'",
+          "description": " Pool with Spa/Hot Tub"
+        },
+        {
+          "name": "'pooltypeid7'",
+          "description": " Pool without hot tub"
+        },
+        {
+          "name": "'propertycountylandusecode'",
+          "description": " County land use code i.e. it's zoning at the county level"
+        },
+        {
+          "name": "'propertylandusetypeid'",
+          "description": " Type of land use the property is zoned for"
+        },
+        {
+          "name": "'propertyzoningdesc'",
+          "description": " Description of the allowed land uses (zoning) for that property"
+        },
+        {
+          "name": "'rawcensustractandblock'",
+          "description": " Census tract and block ID combined - also contains blockgroup assignment by extension"
+        },
+        {
+          "name": "'censustractandblock'",
+          "description": " Census tract and block ID combined - also contains blockgroup assignment by extension"
+        },
+        {
+          "name": "'regionidcounty'",
+          "description": "County in which the property is located"
+        },
+        {
+          "name": "'regionidcity'",
+          "description": " City in which the property is located (if any)"
+        },
+        {
+          "name": "'regionidzip'",
+          "description": " Zip code in which the property is located"
+        },
+        {
+          "name": "'regionidneighborhood'",
+          "description": "Neighborhood in which the property is located"
+        },
+        {
+          "name": "'roomcnt'",
+          "description": " Total number of rooms in the principal residence"
+        },
+        {
+          "name": "'storytypeid'",
+          "description": " Type of floors in a multi-story house (i.e. basement and main level, split-level, attic, etc.).  See tab for details."
+        },
+        {
+          "name": "'typeconstructiontypeid'",
+          "description": " What type of construction material was used to construct the home"
+        },
+        {
+          "name": "'unitcnt'",
+          "description": " Number of units the structure is built into (i.e. 2 = duplex, 3 = triplex, etc...)"
+        },
+        {
+          "name": "'yardbuildingsqft17'",
+          "description": "Patio in  yard"
+        },
+        {
+          "name": "'yardbuildingsqft26'",
+          "description": "Storage shed/building in yard"
+        },
+        {
+          "name": "'yearbuilt'",
+          "description": " The Year the principal residence was built "
+        },
+        {
+          "name": "'taxvaluedollarcnt'",
+          "description": "The total tax assessed value of the parcel"
+        },
+        {
+          "name": "'structuretaxvaluedollarcnt'",
+          "description": "The assessed value of the built structure on the parcel"
+        },
+        {
+          "name": "'landtaxvaluedollarcnt'",
+          "description": "The assessed value of the land area of the parcel"
+        },
+        {
+          "name": "'taxamount'",
+          "description": "The total property tax assessed for that assessment year"
+        },
+        {
+          "name": "'assessmentyear'",
+          "description": "The year of the property tax assessment "
+        },
+        {
+          "name": "'taxdelinquencyflag'",
+          "description": "Property taxes for this parcel are past due as of 2015"
+        },
+        {
+          "name": "'taxdelinquencyyear'",
+          "description": "Year for which the unpaid propert taxes were due "
+        }
+      ]
+    }
+  },
+  "metric": {
+    "name": "ZillowMAE"
+  }
+}

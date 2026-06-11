@@ -1,0 +1,1300 @@
+{
+  "competition_slug": "icr-identify-age-related-conditions",
+  "generated_at": "2026-04-14T03:10:00-05:00",
+  "actions": [
+    {
+      "action_id": "CA-000001",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "BQ",
+          "EL"
+        ],
+        "reason": "missingness_pruning",
+        "mode": "transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Dropping both major sparse biomarkers removes signal that the notebook corpus usually preserves with scalar imputation.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Near-miss negative derived from the observed missing-value-handling branch: notebooks usually keep BQ and EL and repair them rather than deleting both columns outright.",
+      "derived_from_action_ids": [
+        "CA-000004",
+        "CA-000016"
+      ]
+    },
+    {
+      "action_id": "CA-000002",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "Id"
+        ],
+        "reason": "identifier",
+        "mode": "transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Selected notebooks almost always remove the submission key before fitting models.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "jasonheesanglee/updated-beginner-eda-on-greeks",
+        "aditya9790/icr-eda-lightgbm-optuna",
+        "masatakaitakura/for-beginner-icr-eda-xgb-submission-baseline",
+        "prasad22/icr-competition-submission",
+        "emphymachine/private-gold-solution-svm-rf-xgb-kfold-ensemble",
+        "chaitanyagiri/icr-2023-single-lgbm-0-12-cv-0-16-lb",
+        "sinanozdemir/icr-identifying-age-related-conditions-xgboost"
+      ],
+      "source_profile": "high_vote_competitive",
+      "context_notes": "Id is a prediction key, not a biomarker feature. Keeping it as a numeric model input is a common avoidable mistake on tiny tabular competitions.",
+      "evidence_snippets": [
+        "temp_ = train_no_class.drop(columns='Id')",
+        "X = train.drop(columns=[\"Id\"], axis=1)",
+        "X_test_pre = df_test.drop(['Id'], axis=1)",
+        "train = train.drop(columns=[\"Id\"])",
+        "X_train, y_train = train_df.drop(['Id', 'Class', 'fold'], axis=1), train_df['Class']",
+        "df.drop(['Id'], axis=1, inplace=True)"
+      ],
+      "rareness": "common",
+      "confidence": 0.97
+    },
+    {
+      "action_id": "CA-000003",
+      "action_type": "MAP_CATEGORIES",
+      "canonical_params": {
+        "columns": [
+          "EJ"
+        ],
+        "mapping": {
+          "A": 0,
+          "B": 0
+        },
+        "mode": "transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Collapsing both EJ categories to the same numeric code destroys the only primary-table categorical signal instead of encoding it.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Derived as a harmful collapse of the observed A/B to 0/1 mapping branch.",
+      "derived_from_action_ids": [
+        "CA-000006"
+      ]
+    },
+    {
+      "action_id": "CA-000004",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "median",
+        "columns": [
+          "BQ",
+          "EL",
+          "CC",
+          "CB",
+          "FS",
+          "DU",
+          "FC",
+          "FL",
+          "GL"
+        ],
+        "mode": "fit_transform",
+        "fit_scope": "train_only"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Median-fill is a common scalar repair branch for the benchmark's sparse numeric biomarkers and is easy to apply consistently to train/test.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "aditya9790/icr-eda-lightgbm-optuna",
+        "kacperrabczewski/age-related-conditions",
+        "moritzm00/icr-xgb-lgbm-pipeline-hyperparameter-tuning",
+        "chaitanyagiri/icr-2023-single-lgbm-0-12-cv-0-16-lb",
+        "nemanjagojkovic/using-advanced-feature-engineering-with-featurewiz",
+        "scipygaurav/icr-improved-tabpfn-xgb-lb-0-10"
+      ],
+      "source_profile": "high_vote_competitive",
+      "context_notes": "This is the most canonicalizable repair branch for BQ/EL-heavy missingness under the current schema. It is intentionally favored over notebook-only KNN branches because the ontology cannot represent KNN directly.",
+      "evidence_snippets": [
+        "impute = SimpleImputer(strategy=\"median\")",
+        "SimpleImputer(strategy='median')",
+        "(\"impute\", SimpleImputer(strategy=\"median\"))",
+        "train.fillna(train.median(), inplace=True)",
+        "SimpleImputer(strategy='median').fit(data_na)",
+        "SimpleImputer(missing_values=np.nan, strategy='median')"
+      ],
+      "rareness": "common",
+      "confidence": 0.88,
+      "equivalence_group": "icr_numeric_missing_strategy"
+    },
+    {
+      "action_id": "CA-000005",
+      "action_type": "DROP_ROWS_WITH_MISSING",
+      "canonical_params": {
+        "subset_columns": [
+          "BQ",
+          "EL"
+        ],
+        "how": "any",
+        "mode": "transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Dropping every row with a BQ or EL gap discards a large fraction of an already tiny training set instead of repairing the sparse columns.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Derived as a destructive alternative to the notebook-backed scalar imputation branch for the two most-missing biomarkers.",
+      "derived_from_action_ids": [
+        "CA-000004",
+        "CA-000016"
+      ]
+    },
+    {
+      "action_id": "CA-000006",
+      "action_type": "MAP_CATEGORIES",
+      "canonical_params": {
+        "columns": [
+          "EJ"
+        ],
+        "mapping": {
+          "A": 0,
+          "B": 1
+        },
+        "mode": "transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "The only non-numeric main-table feature is routinely mapped from A/B to a binary numeric code before modeling.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "jasonheesanglee/updated-beginner-eda-on-greeks",
+        "aditya9790/icr-eda-lightgbm-optuna",
+        "hongyuguo/icr-auxiliary-learning-upsample-deeplearning",
+        "ulrich07/icr-a-similarity-based-approach",
+        "atsushiiwasaki/icr-lgbm-baseline-with-optuna-cv-0-19-lb-0-23",
+        "titericz/xgboost-late-sub",
+        "tetsutani/icr-iarc-eda-ensemble-and-stacking-baseline",
+        "roger92/singlelgb-lb0-16-with-analysis"
+      ],
+      "source_profile": "high_vote_competitive",
+      "context_notes": "This is the most stable categorical preprocessing step across the selected notebook corpus. Some kernels use eq('B') instead of map, but the resulting binary semantics are the same.",
+      "evidence_snippets": [
+        "train.EJ = train.EJ.map(EJ_mapping)",
+        "train['EJ'] = train.EJ.map({'A':0,'B':1}).astype(float)",
+        "df_train['EJ'] = df_train.EJ.map({'A':0,'B':1}).astype(float)",
+        "df['EJ'] = df['EJ'].map({'A':0,'B':1})",
+        "self.df[\"EJ\"] = self.df.EJ.map({\"A\":0, \"B\":1}).astype('int')",
+        "train.EJ = train.EJ.eq('B').astype('int')",
+        "df_train['EJ'] = df_train['EJ'].replace({'A': 0, 'B': 1})"
+      ],
+      "rareness": "common",
+      "confidence": 0.95
+    },
+    {
+      "action_id": "CA-000007",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "constant",
+        "columns": [
+          "BQ",
+          "EL",
+          "CC",
+          "CB",
+          "FS",
+          "DU",
+          "FC",
+          "FL",
+          "GL"
+        ],
+        "fill_value": -9999,
+        "mode": "fit_transform",
+        "fit_scope": "train_only"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "A giant sentinel value overstates missingness and warps feature scale on a tiny biomedical table.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Derived as a harsher constant-fill alternative to the notebook-backed scalar imputation branches; the selected corpus contains repair-heavy handling for these sparse columns rather than extreme sentinels.",
+      "derived_from_action_ids": [
+        "CA-000004",
+        "CA-000016"
+      ]
+    },
+    {
+      "action_id": "CA-000008",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "greeks",
+        "left_on": "Id",
+        "right_on": "Id",
+        "how": "left",
+        "select_columns": [
+          "Alpha",
+          "Beta",
+          "Gamma",
+          "Delta",
+          "Epsilon"
+        ],
+        "mode": "transform",
+        "fit_scope": "train_only"
+      },
+      "eval_stage": "validation_protocol",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "A substantial validation-side branch joins the official greeks metadata onto training rows for fold construction or train-side diagnostics.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "jasonheesanglee/updated-beginner-eda-on-greeks",
+        "nazimcherpanov/icr-xgboot-and-lgb-voting-stacking",
+        "prasad22/icr-competition-submission",
+        "atsushiiwasaki/icr-lgbm-baseline-with-optuna-cv-0-19-lb-0-23",
+        "tatudoug/logistic-regression-baseline",
+        "titericz/xgboost-late-sub",
+        "seyered/eda-icr-models"
+      ],
+      "source_profile": "high_vote_competitive",
+      "context_notes": "This branch is intentionally non-primary because greeks.csv is train-side metadata and not part of the minimal submission preprocessing spine.",
+      "evidence_snippets": [
+        "train_temp = pd.merge(train_no_class, greeks_ready, on='Id', how='right')",
+        "df = pd.merge(train, greeks, how='left', on='Id')",
+        "train = pd.merge(train,greeks,on=\"Id\",how=\"left\")",
+        "train_df = train_df.merge(greeks_df, on='Id')",
+        "train = pd.merge( greeks[['k','Id']],train,on='Id')",
+        "train = train.merge(greeks, on='Id')",
+        "trainDf = pd.merge(trainDf, greeksDf, how = 'left', on = 'Id')"
+      ],
+      "rareness": "common",
+      "confidence": 0.82
+    },
+    {
+      "action_id": "CA-000009",
+      "action_type": "SAMPLE_ROWS",
+      "canonical_params": {
+        "method": "random",
+        "frac": 0.3,
+        "replace": false,
+        "mode": "transform",
+        "fit_scope": "train_only",
+        "random_state": 42
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Randomly keeping only 30% of a 617-row training set throws away too much supervised signal for this benchmark.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Derived from the notebook corpus' interest in resampling, but made intentionally harmful by using aggressive unstratified random dropping instead of a justified label-aware procedure.",
+      "base_refs": [
+        "masatakaitakura/for-beginner-icr-eda-xgb-submission-baseline",
+        "tetsutani/icr-iarc-eda-ensemble-and-stacking-baseline",
+        "ziadelassal/icr-eda-boosting-featureeng",
+        "aikhmelnytskyy/public-krni-pdi-with-two-additional-models"
+      ]
+    },
+    {
+      "action_id": "CA-000010",
+      "action_type": "PARSE_DATETIME",
+      "canonical_params": {
+        "columns": [
+          "Epsilon"
+        ],
+        "format": "%m/%d/%Y",
+        "errors": "coerce",
+        "mode": "transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "validation_protocol",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "When the greeks branch is used, notebooks commonly parse Epsilon with coercion because Unknown values are present.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "atsushiiwasaki/icr-lgbm-baseline-with-optuna-cv-0-19-lb-0-23",
+        "kacperrabczewski/age-related-conditions",
+        "titericz/xgboost-late-sub",
+        "roger92/singlelgb-lb0-16-with-analysis",
+        "ziadelassal/icr-eda-boosting-featureeng",
+        "scipygaurav/icr-improved-tabpfn-xgb-lb-0-10",
+        "hongyuguo/icr-auxiliary-learning-upsample-deeplearning"
+      ],
+      "source_profile": "high_vote_competitive",
+      "context_notes": "Coercive parsing is the stable branch because Epsilon contains Unknown in the official file. The parsed value is mainly used for validation-side time features.",
+      "evidence_snippets": [
+        "datetime.datetime.strptime(x,'%m/%d/%Y').toordinal()",
+        "pd.to_datetime(greeks['Epsilon'], errors='coerce', format='%m/%d/%Y')",
+        "pd.to_datetime(greeks['Epsilon'].replace('Unknown', None), format='%m/%d/%Y')",
+        "datetime.strptime(x,'%m/%d/%Y').toordinal()",
+        "times[dfGr.Epsilon == 'Unknown'] = np.nan"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.76,
+      "must_follow_action_ids": [
+        "CA-000008"
+      ]
+    },
+    {
+      "action_id": "CA-000011",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "EJ"
+        ],
+        "reason": "drop_categorical_feature",
+        "mode": "transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Dropping EJ throws away the only main-table categorical feature instead of encoding it.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Derived as a destructive opposite of the observed EJ binary-mapping branch.",
+      "derived_from_action_ids": [
+        "CA-000006"
+      ]
+    },
+    {
+      "action_id": "CA-000012",
+      "action_type": "SCALE_NUMERIC",
+      "canonical_params": {
+        "method": "standard",
+        "columns": [
+          "AB",
+          "AF",
+          "AH",
+          "AM",
+          "AR",
+          "AX",
+          "AY",
+          "AZ",
+          "BC",
+          "BD",
+          "BN",
+          "BP",
+          "BQ",
+          "BR",
+          "BZ",
+          "CB",
+          "CC",
+          "CD",
+          "CF",
+          "CH",
+          "CL",
+          "CR",
+          "CS",
+          "CU",
+          "CW",
+          "DA",
+          "DE",
+          "DF",
+          "DH",
+          "DI",
+          "DL",
+          "DN",
+          "DU",
+          "DV",
+          "DY",
+          "EB",
+          "EE",
+          "EG",
+          "EH",
+          "EL",
+          "EP",
+          "EU",
+          "FC",
+          "FD",
+          "FE",
+          "FI",
+          "FL",
+          "FR",
+          "FS",
+          "GB",
+          "GE",
+          "GF",
+          "GH",
+          "GI",
+          "GL"
+        ],
+        "mode": "fit_transform",
+        "fit_scope": "train_only"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Standard scaling is a recurring model-family branch for linear, SVM, and tabular-deep pipelines after basic repairs are done.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "hongyuguo/icr-auxiliary-learning-upsample-deeplearning",
+        "moritzm00/icr-xgb-lgbm-pipeline-hyperparameter-tuning",
+        "prasad22/icr-competition-submission",
+        "emphymachine/private-gold-solution-svm-rf-xgb-kfold-ensemble",
+        "tatudoug/logistic-regression-baseline",
+        "titericz/xgboost-late-sub"
+      ],
+      "source_profile": "high_vote_competitive",
+      "context_notes": "This is intentionally non-primary because strong tree-only branches do not require it, but it remains a real branch in the selected corpus.",
+      "evidence_snippets": [
+        "scaler = StandardScaler()",
+        "(\"scale\", StandardScaler())",
+        "from sklearn.preprocessing import LabelEncoder,StandardScaler,MinMaxScaler",
+        "if is_scaling: scaler = StandardScaler()",
+        "from sklearn.preprocessing import StandardScaler",
+        "sc = StandardScaler()"
+      ],
+      "rareness": "common",
+      "confidence": 0.78,
+      "equivalence_group": "icr_scaling_strategy"
+    },
+    {
+      "action_id": "CA-000013",
+      "action_type": "PARSE_DATETIME",
+      "canonical_params": {
+        "columns": [
+          "Epsilon"
+        ],
+        "format": "%m/%d/%Y",
+        "errors": "raise",
+        "mode": "transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "validation_protocol",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Raising on parse errors is brittle because the official greeks file contains Unknown Epsilon values.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Derived as the unsafe opposite of the observed coerce-based Epsilon parsing branch.",
+      "derived_from_action_ids": [
+        "CA-000010"
+      ]
+    },
+    {
+      "action_id": "CA-000014",
+      "action_type": "LOG_TRANSFORM",
+      "canonical_params": {
+        "columns": [
+          "AX",
+          "BP",
+          "CC",
+          "CF",
+          "CR",
+          "CS",
+          "CU",
+          "DE",
+          "EE",
+          "EG",
+          "FC",
+          "FE",
+          "FI",
+          "GB",
+          "GF"
+        ],
+        "offset": 1,
+        "base": "e",
+        "mode": "transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "hard",
+      "reasoning": "Several competitive branches selectively log-transform skewed biomarker subsets before scaling or downstream modeling.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "aditya9790/icr-eda-lightgbm-optuna",
+        "hongyuguo/icr-auxiliary-learning-upsample-deeplearning",
+        "tetsutani/icr-iarc-eda-ensemble-and-stacking-baseline"
+      ],
+      "source_profile": "high_vote_competitive",
+      "context_notes": "This branch is kept non-primary because the exact transformed subset varies across notebooks and is more model-family-specific than the basic repair spine.",
+      "evidence_snippets": [
+        "train[skewed] = np.log1p(train[skewed])",
+        "log1p_cols = ['AX', 'BP', 'CC', 'CF', 'CR', 'CS', 'CU', 'DE', 'EE', 'EG', 'FC', 'FE', 'FI', 'GB', 'GF']",
+        "X_train.loc[:, log_cols] = np.log1p(X_train.loc[:, log_cols])"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.69
+    },
+    {
+      "action_id": "CA-000015",
+      "action_type": "FEATURE_SELECTION",
+      "canonical_params": {
+        "method": "model_importance",
+        "feature_columns": [
+          "AB",
+          "AF",
+          "AH",
+          "AM",
+          "AR",
+          "AX",
+          "AY",
+          "AZ",
+          "BC",
+          "BD",
+          "BN",
+          "BP",
+          "BQ",
+          "BR",
+          "BZ",
+          "CB",
+          "CC",
+          "CD",
+          "CF",
+          "CH",
+          "CL",
+          "CR",
+          "CS",
+          "CU",
+          "CW",
+          "DA",
+          "DE",
+          "DF",
+          "DH",
+          "DI",
+          "DL",
+          "DN",
+          "DU",
+          "DV",
+          "DY",
+          "EB",
+          "EE",
+          "EG",
+          "EH",
+          "EJ",
+          "EL",
+          "EP",
+          "EU",
+          "FC",
+          "FD",
+          "FE",
+          "FI",
+          "FL",
+          "FR",
+          "FS",
+          "GB",
+          "GE",
+          "GF",
+          "GH",
+          "GI",
+          "GL"
+        ],
+        "k": 3,
+        "estimator": "tree_ensemble",
+        "mode": "fit_transform",
+        "fit_scope": "train_only"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Over-pruning to only three features is too aggressive for this tiny but moderately wide biomarker table.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Derived from notebooks that use feature importance and top-k selection, but made intentionally harmful by collapsing the retained set too far.",
+      "base_refs": [
+        "emphymachine/private-gold-solution-svm-rf-xgb-kfold-ensemble",
+        "moritzm00/icr-xgb-lgbm-pipeline-hyperparameter-tuning",
+        "mateuszk013/icr-eda-balanced-learning-with-lgbm-xgb",
+        "tetsutani/icr-iarc-eda-ensemble-and-stacking-baseline"
+      ]
+    },
+    {
+      "action_id": "CA-000016",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "mean",
+        "columns": [
+          "BQ",
+          "EL",
+          "CC",
+          "CB",
+          "FS",
+          "DU",
+          "FC",
+          "FL",
+          "GL"
+        ],
+        "mode": "fit_transform",
+        "fit_scope": "train_only"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Mean-fill appears as a simpler scalar alternative to median-fill in several selected notebooks and is still within the benchmark's deterministic repair envelope.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "masatakaitakura/for-beginner-icr-eda-xgb-submission-baseline",
+        "iqmansingh/icr-optuna-xgb-lgbm-rf-ensemble-eda",
+        "hongyuguo/icr-auxiliary-learning-upsample-deeplearning",
+        "prasad22/icr-competition-submission",
+        "tatudoug/logistic-regression-baseline"
+      ],
+      "source_profile": "high_vote_competitive",
+      "context_notes": "This row is kept in the same equivalence group as median-fill because both rows address the same primary missing-data need and should not count as separate add units.",
+      "evidence_snippets": [
+        "SimpleImputer(strategy='mean')",
+        "meanTrain = train_data.mean()",
+        "fillna(df_train[feature_list_KNN].mean())",
+        "fillna(df[numerical_columns].mean())",
+        "fillna(train[names].mean())"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.74,
+      "equivalence_group": "icr_numeric_missing_strategy"
+    },
+    {
+      "action_id": "CA-000017",
+      "action_type": "DROP_HIGH_NULL_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "BQ",
+          "EL"
+        ],
+        "null_ratio_threshold": 0.05,
+        "mode": "transform",
+        "fit_scope": "train_only"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "A 5% null-ratio cutoff would wrongly prune the two most-salient sparse biomarkers even though the notebook corpus usually repairs them.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Derived from notebook discussions of missingness, but made harmful by turning moderate sparsity directly into column deletion.",
+      "derived_from_action_ids": [
+        "CA-000004",
+        "CA-000016"
+      ]
+    },
+    {
+      "action_id": "CA-000018",
+      "action_type": "SCALE_NUMERIC",
+      "canonical_params": {
+        "method": "robust",
+        "columns": [
+          "AB",
+          "AF",
+          "AH",
+          "AM",
+          "AR",
+          "AX",
+          "AY",
+          "AZ",
+          "BC",
+          "BD",
+          "BN",
+          "BP",
+          "BQ",
+          "BR",
+          "BZ",
+          "CB",
+          "CC",
+          "CD",
+          "CF",
+          "CH",
+          "CL",
+          "CR",
+          "CS",
+          "CU",
+          "CW",
+          "DA",
+          "DE",
+          "DF",
+          "DH",
+          "DI",
+          "DL",
+          "DN",
+          "DU",
+          "DV",
+          "DY",
+          "EB",
+          "EE",
+          "EG",
+          "EH",
+          "EL",
+          "EP",
+          "EU",
+          "FC",
+          "FD",
+          "FE",
+          "FI",
+          "FL",
+          "FR",
+          "FS",
+          "GB",
+          "GE",
+          "GF",
+          "GH",
+          "GI",
+          "GL"
+        ],
+        "mode": "fit_transform",
+        "fit_scope": "train_only"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "A smaller but real notebook branch uses robust scaling to reduce sensitivity to the biomarker outliers discussed in EDA-heavy kernels.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "hongyuguo/icr-auxiliary-learning-upsample-deeplearning",
+        "moritzm00/icr-xgb-lgbm-pipeline-hyperparameter-tuning"
+      ],
+      "source_profile": "high_vote_competitive",
+      "context_notes": "This row stays in the same equivalence group as standard scaling because both rows express the same non-primary scaling need for particular model families.",
+      "evidence_snippets": [
+        "from sklearn.preprocessing import RobustScaler",
+        "from sklearn.preprocessing import RobustScaler, StandardScaler"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.63,
+      "equivalence_group": "icr_scaling_strategy"
+    },
+    {
+      "action_id": "CA-000019",
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "BQ.notnull() and EL.notnull()",
+        "mode": "transform",
+        "fit_scope": "train_only"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Keeping only rows with both BQ and EL present is a row-loss variant of the same destructive missing-data mistake.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Derived as a filter-form equivalent of dropping rows with missing BQ/EL instead of repairing them.",
+      "derived_from_action_ids": [
+        "CA-000004",
+        "CA-000016"
+      ]
+    },
+    {
+      "action_id": "CA-000020",
+      "action_type": "MAP_CATEGORIES",
+      "canonical_params": {
+        "columns": [
+          "EJ"
+        ],
+        "mapping": {
+          "A": 1,
+          "B": 1
+        },
+        "mode": "transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "This is the same EJ-signal collapse as mapping everything to zero, just with the opposite constant.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Derived as another harmful collapse of the observed EJ binary-mapping branch.",
+      "derived_from_action_ids": [
+        "CA-000006"
+      ]
+    },
+    {
+      "action_id": "CA-000021",
+      "action_type": "CLIP_OUTLIERS",
+      "canonical_params": {
+        "columns": [
+          "AF",
+          "BQ",
+          "CR",
+          "DU",
+          "EL"
+        ],
+        "method": "winsorize",
+        "lower_quantile": 0.1,
+        "upper_quantile": 0.9,
+        "mode": "fit_transform",
+        "fit_scope": "train_only"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Aggressive winsorization on a handful of informative biomarkers is a plausible but overly destructive reaction to the outlier-heavy EDA plots.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Derived from notebook discussions of outliers and robust scaling, but turned into a harmful over-correction that flattens medically informative variation.",
+      "base_refs": [
+        "iqmansingh/icr-optuna-xgb-lgbm-rf-ensemble-eda",
+        "hongyuguo/icr-auxiliary-learning-upsample-deeplearning",
+        "masatakaitakura/for-beginner-icr-eda-xgb-submission-baseline"
+      ]
+    },
+    {
+      "action_id": "CA-000022",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "greeks",
+        "left_on": "Id",
+        "right_on": "Id",
+        "how": "inner",
+        "select_columns": [
+          "Alpha",
+          "Beta",
+          "Gamma",
+          "Delta",
+          "Epsilon"
+        ],
+        "mode": "transform",
+        "fit_scope": "full_data"
+      },
+      "eval_stage": "validation_protocol",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Treating the train-side greeks table as a full-data inner join makes the submission-side pipeline ill-defined because there is no greeks row for official test examples.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Derived from the observed greeks join branch, but changed to a join contract that is incompatible with the official test-side scope.",
+      "derived_from_action_ids": [
+        "CA-000008"
+      ]
+    },
+    {
+      "action_id": "CA-000023",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "most_frequent",
+        "columns": [
+          "BQ",
+          "EL",
+          "CC",
+          "CB",
+          "FS",
+          "DU",
+          "FC",
+          "FL",
+          "GL"
+        ],
+        "mode": "fit_transform",
+        "fit_scope": "train_only"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Most-frequent fill is a poor fit for these continuous biomarker columns and tends to collapse sparse features to a repeated constant-like value.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Derived as a low-quality scalar-imputation alternative to the observed mean/median branches.",
+      "derived_from_action_ids": [
+        "CA-000004",
+        "CA-000016"
+      ]
+    },
+    {
+      "action_id": "CA-000024",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "EL"
+        ],
+        "reason": "missingness_pruning",
+        "mode": "transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "EL is sparse but still notebook-salient; removing it is an avoidable pruning mistake on this already small feature set.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Single-column pruning variant derived from the observed repair branch for EL.",
+      "derived_from_action_ids": [
+        "CA-000004",
+        "CA-000016"
+      ]
+    },
+    {
+      "action_id": "CA-000025",
+      "action_type": "FEATURE_SELECTION",
+      "canonical_params": {
+        "method": "variance",
+        "feature_columns": [
+          "AB",
+          "AF",
+          "AH",
+          "AM",
+          "AR",
+          "AX",
+          "AY",
+          "AZ",
+          "BC",
+          "BD",
+          "BN",
+          "BP",
+          "BQ",
+          "BR",
+          "BZ",
+          "CB",
+          "CC",
+          "CD",
+          "CF",
+          "CH",
+          "CL",
+          "CR",
+          "CS",
+          "CU",
+          "CW",
+          "DA",
+          "DE",
+          "DF",
+          "DH",
+          "DI",
+          "DL",
+          "DN",
+          "DU",
+          "DV",
+          "DY",
+          "EB",
+          "EE",
+          "EG",
+          "EH",
+          "EJ",
+          "EL",
+          "EP",
+          "EU",
+          "FC",
+          "FD",
+          "FE",
+          "FI",
+          "FL",
+          "FR",
+          "FS",
+          "GB",
+          "GE",
+          "GF",
+          "GH",
+          "GI",
+          "GL"
+        ],
+        "threshold": 1.0,
+        "mode": "fit_transform",
+        "fit_scope": "train_only"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "A variance cutoff this high is likely to discard too many moderately informative biomarkers.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Derived from notebook-side feature selection interest, but turned into an overly aggressive low-information screen.",
+      "base_refs": [
+        "moritzm00/icr-xgb-lgbm-pipeline-hyperparameter-tuning",
+        "mateuszk013/icr-eda-balanced-learning-with-lgbm-xgb",
+        "nemanjagojkovic/using-advanced-feature-engineering-with-featurewiz"
+      ]
+    },
+    {
+      "action_id": "CA-000026",
+      "action_type": "SAMPLE_ROWS",
+      "canonical_params": {
+        "method": "random",
+        "frac": 0.5,
+        "replace": false,
+        "mode": "transform",
+        "fit_scope": "train_only",
+        "random_state": 42
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Halving the already small labeled table without a principled target-aware reason is still a harmful data-loss branch.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Another intentionally harmful generic-row-sampling variant derived from the corpus' resampling interest.",
+      "base_refs": [
+        "masatakaitakura/for-beginner-icr-eda-xgb-submission-baseline",
+        "tetsutani/icr-iarc-eda-ensemble-and-stacking-baseline",
+        "vadimkamaev/tabpfn-postprocessing",
+        "aikhmelnytskyy/public-krni-pdi-with-two-additional-models"
+      ]
+    },
+    {
+      "action_id": "CA-000027",
+      "action_type": "DROP_HIGH_NULL_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "BQ",
+          "EL",
+          "CC",
+          "CB",
+          "FS",
+          "DU",
+          "FC",
+          "FL",
+          "GL"
+        ],
+        "null_ratio_threshold": 0.0,
+        "mode": "transform",
+        "fit_scope": "train_only"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Dropping every column with any missing value is too destructive for this competition because the sparse set is still small and repairable.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Extreme null-pruning variant derived from the observed keep-and-repair branch for the sparse columns.",
+      "derived_from_action_ids": [
+        "CA-000004",
+        "CA-000016"
+      ]
+    },
+    {
+      "action_id": "CA-000028",
+      "action_type": "LOG_TRANSFORM",
+      "canonical_params": {
+        "columns": [
+          "AB",
+          "AF",
+          "AH",
+          "AM",
+          "AR",
+          "AX",
+          "AY",
+          "AZ",
+          "BC",
+          "BD",
+          "BN",
+          "BP",
+          "BQ",
+          "BR",
+          "BZ",
+          "CB",
+          "CC",
+          "CD",
+          "CF",
+          "CH",
+          "CL",
+          "CR",
+          "CS",
+          "CU",
+          "CW",
+          "DA",
+          "DE",
+          "DF",
+          "DH",
+          "DI",
+          "DL",
+          "DN",
+          "DU",
+          "DV",
+          "DY",
+          "EB",
+          "EE",
+          "EG",
+          "EH",
+          "EL",
+          "EP",
+          "EU",
+          "FC",
+          "FD",
+          "FE",
+          "FI",
+          "FL",
+          "FR",
+          "FS",
+          "GB",
+          "GE",
+          "GF",
+          "GH",
+          "GI",
+          "GL"
+        ],
+        "offset": 1,
+        "base": "e",
+        "mode": "transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Blindly log-transforming every numeric biomarker is a much broader distortion than the selective skew-handling branches seen in the notebook corpus.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Derived as an over-broad version of the observed selective log-transform branch.",
+      "derived_from_action_ids": [
+        "CA-000014"
+      ]
+    },
+    {
+      "action_id": "CA-000029",
+      "action_type": "DROP_ROWS_WITH_MISSING",
+      "canonical_params": {
+        "subset_columns": [
+          "BQ",
+          "EL",
+          "CC",
+          "CB",
+          "FS",
+          "DU",
+          "FC",
+          "FL",
+          "GL"
+        ],
+        "how": "any",
+        "mode": "transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "This row-loss branch is even more destructive than dropping only on BQ/EL because it compounds all sparse columns at once.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Expanded destructive variant of dropping rows with missing data instead of repairing the sparse biomarker set.",
+      "derived_from_action_ids": [
+        "CA-000004",
+        "CA-000016"
+      ]
+    },
+    {
+      "action_id": "CA-000030",
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "AB >= AB.quantile(0.05) and AB <= AB.quantile(0.95)",
+        "mode": "transform",
+        "fit_scope": "train_only"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Aggressively trimming the central 90% of one biomarker is a plausible but harmful outlier reaction on a very small training set.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Derived from EDA notebooks that emphasize outliers, but turned into an unnecessary row-filtering branch that loses supervised signal.",
+      "base_refs": [
+        "iqmansingh/icr-optuna-xgb-lgbm-rf-ensemble-eda",
+        "hongyuguo/icr-auxiliary-learning-upsample-deeplearning",
+        "datafan07/icr-simple-eda-baseline"
+      ]
+    },
+    {
+      "action_id": "CA-000031",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "constant",
+        "columns": [
+          "BQ",
+          "EL",
+          "CC",
+          "CB",
+          "FS",
+          "DU",
+          "FC",
+          "FL",
+          "GL"
+        ],
+        "fill_value": 0,
+        "mode": "fit_transform",
+        "fit_scope": "train_only"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Zero-fill is a tempting shortcut, but it collapses sparse continuous biomarkers to a hard-coded boundary value that the stronger notebooks usually avoid.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Derived as a weaker scalar-imputation shortcut relative to the observed mean/median branches.",
+      "derived_from_action_ids": [
+        "CA-000004",
+        "CA-000016"
+      ]
+    },
+    {
+      "action_id": "CA-000032",
+      "action_type": "CLIP_OUTLIERS",
+      "canonical_params": {
+        "columns": [
+          "AB",
+          "AF",
+          "AH",
+          "AM",
+          "AR",
+          "AX",
+          "AY",
+          "AZ",
+          "BC",
+          "BD",
+          "BN",
+          "BP",
+          "BQ",
+          "BR",
+          "BZ",
+          "CB",
+          "CC",
+          "CD",
+          "CF",
+          "CH",
+          "CL",
+          "CR",
+          "CS",
+          "CU",
+          "CW",
+          "DA",
+          "DE",
+          "DF",
+          "DH",
+          "DI",
+          "DL",
+          "DN",
+          "DU",
+          "DV",
+          "DY",
+          "EB",
+          "EE",
+          "EG",
+          "EH",
+          "EL",
+          "EP",
+          "EU",
+          "FC",
+          "FD",
+          "FE",
+          "FI",
+          "FL",
+          "FR",
+          "FS",
+          "GB",
+          "GE",
+          "GF",
+          "GH",
+          "GI",
+          "GL"
+        ],
+        "method": "iqr",
+        "iqr_k": 0.1,
+        "mode": "fit_transform",
+        "fit_scope": "train_only"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "An IQR cutoff this tight would over-clip the entire numeric feature space and erase too much natural biomarker spread.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Globalized and over-tightened outlier clipping derived from EDA notebooks that discuss heavy tails and robust preprocessing.",
+      "base_refs": [
+        "iqmansingh/icr-optuna-xgb-lgbm-rf-ensemble-eda",
+        "hongyuguo/icr-auxiliary-learning-upsample-deeplearning",
+        "masatakaitakura/for-beginner-icr-eda-xgb-submission-baseline"
+      ]
+    },
+    {
+      "action_id": "CA-000033",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "BQ"
+        ],
+        "reason": "missingness_pruning",
+        "mode": "transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "BQ is sparse but still repeatedly repaired and retained by the notebook corpus, so dropping it is a harmful shortcut.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Single-column pruning variant derived from the observed repair branch for BQ.",
+      "derived_from_action_ids": [
+        "CA-000004",
+        "CA-000016"
+      ]
+    }
+  ]
+}

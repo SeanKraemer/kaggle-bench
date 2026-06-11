@@ -1,0 +1,12 @@
+{
+  "testcase_id": "tc3_fault_injected",
+  "competition_slug": "santander-customer-transaction-prediction",
+  "task_ref": "../task.json",
+  "input": {
+    "scenario": "fault_injected",
+    "context_action_ids": [
+      "CA-000001",
+      "CA-000003"
+    ]
+  }
+}

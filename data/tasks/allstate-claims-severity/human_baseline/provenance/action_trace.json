@@ -1,0 +1,14 @@
+[
+  {
+    "predicted_action_id": "CA-000001",
+    "artifact": "../work.ipynb",
+    "section": "CA-000001 - Drop id Column",
+    "mapping_rationale": "I dropped id because it is a row identifier and I would not want the model to learn from it."
+  },
+  {
+    "predicted_action_id": "CA-000005",
+    "artifact": "../work.ipynb",
+    "section": "CA-000005 - Label Encode Categorical Columns",
+    "mapping_rationale": "I chose label encoding as my simple first-pass categorical treatment because it handles all cat columns compactly for tree models."
+  }
+]

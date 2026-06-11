@@ -1,0 +1,15 @@
+{
+  "testcase_id": "tc4_mixed_history",
+  "competition_slug": "lish-moa",
+  "task_ref": "../task.json",
+  "input": {
+    "scenario": "mixed",
+    "context_action_ids": [
+      "CA-000008",
+      "CA-000014",
+      "CA-000020",
+      "CA-000030",
+      "CA-000049"
+    ]
+  }
+}

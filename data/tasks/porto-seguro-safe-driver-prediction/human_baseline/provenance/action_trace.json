@@ -1,0 +1,39 @@
+{
+  "competition_slug": "porto-seguro-safe-driver-prediction",
+  "testcase_id": "tc1_from_scratch",
+  "artifact_type": "eval_human_baseline_action_trace",
+  "related_output": "../tc1_human.json",
+  "traces": [
+    {
+      "predicted_action_id": "CA-000019",
+      "artifact": "../work.ipynb",
+      "section": "Sentinel Missingness And Heavy Sparsity",
+      "mapping_rationale": "The notebook treats sentinel normalization as the first unavoidable Porto cleanup step."
+    },
+    {
+      "predicted_action_id": "CA-000029",
+      "artifact": "../work.ipynb",
+      "section": "Sentinel Missingness And Heavy Sparsity",
+      "mapping_rationale": "The inspection highlights two categorical columns with extreme missingness, which supports dropping them in a first-pass baseline."
+    },
+    {
+      "predicted_action_id": "CA-000008",
+      "artifact": "../work.ipynb",
+      "section": "Calc Features, Remaining Missingness, And Identifier Check",
+      "mapping_rationale": "The calc block remains one of the clearest Porto pruning targets after inspection of its weak signal."
+    },
+    {
+      "predicted_action_id": "CA-000040",
+      "artifact": "../work.ipynb",
+      "section": "Calc Features, Remaining Missingness, And Identifier Check",
+      "mapping_rationale": "The notebook explicitly checks `id` uniqueness, which makes the identifier drop one of the easiest manual decisions to defend."
+    }
+  ],
+  "omitted_steps": [
+    {
+      "artifact": "../manual_selection_worksheet.md",
+      "section": "Intentionally Omitted",
+      "note": "The manual pass stops before typed imputation, missing indicators, and model-specific branches."
+    }
+  ]
+}

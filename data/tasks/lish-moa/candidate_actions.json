@@ -1,0 +1,1354 @@
+{
+  "competition_slug": "lish-moa",
+  "generated_at": "2026-04-24T00:00:00-05:00",
+  "actions": [
+    {
+      "action_id": "CA-000001",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "coerce sig_id, cp_type, cp_time, cp_dose, g-* and c-* into one numeric matrix, then fit StandardScaler on train and transform train/test",
+        "output_columns": [
+          "standard_scaled_mixed_feature_matrix"
+        ],
+        "mode": "fit_transform",
+        "fit_scope": "train_only"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Standard-scaling identifiers and categorical treatment metadata together with assay values requires arbitrary numeric codes and contaminates the feature matrix before the observed RankGauss/PCA path.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000008",
+        "CA-000020",
+        "CA-000003"
+      ],
+      "derivation_reasoning": "Misapplies the numeric normalization step to identifier and categorical columns that should instead be dropped or encoded."
+    },
+    {
+      "action_id": "CA-000002",
+      "action_type": "PCA_REDUCTION",
+      "canonical_params": {
+        "feature_columns": [
+          "g-*"
+        ],
+        "n_components": 600,
+        "method": "pca",
+        "random_state": 42,
+        "mode": "fit_transform",
+        "output_columns": [
+          "train_pca_G-* and separately fitted test_pca_G-*"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Fitting separate PCA bases for train and test creates incompatible component spaces, so a model trained on train components cannot be applied coherently to test components.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000043"
+      ],
+      "derivation_reasoning": "Uses the observed gene PCA family but fits independent train/test component bases instead of one shared basis."
+    },
+    {
+      "action_id": "CA-000003",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "for each g-* and c-* column, fit QuantileTransformer(n_quantiles=100, output_distribution='normal') on train and transform train/test",
+        "output_columns": [
+          "g-* RankGauss normalized in place",
+          "c-* RankGauss normalized in place"
+        ],
+        "mode": "fit_transform",
+        "fit_scope": "train_only"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "RankGauss normalization makes the high-dimensional gene and cell distributions better conditioned for PCA and neural models.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "nayuts/moa-pytorch-nn-pca-rankgauss",
+        "kushal1506/moa-pytorch-0-01859-rankgauss-pca-nn",
+        "vbmokin/moa-pytorch-rankgauss-pca-nn-upgrade-3d-visual",
+        "hiramcho/moa-tabnet-with-pca-rank-gauss",
+        "riadalmadani/pytorch-cv-0-0145-lb-0-01839"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Observed in 11 of 30 notebooks and repeatedly used in the strongest PCA/NN pipelines.",
+      "evidence_snippets": [
+        "transformer = QuantileTransformer(n_quantiles=100, random_state=0, output_distribution='normal')",
+        "train_features[col] = transformer.transform(raw_vec).reshape(1, vec_len)[0]",
+        "test_features[col] = transformer.transform(test_features[col].values.reshape(vec_len_test, 1)).reshape(1, vec_len_test)[0]"
+      ],
+      "rareness": "common",
+      "confidence": 0.92
+    },
+    {
+      "action_id": "CA-000004",
+      "action_type": "CLIP_OUTLIERS",
+      "canonical_params": {
+        "columns": [
+          "g-*",
+          "c-*"
+        ],
+        "method": "winsorize",
+        "lower_quantile": 0.25,
+        "upper_quantile": 0.75,
+        "mode": "fit_transform",
+        "fit_scope": "train_only"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Winsorizing every assay column to its interquartile range before RankGauss collapses half of each feature's ranked response distribution and destroys tail signal needed by PCA and neural models.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "lish_moa_numeric_feature_distribution"
+      ],
+      "derivation_reasoning": "Destructive quantile clipping applied before the rank-based normalization step."
+    },
+    {
+      "action_id": "CA-000005",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "fit separate KMeans models on g-* and c-* groups over the shared train/test feature frame; append one-hot cluster assignments",
+        "output_columns": [
+          "clusters_g_*",
+          "clusters_c_*"
+        ],
+        "fit_scope": "full_data",
+        "random_state": 123
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "hard",
+      "reasoning": "KMeans cluster assignments over gene and cell groups capture neighborhood structure in some extended LISH-MoA feature-engineering pipelines.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "sinamhd9/mechanisms-of-action-moa-tutorial",
+        "kushal1506/moa-pytorch-feature-engineering-0-01846",
+        "kushal1506/moa-tabnet-inference"
+      ],
+      "source_profile": "extended_feature_engineering",
+      "context_notes": "Observed in 4 of 30 notebooks. Kept for all-scope evaluation only because it is uncommon and model/pipeline-specific.",
+      "evidence_snippets": [
+        "kmeans = KMeans(n_clusters = n_clusters, random_state = SEED).fit(data)",
+        "train[f'clusters_{kind}'] = kmeans.labels_[:train.shape[0]]",
+        "train = pd.get_dummies(train, columns = [f'clusters_{kind}'])"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.8
+    },
+    {
+      "action_id": "CA-000006",
+      "action_type": "PCA_REDUCTION",
+      "canonical_params": {
+        "feature_columns": [
+          "g-*"
+        ],
+        "n_components": 5,
+        "method": "pca",
+        "random_state": 42,
+        "mode": "fit_transform",
+        "output_columns": [
+          "pca_G-0 through pca_G-4"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Reducing 772 gene features to only five replacement components destroys most gene-expression signal.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000043"
+      ],
+      "derivation_reasoning": "Uses the correct feature family but an excessively lossy component count and replacement mode."
+    },
+    {
+      "action_id": "CA-000007",
+      "action_type": "ORDINAL_ENCODE",
+      "canonical_params": {
+        "columns": [
+          "cp_time"
+        ],
+        "order": {
+          "cp_time": [
+            "72",
+            "48",
+            "24"
+          ]
+        },
+        "mode": "transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "This reverses the treatment-time order and encodes only cp_time, leaving dose unhandled.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000031"
+      ],
+      "derivation_reasoning": "Perturbs the ordinal categorical mapping by reversing time semantics and omitting dose."
+    },
+    {
+      "action_id": "CA-000008",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "sig_id"
+        ],
+        "reason": "identifier",
+        "mode": "transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "sig_id is a unique string sample identifier and should not be used as a model feature.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "yasufuminakama/moa-pytorch-nn-starter",
+        "nayuts/moa-pytorch-nn-pca-rankgauss",
+        "kushal1506/moa-pytorch-0-01859-rankgauss-pca-nn",
+        "gogo827jz/kernel-logistic-regression-one-for-206-targets",
+        "fchmiel/xgboost-baseline-multilabel-classification",
+        "simakov/multilabel-neural-network",
+        "stanleyjzheng/baseline-nn-with-k-folds",
+        "maunish/moa-super-cool-eda-and-pytorch-baseline"
+      ],
+      "source_profile": "common_baseline",
+      "context_notes": "All 30 reviewed notebooks exclude sig_id before constructing the feature matrix.",
+      "evidence_snippets": [
+        "X = train.iloc[:,1:].to_numpy()",
+        "feature_cols = [c for c in feature_cols if c not in ['kfold','sig_id']]",
+        "del train_features['sig_id']"
+      ],
+      "rareness": "common",
+      "confidence": 0.99
+    },
+    {
+      "action_id": "CA-000009",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "columns": [
+          "sig_id"
+        ],
+        "method": "onehot",
+        "mode": "transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "One-hot encoding sig_id creates a very wide near-unique indicator matrix with no reusable signal for unseen test ids.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000008",
+        "CA-000020"
+      ],
+      "derivation_reasoning": "Applies categorical encoding to the identifier column that should be dropped."
+    },
+    {
+      "action_id": "CA-000010",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "c-*"
+        ],
+        "reason": "drop_cell_viability_features",
+        "mode": "transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Cell viability columns are a biologically distinct signal group; dropping them loses response information used in the separate PCA path.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "lish_moa_feature_group_design"
+      ],
+      "derivation_reasoning": "Destructive feature-group drop based on the known LISH-MoA column families."
+    },
+    {
+      "action_id": "CA-000011",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "columns": [
+          "cp_dose"
+        ],
+        "method": "onehot",
+        "mode": "transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Encoding only dose leaves treatment duration as an unhandled categorical feature or discards it later.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000020"
+      ],
+      "derivation_reasoning": "Partial implementation of the one-hot treatment encoding family."
+    },
+    {
+      "action_id": "CA-000012",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "cp_type"
+        ],
+        "reason": "constant_after_control_filter",
+        "mode": "transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "After control rows are removed from training, cp_type has one remaining value and carries no discriminative signal.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "nayuts/moa-pytorch-nn-pca-rankgauss",
+        "kushal1506/moa-pytorch-0-01859-rankgauss-pca-nn",
+        "ragnar123/moa-dnn-feature-engineering",
+        "namanj27/new-baseline-pytorch-moa",
+        "vbmokin/moa-pytorch-rankgauss-pca-nn-upgrade-3d-visual"
+      ],
+      "source_profile": "common_baseline",
+      "context_notes": "Observed in 15 of 30 notebooks. Must happen after the control-row filter if cp_type is needed to identify controls.",
+      "evidence_snippets": [
+        "train = train.drop('cp_type', axis=1)",
+        "test = test.drop('cp_type', axis=1)"
+      ],
+      "rareness": "common",
+      "confidence": 0.9,
+      "must_follow_action_ids": [
+        "CA-000034"
+      ]
+    },
+    {
+      "action_id": "CA-000013",
+      "action_type": "PCA_REDUCTION",
+      "canonical_params": {
+        "feature_columns": [
+          "c-*"
+        ],
+        "n_components": 2,
+        "method": "pca",
+        "random_state": 42,
+        "mode": "fit_transform",
+        "output_columns": [
+          "pca_C-0",
+          "pca_C-1"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Replacing 100 cell-viability columns with only two components throws away most of the cell-response signal.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000047"
+      ],
+      "derivation_reasoning": "Uses the right cell feature group but an excessively lossy component count and replacement mode."
+    },
+    {
+      "action_id": "CA-000014",
+      "action_type": "PCA_REDUCTION",
+      "canonical_params": {
+        "feature_columns": [
+          "g-*",
+          "c-*"
+        ],
+        "n_components": 100,
+        "method": "pca",
+        "random_state": 42,
+        "mode": "fit_transform",
+        "output_columns": [
+          "pca_GC-0 through pca_GC-99"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "A single combined PCA mixes biologically distinct gene expression and cell viability spaces, losing the structure preserved by separate decompositions.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000043",
+        "CA-000047"
+      ],
+      "derivation_reasoning": "Collapses the two observed PCA families into one combined PCA basis."
+    },
+    {
+      "action_id": "CA-000015",
+      "action_type": "SAMPLE_ROWS",
+      "canonical_params": {
+        "method": "random",
+        "n": 1866,
+        "replace": false,
+        "mode": "fit",
+        "fit_scope": "train_only"
+      },
+      "eval_stage": "validation_protocol",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Randomly retaining only 1,866 rows, roughly the control-row count, discards more than 90% of the labeled training data and makes rare MoA targets unstable or absent.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000022"
+      ],
+      "derivation_reasoning": "Recasts control-count matching as an invalid row-sampling strategy for a sparse multilabel task."
+    },
+    {
+      "action_id": "CA-000016",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "fit out-of-fold target encoders for sig_id against the 206 scored MoA targets and append the encoded columns",
+        "output_columns": [
+          "sig_id_target_encode_0 through sig_id_target_encode_205"
+        ],
+        "mode": "fit_transform",
+        "fit_scope": "train_only"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Target encoding the near-unique sig_id key memorizes training samples and cannot generalize to unseen test identifiers.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000008"
+      ],
+      "derivation_reasoning": "Applies supervised encoding to the identifier column that should be dropped."
+    },
+    {
+      "action_id": "CA-000017",
+      "action_type": "FEATURE_SELECTION",
+      "canonical_params": {
+        "method": "mutual_info",
+        "feature_columns": [
+          "g-*",
+          "c-*"
+        ],
+        "scoring": "206 scored MoA targets including unavailable test labels",
+        "mode": "fit_transform",
+        "output_columns": [
+          "supervised selected assay features"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Supervised feature selection cannot use test targets; describing it as train_and_test creates impossible leakage.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000026"
+      ],
+      "derivation_reasoning": "Turns unsupervised variance filtering into an invalid supervised selector over unavailable test labels."
+    },
+    {
+      "action_id": "CA-000018",
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "all g-* values are nonnegative",
+        "mode": "transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Filtering rows based on all gene-expression values being nonnegative removes most valid assay rows and biases the training set.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "lish_moa_gene_expression_distribution"
+      ],
+      "derivation_reasoning": "Generic outlier-row filter that is invalid for signed gene expression measurements."
+    },
+    {
+      "action_id": "CA-000019",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "fit KMeans on sig_id, cp_type, cp_time, cp_dose, g-* and c-* after coercing identifiers/categories to numeric codes",
+        "output_columns": [
+          "clusters_mixed_metadata_numeric"
+        ],
+        "fit_scope": "full_data",
+        "random_state": 123
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Clustering after mixing identifiers and categorical treatment metadata with assay features makes Euclidean cluster assignments depend on arbitrary codes rather than biological response structure.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000005"
+      ],
+      "derivation_reasoning": "Applies the observed KMeans feature idea to an invalid mixed column set rather than separate numeric assay groups."
+    },
+    {
+      "action_id": "CA-000020",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "columns": [
+          "cp_time",
+          "cp_dose"
+        ],
+        "method": "onehot",
+        "mode": "transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Treatment duration and dose are categorical descriptors that must be converted to numeric features before modeling.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "nayuts/moa-pytorch-nn-pca-rankgauss",
+        "kushal1506/moa-pytorch-0-01859-rankgauss-pca-nn",
+        "artgor/lish-moa-baseline-approach",
+        "maunish/moa-super-cool-eda-and-pytorch-baseline",
+        "simakov/multilabel-neural-network"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "One-hot encoding is the most common treatment-metadata strategy, observed in 19 of 30 reviewed notebooks.",
+      "evidence_snippets": [
+        "data = pd.get_dummies(data, columns=['cp_time','cp_dose'])",
+        "train_features = pd.concat([train_features, pd.get_dummies(train_features['cp_time'], prefix='cp_time')], axis=1)"
+      ],
+      "rareness": "common",
+      "confidence": 0.9,
+      "equivalence_group": "lish_moa_categorical_encoding_strategy"
+    },
+    {
+      "action_id": "CA-000021",
+      "action_type": "BIN_NUMERIC",
+      "canonical_params": {
+        "columns": [
+          "g-*",
+          "c-*"
+        ],
+        "method": "quantile",
+        "bins": 2,
+        "mode": "fit_transform",
+        "fit_scope": "train_only"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Binary quantile binning converts rich expression and viability measurements into coarse signs, throwing away most magnitude information.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "lish_moa_numeric_feature_distribution"
+      ],
+      "derivation_reasoning": "A more destructive discretization distractor for the same numeric feature groups."
+    },
+    {
+      "action_id": "CA-000022",
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "cp_type == 'ctl_vehicle'",
+        "mode": "transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "This keeps only control vehicle rows, which have all-zero targets, and discards the compound-treated rows that contain the actual MoA signal.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000034"
+      ],
+      "derivation_reasoning": "Predicate inversion of the canonical control-row exclusion."
+    },
+    {
+      "action_id": "CA-000023",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "g-*"
+        ],
+        "reason": "drop_high_dimensional_gene_features",
+        "mode": "transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Gene expression columns are the largest signal source in the competition; dropping them leaves only metadata and cell features.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "lish_moa_feature_group_design"
+      ],
+      "derivation_reasoning": "Destructive feature-group drop based on the known LISH-MoA column families."
+    },
+    {
+      "action_id": "CA-000024",
+      "action_type": "CLIP_OUTLIERS",
+      "canonical_params": {
+        "columns": [
+          "g-*",
+          "c-*"
+        ],
+        "method": "clip",
+        "lower_value": -1,
+        "upper_value": 1,
+        "mode": "transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Aggressively clipping assay values to [-1, 1] truncates biological response magnitude before normalization/PCA.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "lish_moa_numeric_feature_distribution"
+      ],
+      "derivation_reasoning": "Fixed-range clipping that truncates assay magnitudes before normalization and dimensionality reduction."
+    },
+    {
+      "action_id": "CA-000025",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "fit separate QuantileTransformer(output_distribution='normal') objects on train and test for every g-* and c-* column",
+        "output_columns": [
+          "train_rankgauss_features",
+          "test_rankgauss_features_on_separate_scale"
+        ],
+        "mode": "fit_transform",
+        "fit_scope": "full_data"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Fitting separate quantile transforms for train and test changes feature scales independently and makes test features incomparable to the training representation.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000003"
+      ],
+      "derivation_reasoning": "Uses the observed RankGauss method but with inconsistent split-wise fitting."
+    },
+    {
+      "action_id": "CA-000026",
+      "action_type": "FEATURE_SELECTION",
+      "canonical_params": {
+        "method": "variance",
+        "feature_columns": [
+          "numeric_features"
+        ],
+        "threshold": 0.8,
+        "mode": "fit_transform",
+        "output_columns": [
+          "variance_selected numeric features"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "VarianceThreshold removes near-constant numeric features and low-variance PCA components that add noise without signal.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "nayuts/moa-pytorch-nn-pca-rankgauss",
+        "kushal1506/moa-pytorch-0-01859-rankgauss-pca-nn",
+        "gogo827jz/kernel-logistic-regression-one-for-206-targets",
+        "riadalmadani/pytorch-cv-0-0145-lb-0-01839",
+        "vbmokin/moa-pytorch-rankgauss-pca-nn-upgrade-3d-visual"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Observed in 15 of 30 notebooks. The canonical threshold 0.8 follows strong Kushal/VBMokin/Riad-style pipelines.",
+      "evidence_snippets": [
+        "var_thresh = VarianceThreshold(threshold=0.8)",
+        "data_transformed = var_thresh.fit_transform(data.iloc[:, 4:])",
+        "var_thresh = VarianceThreshold(threshold=0.5)"
+      ],
+      "rareness": "common",
+      "confidence": 0.88,
+      "must_follow_action_ids": [
+        "CA-000043",
+        "CA-000047"
+      ]
+    },
+    {
+      "action_id": "CA-000027",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "for each row, compute mean/std over sig_id, cp_type, cp_time, cp_dose, g-* and c-* together",
+        "output_columns": [
+          "mixed_row_mean",
+          "mixed_row_std"
+        ],
+        "mode": "transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Aggregating over identifiers and categorical metadata together with numeric assay features produces meaningless row summaries.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000039"
+      ],
+      "derivation_reasoning": "Applies the observed row-statistics idea to the wrong column set."
+    },
+    {
+      "action_id": "CA-000028",
+      "action_type": "POWER_TRANSFORM",
+      "canonical_params": {
+        "columns": [
+          "sig_id",
+          "cp_type",
+          "cp_time",
+          "cp_dose"
+        ],
+        "method": "yeojohnson",
+        "standardize": true,
+        "mode": "fit_transform",
+        "fit_scope": "train_only"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Yeo-Johnson is a numeric power transform; applying it to sig_id and categorical treatment descriptors after arbitrary coding distorts nominal categories and reintroduces the sample identifier as a feature.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000008",
+        "CA-000020",
+        "CA-000031"
+      ],
+      "derivation_reasoning": "Misapplies a numeric transform to columns that should be dropped or categorically encoded."
+    },
+    {
+      "action_id": "CA-000029",
+      "action_type": "LOG_TRANSFORM",
+      "canonical_params": {
+        "columns": [
+          "g-*",
+          "c-*"
+        ],
+        "offset": 1,
+        "base": "e",
+        "handle_nonpositive": "error",
+        "mode": "transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Raw gene and cell values include negative measurements, so log1p with an offset of 1 can create invalid values before modeling.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000003"
+      ],
+      "derivation_reasoning": "Substitutes a generic skew transform for the observed rank-based normalization."
+    },
+    {
+      "action_id": "CA-000030",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "for each g-* and c-* column, fit QuantileTransformer(n_quantiles=100, output_distribution='uniform') on train and transform train/test",
+        "output_columns": [
+          "g-* uniformly quantile-normalized in place",
+          "c-* uniformly quantile-normalized in place"
+        ],
+        "mode": "fit_transform",
+        "fit_scope": "train_only"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Uniform quantile scaling is not RankGauss and undermines the normal-distribution assumption used by the PCA/NN feature-engineering path.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000003"
+      ],
+      "derivation_reasoning": "Changes only the QuantileTransformer output distribution from normal to uniform."
+    },
+    {
+      "action_id": "CA-000031",
+      "action_type": "ORDINAL_ENCODE",
+      "canonical_params": {
+        "columns": [
+          "cp_time",
+          "cp_dose"
+        ],
+        "order": {
+          "cp_time": [
+            "24",
+            "48",
+            "72"
+          ],
+          "cp_dose": [
+            "D1",
+            "D2"
+          ]
+        },
+        "mode": "transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Ordinal numeric mapping is a common alternative to one-hot encoding for treatment duration and dose.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "yasufuminakama/moa-pytorch-nn-starter",
+        "gogo827jz/kernel-logistic-regression-one-for-206-targets",
+        "andypenrose/moa-pytorch-nn-starter-with-weight-decay",
+        "elcaiseri/moa-keras-multilabel-classifier-nn-starter",
+        "namanj27/new-baseline-pytorch-moa"
+      ],
+      "source_profile": "common_baseline",
+      "context_notes": "Observed in 12 of 30 notebooks. It satisfies the same preprocessing need as one-hot encoding and is therefore one equivalence unit with CA-000020.",
+      "evidence_snippets": [
+        "df.loc[:, 'cp_time'] = df.loc[:, 'cp_time'].map({24: 0, 48: 0.5, 72: 1})",
+        "df['cp_time'] = df['cp_time'].map({24: 0, 48: 1, 72: 2})",
+        "df['cp_dose'] = df['cp_dose'].map({'D1': 0, 'D2': 1})"
+      ],
+      "rareness": "common",
+      "confidence": 0.85,
+      "equivalence_group": "lish_moa_categorical_encoding_strategy"
+    },
+    {
+      "action_id": "CA-000032",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "replace cp_time/cp_dose with full-training target means for the 206 scored targets without out-of-fold separation",
+        "output_columns": [
+          "leaky_cp_time_target_means",
+          "leaky_cp_dose_target_means"
+        ],
+        "mode": "fit_transform",
+        "fit_scope": "train_only"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Target encoding treatment metadata without out-of-fold safeguards leaks label information into the training features.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000020",
+        "CA-000031"
+      ],
+      "derivation_reasoning": "Substitutes a leaky supervised encoding for the observed unsupervised categorical encodings."
+    },
+    {
+      "action_id": "CA-000033",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "cp_time",
+          "cp_dose"
+        ],
+        "reason": "drop_treatment_metadata_without_encoding",
+        "mode": "transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Dropping treatment duration and dose without encoding them discards predictive experimental metadata used by most strong notebooks.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000020",
+        "CA-000031"
+      ],
+      "derivation_reasoning": "Replaces the categorical treatment encoding family with a destructive drop."
+    },
+    {
+      "action_id": "CA-000034",
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "cp_type != 'ctl_vehicle' on training rows only; preserve all test rows for submission alignment",
+        "mode": "transform",
+        "fit_scope": "train_only"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Control vehicle samples have all-zero MoA targets by experimental design; filtering them from training avoids teaching the model that drug-response rows should look like controls.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "yasufuminakama/moa-pytorch-nn-starter",
+        "nayuts/moa-pytorch-nn-pca-rankgauss",
+        "kushal1506/moa-pytorch-0-01859-rankgauss-pca-nn",
+        "gogo827jz/kernel-logistic-regression-one-for-206-targets",
+        "fchmiel/xgboost-baseline-multilabel-classification",
+        "simakov/multilabel-neural-network",
+        "stanleyjzheng/baseline-nn-with-k-folds",
+        "maunish/moa-super-cool-eda-and-pytorch-baseline"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Observed in 24 of 30 reviewed notebooks. Applied to training rows; test controls are usually retained for submission and assigned near-zero predictions.",
+      "evidence_snippets": [
+        "train = train[train['cp_type']!='ctl_vehicle'].reset_index(drop=True)",
+        "ctl_mask = X_train[:,0]=='ctl_vehicle'; X_train = X_train[~ctl_mask,:]",
+        "train = train[train['cp_type'] == 0].reset_index(drop = True)"
+      ],
+      "rareness": "common",
+      "confidence": 0.95
+    },
+    {
+      "action_id": "CA-000035",
+      "action_type": "SAMPLE_ROWS",
+      "canonical_params": {
+        "method": "stratified",
+        "frac": 0.06,
+        "stratify_columns": [
+          "cp_type"
+        ],
+        "replace": false,
+        "mode": "fit",
+        "fit_scope": "train_only"
+      },
+      "eval_stage": "validation_protocol",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Keeping only a 6% stratified sample by cp_type discards most labeled MoA examples while preserving only the treatment/control ratio, not the rare multilabel target coverage.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "lish_moa_control_rows"
+      ],
+      "derivation_reasoning": "Misapplies class-balancing intuition to a perturbation-type column where controls are not a target class."
+    },
+    {
+      "action_id": "CA-000036",
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "cp_time == 24",
+        "mode": "transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Keeping only one treatment duration discards valid 48h and 72h experiments and narrows the training distribution.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000020",
+        "CA-000031"
+      ],
+      "derivation_reasoning": "Mistakes a treatment descriptor for a row-quality filter."
+    },
+    {
+      "action_id": "CA-000037",
+      "action_type": "FEATURE_SELECTION",
+      "canonical_params": {
+        "method": "variance",
+        "feature_columns": [
+          "g-*",
+          "c-*"
+        ],
+        "k": 20,
+        "mode": "fit_transform",
+        "output_columns": [
+          "top_20_highest_variance_assay_features"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Keeping only the 20 highest-variance raw assay features before PCA discards almost all gene and cell measurements and prevents the observed dimensionality-reduction path from recovering broad response structure.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000043",
+        "CA-000047",
+        "CA-000026"
+      ],
+      "derivation_reasoning": "Turns the observed low-variance cleanup step into an aggressive top-k raw-feature selector."
+    },
+    {
+      "action_id": "CA-000038",
+      "action_type": "POWER_TRANSFORM",
+      "canonical_params": {
+        "columns": [
+          "g-*",
+          "c-*"
+        ],
+        "method": "boxcox",
+        "standardize": true,
+        "mode": "fit_transform",
+        "fit_scope": "train_only"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Box-Cox requires positive inputs and is unsuitable for raw expression/viability features with negative values.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000003"
+      ],
+      "derivation_reasoning": "Uses a power transform that violates the LISH-MoA numeric feature domain."
+    },
+    {
+      "action_id": "CA-000039",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "for each row, compute sum/mean/std/kurtosis/skew over g-* and c-* feature groups",
+        "output_columns": [
+          "g_sum",
+          "g_mean",
+          "g_std",
+          "g_kurt",
+          "g_skew",
+          "c_sum",
+          "c_mean",
+          "c_std",
+          "c_kurt",
+          "c_skew"
+        ],
+        "mode": "transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Row-level distribution statistics summarize each sample's gene and cell response profile and appear in a smaller set of extended feature-engineering notebooks.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "ragnar123/moa-dnn-feature-engineering",
+        "maunish/moa-super-cool-eda-and-pytorch-baseline",
+        "kushal1506/moa-pytorch-feature-engineering-0-01846"
+      ],
+      "source_profile": "extended_feature_engineering",
+      "context_notes": "Observed in 6 of 30 notebooks. Kept for all-scope evaluation but not primary core because it is optional extended feature engineering.",
+      "evidence_snippets": [
+        "df['g_sum'] = df[features_g].sum(axis = 1)",
+        "df['g_mean'] = df[features_g].mean(axis = 1)",
+        "df['g_std'] = df[features_g].std(axis = 1)"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.85
+    },
+    {
+      "action_id": "CA-000040",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "fit separate VarianceThreshold selectors on train and test numeric features and keep each split's selected columns independently",
+        "output_columns": [
+          "train_variance_selected_numeric_features",
+          "test_variance_selected_numeric_features"
+        ],
+        "mode": "fit_transform",
+        "fit_scope": "full_data"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Fitting separate selectors for train and test can produce different feature spaces, breaking model application to test rows.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000026"
+      ],
+      "derivation_reasoning": "Applies the right threshold idea but independently per split."
+    },
+    {
+      "action_id": "CA-000041",
+      "action_type": "BIN_NUMERIC",
+      "canonical_params": {
+        "columns": [
+          "g-*",
+          "c-*"
+        ],
+        "method": "uniform",
+        "bins": 10,
+        "mode": "fit_transform",
+        "fit_scope": "train_only"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Uniform binning discards continuous assay resolution across hundreds of dense biological features.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "lish_moa_numeric_feature_distribution"
+      ],
+      "derivation_reasoning": "A generic numeric discretization distractor for high-dimensional continuous assay data."
+    },
+    {
+      "action_id": "CA-000042",
+      "action_type": "LOG_TRANSFORM",
+      "canonical_params": {
+        "columns": [
+          "g-*"
+        ],
+        "offset": 1,
+        "base": "e",
+        "handle_nonpositive": "signed_log1p",
+        "mode": "transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Taking logs of absolute expression values destroys sign information that is meaningful in gene expression responses.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000003"
+      ],
+      "derivation_reasoning": "Another generic transform distractor that damages the assay signal."
+    },
+    {
+      "action_id": "CA-000043",
+      "action_type": "PCA_REDUCTION",
+      "canonical_params": {
+        "feature_columns": [
+          "g-*"
+        ],
+        "n_components": 600,
+        "method": "pca",
+        "random_state": 42,
+        "mode": "fit_transform",
+        "output_columns": [
+          "pca_G-0 through pca_G-599"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Separate PCA on gene expression features captures dense gene-response components without mixing them with cell-viability measurements.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "nayuts/moa-pytorch-nn-pca-rankgauss",
+        "kushal1506/moa-pytorch-0-01859-rankgauss-pca-nn",
+        "ragnar123/moa-dnn-feature-engineering",
+        "sinamhd9/mechanisms-of-action-moa-tutorial",
+        "vbmokin/moa-pytorch-rankgauss-pca-nn-upgrade-3d-visual"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Observed in 13 of 30 notebooks. Component counts vary, but the canonical high-capacity variant follows strong Kushal/VBMokin-style notebooks.",
+      "evidence_snippets": [
+        "data = pd.concat([pd.DataFrame(train_features[GENES]), pd.DataFrame(test_features[GENES])])",
+        "data2 = PCA(n_components=n_comp, random_state=42).fit_transform(data[GENES])",
+        "train_features = pd.concat((train_features, train2), axis=1)"
+      ],
+      "rareness": "common",
+      "confidence": 0.9
+    },
+    {
+      "action_id": "CA-000044",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "columns": [
+          "cp_time"
+        ],
+        "method": "onehot",
+        "mode": "transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Encoding only treatment time leaves dose as an unhandled categorical feature or discards it later.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000020"
+      ],
+      "derivation_reasoning": "Partial implementation of the one-hot treatment encoding family."
+    },
+    {
+      "action_id": "CA-000045",
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "cp_dose == 'D1'",
+        "mode": "transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Keeping only the D1 dose subset discards valid D2 compound-treatment rows and biases the learned MoA response toward one treatment-dose condition.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000020"
+      ],
+      "derivation_reasoning": "Mistakes dose metadata handling for row filtering, replacing categorical treatment encoding with a destructive dose-only subset."
+    },
+    {
+      "action_id": "CA-000046",
+      "action_type": "INTERACTION_FEATURE",
+      "canonical_params": {
+        "feature_columns": [
+          "cp_time",
+          "cp_dose",
+          "g-*",
+          "c-*"
+        ],
+        "operator": "multiply",
+        "degree": 2,
+        "include_bias": false,
+        "mode": "transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Crossing treatment metadata with every assay column explodes the feature space without the notebook evidence supporting such a design.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "lish_moa_high_dimensional_feature_space"
+      ],
+      "derivation_reasoning": "Generic interaction-feature distractor for already high-dimensional assay data."
+    },
+    {
+      "action_id": "CA-000047",
+      "action_type": "PCA_REDUCTION",
+      "canonical_params": {
+        "feature_columns": [
+          "c-*"
+        ],
+        "n_components": 50,
+        "method": "pca",
+        "random_state": 42,
+        "mode": "fit_transform",
+        "output_columns": [
+          "pca_C-0 through pca_C-49"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Separate PCA on cell viability features preserves the distinction between cell-health and gene-expression response spaces.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "nayuts/moa-pytorch-nn-pca-rankgauss",
+        "kushal1506/moa-pytorch-0-01859-rankgauss-pca-nn",
+        "ragnar123/moa-dnn-feature-engineering",
+        "sinamhd9/mechanisms-of-action-moa-tutorial",
+        "vbmokin/moa-pytorch-rankgauss-pca-nn-upgrade-3d-visual"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Observed in 13 of 30 notebooks, usually paired with gene PCA while keeping the two feature groups separate.",
+      "evidence_snippets": [
+        "data = pd.concat([pd.DataFrame(train_features[CELLS]), pd.DataFrame(test_features[CELLS])])",
+        "data2 = PCA(n_components=n_comp, random_state=42).fit_transform(data[CELLS])",
+        "train_features = pd.concat((train_features, train2), axis=1)"
+      ],
+      "rareness": "common",
+      "confidence": 0.9
+    },
+    {
+      "action_id": "CA-000048",
+      "action_type": "INTERACTION_FEATURE",
+      "canonical_params": {
+        "feature_columns": [
+          "g-*"
+        ],
+        "operator": "multiply",
+        "degree": 2,
+        "include_bias": false,
+        "mode": "transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "All pairwise interactions among 772 gene columns create hundreds of thousands of features and overwhelm the modest row count.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "lish_moa_high_dimensional_feature_space"
+      ],
+      "derivation_reasoning": "Generic feature-crossing distractor that is unsuitable at LISH-MoA dimensionality."
+    },
+    {
+      "action_id": "CA-000049",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "cp_type"
+        ],
+        "reason": "drop_before_control_filter",
+        "mode": "transform",
+        "fit_scope": "none"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Dropping cp_type before control filtering makes it impossible to identify the ctl_vehicle training rows that should be removed.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000034",
+        "CA-000012"
+      ],
+      "derivation_reasoning": "Uses the right column but at the wrong point in the preprocessing order."
+    },
+    {
+      "action_id": "CA-000050",
+      "action_type": "FEATURE_SELECTION",
+      "canonical_params": {
+        "method": "variance",
+        "feature_columns": [
+          "numeric_features"
+        ],
+        "threshold": 2,
+        "mode": "fit_transform",
+        "output_columns": [
+          "over-pruned numeric features"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Threshold 2.0 is too aggressive after RankGauss/PCA-style processing and removes too much signal.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000026"
+      ],
+      "derivation_reasoning": "Over-tightens the observed VarianceThreshold into a destructive selector."
+    },
+    {
+      "action_id": "CA-000051",
+      "action_type": "SCALE_NUMERIC",
+      "canonical_params": {
+        "method": "standard",
+        "columns": [
+          "g-*",
+          "c-*"
+        ],
+        "with_mean": true,
+        "with_std": true,
+        "mode": "fit_transform",
+        "fit_scope": "train_only",
+        "output_columns": [
+          "standard_scaled_g_*",
+          "standard_scaled_c_*"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Standard scaling is mechanically applicable to the assay matrix, but it is a generic replacement for the observed RankGauss normalization path and does not preserve the rank-normal feature distribution used by strong LISH-MoA PCA/NN pipelines.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000003"
+      ],
+      "derivation_reasoning": "Covers the numeric scaling family as a plausible but non-observed normalization alternative to RankGauss."
+    },
+    {
+      "action_id": "CA-000052",
+      "action_type": "SCALE_NUMERIC",
+      "canonical_params": {
+        "method": "minmax",
+        "columns": [
+          "g-*",
+          "c-*"
+        ],
+        "with_mean": false,
+        "with_std": false,
+        "mode": "fit_transform",
+        "fit_scope": "train_only",
+        "output_columns": [
+          "minmax_scaled_g_*",
+          "minmax_scaled_c_*"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Min-max scaling compresses each assay feature into a bounded range but remains a generic scaling substitute rather than the observed RankGauss/PCA preprocessing path for LISH-MoA.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000003"
+      ],
+      "derivation_reasoning": "Second numeric scaling distractor so SCALE_NUMERIC is represented by at least two nearby rows rather than a singleton coverage hint."
+    }
+  ]
+}

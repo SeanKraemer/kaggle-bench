@@ -1,0 +1,66 @@
+{
+  "competition_slug": "restaurant-revenue-prediction",
+  "testcase_id": "tc1_from_scratch",
+  "artifact_type": "eval_human_baseline_action_trace",
+  "related_output": "../tc1_human.json",
+  "traces": [
+    {
+      "predicted_action_id": "CA-000002",
+      "artifact": "../work.ipynb",
+      "section": "Drop Id",
+      "mapping_rationale": "Direct bank match for removing the identifier column from both train and test tables."
+    },
+    {
+      "predicted_action_id": "CA-000007",
+      "artifact": "../work.ipynb",
+      "section": "Parse Open Date",
+      "mapping_rationale": "Direct bank match for converting the raw Open Date string into datetime values with month/day/year format."
+    },
+    {
+      "predicted_action_id": "CA-000004",
+      "artifact": "../work.ipynb",
+      "section": "Derive OpenDays",
+      "mapping_rationale": "Direct bank match for the fixed-anchor OpenDays feature branch described in the task-local notes."
+    },
+    {
+      "predicted_action_id": "CA-000024",
+      "artifact": "../work.ipynb",
+      "section": "Label Encode Low-Cardinality Categoricals",
+      "mapping_rationale": "Direct bank match for compact label encoding of City Group and Type."
+    },
+    {
+      "predicted_action_id": "CA-000009",
+      "artifact": "../work.ipynb",
+      "section": "Add Istanbul Indicator",
+      "mapping_rationale": "Chosen as the closest bank action to the notebook's compact Istanbul-versus-other city indicator."
+    },
+    {
+      "predicted_action_id": "CA-000016",
+      "artifact": "../work.ipynb",
+      "section": "Standard Scale P-Features",
+      "mapping_rationale": "Direct bank match for applying StandardScaler to the P1-P37 numeric feature block."
+    },
+    {
+      "predicted_action_id": "CA-000018",
+      "artifact": "../work.ipynb",
+      "section": "Log1p Target",
+      "mapping_rationale": "Direct bank match for log1p normalization of the revenue target before model fitting."
+    },
+    {
+      "predicted_action_id": "CA-000011",
+      "artifact": "../work.ipynb",
+      "section": "Drop Raw Open Date",
+      "mapping_rationale": "Direct bank match for removing Open Date after the OpenDays feature has already been derived."
+    }
+  ],
+  "omitted_notebook_steps": [
+    {
+      "section": "Feature Matrix Preview",
+      "note": "Final model-column selection is kept as a notebook convenience step and is not mapped to a standalone bank action."
+    },
+    {
+      "section": "Scope Boundary",
+      "note": "The bank also contains a year/month/day date-part alternative, but this baseline intentionally selects only the OpenDays branch from that equivalence group."
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "competition_slug": "competitive-data-science-predict-future-sales",
+  "testcase_id": "tc1_from_scratch",
+  "agent_name": "human",
+  "run_by": "annotator_c",
+  "run_id": "human_tc1_annotator_c_v1",
+  "artifact_refs": [
+    {
+      "kind": "notebook",
+      "path": "work.ipynb",
+      "description": "Executable working notebook used to assemble the Predict Future Sales TC1 human baseline."
+    },
+    {
+      "kind": "metadata",
+      "path": "provenance/metadata.json",
+      "description": "Run-level provenance metadata for the bank-id human baseline."
+    },
+    {
+      "kind": "trace",
+      "path": "provenance/action_trace.json",
+      "description": "Maps each selected bank action to the notebook section that supports it."
+    },
+    {
+      "kind": "notes",
+      "path": "notes.md",
+      "description": "Author notes for the Predict Future Sales human baseline."
+    }
+  ],
+  "predicted_add_action_ids": [
+    "CA-000001",
+    "CA-000003",
+    "CA-000005",
+    "CA-000007",
+    "CA-000009",
+    "CA-000011",
+    "CA-000013",
+    "CA-000015",
+    "CA-000017",
+    "CA-000019",
+    "CA-000021",
+    "CA-000023",
+    "CA-000025"
+  ],
+  "predicted_remove_action_ids": [],
+  "time_spent_seconds": 3600,
+  "token_usage": {
+    "input_tokens": null,
+    "output_tokens": null,
+    "total_tokens": null
+  },
+  "notes": "Re-authored TC1 human baseline against the current Predict Future Sales action bank using collected Kaggle notebooks as evidence. Selected every good bank row with clear official-only notebook support and omitted frequent notebook steps that the current bank intentionally leaves out, such as full grid completion and richer grouped-history families."
+}

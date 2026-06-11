@@ -1,0 +1,16 @@
+{
+  "testcase_id": "tc4_mixed_history",
+  "competition_slug": "elo-merchant-category-recommendation",
+  "task_ref": "../task.json",
+  "input": {
+    "scenario": "mixed",
+    "context_action_ids": [
+      "CA-000035",
+      "CA-000047",
+      "CA-000060",
+      "CA-000020",
+      "CA-000044",
+      "CA-000059"
+    ]
+  }
+}

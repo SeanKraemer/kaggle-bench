@@ -1,0 +1,24 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: mixed-line-ending
+        args: ["--fix=lf"]
+      - id: check-merge-conflict
+      - id: check-yaml
+      - id: check-json
+  - repo: local
+    hooks:
+      - id: agent-unit-tests
+        name: agent-unit-tests
+        entry: uv run python -m unittest discover -s agent/tests -p 'test_*.py'
+        language: system
+        pass_filenames: false
+      - id: validate-golden-actions-schema
+        name: validate-golden-actions-schema
+        entry: uv run python data/collector/scripts/validate_golden_actions_schema.py
+        language: system
+        pass_filenames: false
+        files: ^(data/schema/golden_action\.schema\.json|data/tasks/.+/golden_actions\.json)$

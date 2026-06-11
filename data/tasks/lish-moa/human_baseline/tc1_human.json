@@ -1,0 +1,50 @@
+{
+  "competition_slug": "lish-moa",
+  "testcase_id": "tc1_from_scratch",
+  "agent_name": "human",
+  "run_by": "annotator_a",
+  "run_id": "human_tc1_annotator_a_v1",
+  "artifact_refs": [
+    {
+      "kind": "metadata",
+      "path": "provenance/metadata.json",
+      "description": "Run-level metadata for the LISH-MoA TC1 human baseline."
+    },
+    {
+      "kind": "trace",
+      "path": "provenance/action_trace.json",
+      "description": "Human-selected bank action IDs and the masked candidate-review context used for selection."
+    },
+    {
+      "kind": "notes",
+      "path": "notes.md",
+      "description": "Author notes for the LISH-MoA TC1 human baseline."
+    }
+  ],
+  "predicted_add_action_ids": [
+    "CA-000003",
+    "CA-000025",
+    "CA-000039",
+    "CA-000040",
+    "CA-000043",
+    "CA-000047",
+    "CA-000008",
+    "CA-000012",
+    "CA-000020",
+    "CA-000034",
+    "CA-000026",
+    "CA-000007",
+    "CA-000041",
+    "CA-000004",
+    "CA-000042",
+    "CA-000046"
+  ],
+  "predicted_remove_action_ids": [],
+  "time_spent_seconds": 3600,
+  "token_usage": {
+    "input_tokens": null,
+    "output_tokens": null,
+    "total_tokens": null
+  },
+  "notes": "True bank-id TC1 human baseline authored against the current LISH-MoA candidate_actions.json. The human selected action IDs after reviewing a masked candidate menu grouped by action type with pros and cons; role, eval_stage, equivalence groups, and expected answers were not shown. Time was not instrumented; time_spent_seconds is a coarse 60-minute estimate for the manual review and selection session."
+}

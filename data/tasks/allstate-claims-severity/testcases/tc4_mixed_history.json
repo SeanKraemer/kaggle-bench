@@ -1,0 +1,13 @@
+{
+  "testcase_id": "tc4_mixed_history",
+  "competition_slug": "allstate-claims-severity",
+  "task_ref": "../task.json",
+  "input": {
+    "scenario": "mixed",
+    "context_action_ids": [
+      "CA-000001",
+      "CA-000005",
+      "CA-000015"
+    ]
+  }
+}

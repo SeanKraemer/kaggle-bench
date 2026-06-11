@@ -1,0 +1,12 @@
+{
+  "testcase_id": "tc3_fault_injected",
+  "competition_slug": "porto-seguro-safe-driver-prediction",
+  "task_ref": "../task.json",
+  "input": {
+    "scenario": "fault_injected",
+    "context_action_ids": [
+      "CA-000017",
+      "CA-000002"
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "testcase_id": "tc2_partial_good",
+  "competition_slug": "zillow-prize-1",
+  "task_ref": "../task.json",
+  "input": {
+    "scenario": "partial_good",
+    "context_action_ids": [
+      "CA-000107",
+      "CA-000045",
+      "CA-000050"
+    ]
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "testcase_id": "tc2_partial_good",
+  "competition_slug": "rossmann-store-sales",
+  "task_ref": "../task.json",
+  "input": {
+    "scenario": "partial_good",
+    "context_action_ids": [
+      "CA-000044",
+      "CA-000036",
+      "CA-000021",
+      "CA-000031",
+      "CA-000018",
+      "CA-000052"
+    ]
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "competition_slug": "competitive-data-science-predict-future-sales",
+  "testcase_id": "tc1_from_scratch",
+  "artifact_type": "eval_human_baseline_provenance",
+  "author": "annotator_c",
+  "created_at": "2026-04-13T00:00:00-05:00",
+  "source_mode": "collected_kaggle_notebook_corpus_reauthored_to_bank_ids",
+  "related_output": "../tc1_human.json",
+  "source_notebook_artifacts": ["../work.ipynb"],
+  "time_spent_minutes": 60,
+  "consulted_candidate_bank": true,
+  "consulted_collected_notebooks": true,
+  "notes": "This artifact re-authors the Predict Future Sales TC1 human baseline into the current bank-id output format. It uses the collected Kaggle notebook corpus as evidence but only selects rows that remain inside the current official-only benchmark contract."
+}

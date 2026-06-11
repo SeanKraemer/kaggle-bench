@@ -1,0 +1,2302 @@
+{
+  "competition_slug": "ieee-fraud-detection",
+  "generated_at": "2026-03-31T12:00:00-05:00",
+  "actions": [
+    {
+      "action_id": "CA-000001",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "train_identity",
+        "left_on": "TransactionID",
+        "right_on": "TransactionID",
+        "how": "inner",
+        "fit_scope": "none",
+        "mode": "transform"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Inner-joining identity looks natural, but it discards the many transactions that have no identity row.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000005"
+      ],
+      "derivation_reasoning": "Synthetic harmful join variant derived from the rewarded identity left-join action.",
+      "conflicts_with_action_ids": [
+        "CA-000005"
+      ]
+    },
+    {
+      "action_id": "CA-000002",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "train_identity",
+        "left_on": "TransactionID",
+        "right_on": "TransactionID",
+        "how": "right",
+        "fit_scope": "none",
+        "mode": "transform"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "A right join keeps only identity-covered records and reshapes the supervised table around the sparse side.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000005"
+      ],
+      "derivation_reasoning": "Second harmful join variant added so the IEEE join family is not represented by a singleton negative.",
+      "conflicts_with_action_ids": [
+        "CA-000005"
+      ]
+    },
+    {
+      "action_id": "CA-000003",
+      "action_type": "PARSE_DATETIME",
+      "canonical_params": {
+        "columns": [
+          "TransactionDT"
+        ],
+        "unit": "s",
+        "origin": "unix",
+        "errors": "coerce"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Treating TransactionDT as a real Unix timestamp is a plausible IEEE misread, but it anchors all time features to the wrong calendar.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000020"
+      ],
+      "derivation_reasoning": "Synthetic local IEEE near miss derived from the rewarded anchored DT conversion, but demoted out of primary scope because it mainly serves canonical coverage."
+    },
+    {
+      "action_id": "CA-000004",
+      "action_type": "PARSE_DATETIME",
+      "canonical_params": {
+        "columns": [
+          "TransactionDT"
+        ],
+        "unit": "ms",
+        "origin": "unix",
+        "errors": "coerce"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Reading TransactionDT as Unix milliseconds is another plausible timestamp misread that badly compresses the competition's relative-time scale.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "tolgahancepel/lightgbm-single-model-and-feature-engineering"
+      ],
+      "derivation_reasoning": "Second local IEEE timestamp-misread variant added so the parse-datetime family is not singleton while staying out of primary scope."
+    },
+    {
+      "action_id": "CA-000005",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "train_identity",
+        "left_on": "TransactionID",
+        "right_on": "TransactionID",
+        "how": "left",
+        "fit_scope": "none",
+        "mode": "transform"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Strong IEEE workflows left-join identity rows onto the transaction table before any identity-side feature engineering.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "tolgahancepel/lightgbm-single-model-and-feature-engineering",
+        "davidcairuz/feature-engineering-lightgbm",
+        "artgor/eda-and-models"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Core relational setup step for all device and id_* feature families.",
+      "evidence_snippets": [
+        "train = train_transaction.merge(train_identity, how='left', on='TransactionID')",
+        "test = test_transaction.merge(test_identity, how='left', on='TransactionID')"
+      ],
+      "rareness": "common",
+      "confidence": 0.95
+    },
+    {
+      "action_id": "CA-000006",
+      "action_type": "BIN_NUMERIC",
+      "canonical_params": {
+        "columns": [
+          "TransactionAmt",
+          "TransactionDT"
+        ],
+        "method": "quantile",
+        "bins": 10
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Quantile-binning the main amount and time offsets coarsens signal that stronger IEEE workflows usually preserve.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000020",
+        "CA-000066"
+      ],
+      "derivation_reasoning": "Synthetic numeric-binning branch derived from the time and amount handling families."
+    },
+    {
+      "action_id": "CA-000007",
+      "action_type": "BIN_NUMERIC",
+      "canonical_params": {
+        "columns": [
+          "card1",
+          "addr1"
+        ],
+        "method": "uniform",
+        "bins": 8
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Uniformly binning card and address identifiers treats them like continuous measures rather than discrete identity codes.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000010",
+        "CA-000046"
+      ],
+      "derivation_reasoning": "Second binning distractor added around the card/address identity family."
+    },
+    {
+      "action_id": "CA-000008",
+      "action_type": "CAST_DTYPE",
+      "canonical_params": {
+        "columns": [
+          "TransactionAmt",
+          "id_02",
+          "D15"
+        ],
+        "dtype": "int",
+        "errors": "coerce"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Casting amount and sparse identity-delay signals to integers wipes cents and fine-grained variance that the IEEE feature families rely on.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000051",
+        "CA-000056",
+        "CA-000066"
+      ],
+      "derivation_reasoning": "Synthetic harmful cast derived from the amount and ratio-feature families by collapsing continuous values to integers."
+    },
+    {
+      "action_id": "CA-000009",
+      "action_type": "CAST_DTYPE",
+      "canonical_params": {
+        "columns": [
+          "C1",
+          "C2",
+          "C3",
+          "C4",
+          "C5",
+          "C6",
+          "C7",
+          "C8",
+          "C9",
+          "C10",
+          "C11",
+          "C12",
+          "C13",
+          "C14",
+          "D1",
+          "D15"
+        ],
+        "dtype": "bool",
+        "errors": "coerce"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Casting count and delay features to boolean collapses their magnitudes into simple present-or-not signals and destroys the numeric structure IEEE models use.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000046",
+        "CA-000051"
+      ],
+      "derivation_reasoning": "Second harmful cast added around the count and delay families so the cast-dtype family is not represented by a benign alternative."
+    },
+    {
+      "action_id": "CA-000010",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "uid = concat(card1, '_', card2); uid2 = concat(uid, '_', card3, '_', card5); uid3 = concat(uid2, '_', addr1, '_', addr2)",
+        "output_columns": [
+          "uid",
+          "uid2",
+          "uid3"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Winner-style IEEE notebooks construct hierarchical client identifiers from card and address fields before aggregation.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "kyakovlev/ieee-gb-2-make-amount-useful-again",
+        "roydatascience/light-gbm-with-complete-eda"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Primary UID construction branch for the standard LightGBM/XGBoost feature family.",
+      "evidence_snippets": [
+        "train_df['uid'] = train_df['card1'].astype(str)+'_'+train_df['card2'].astype(str)",
+        "train_df['uid3'] = train_df['uid2'].astype(str)+'_'+train_df['addr1'].astype(str)+'_'+train_df['addr2'].astype(str)"
+      ],
+      "rareness": "common",
+      "confidence": 0.9,
+      "equivalence_group": "ieee_uid_strategy"
+    },
+    {
+      "action_id": "CA-000011",
+      "action_type": "CLIP_OUTLIERS",
+      "canonical_params": {
+        "columns": [
+          "TransactionAmt",
+          "id_02",
+          "dist1"
+        ],
+        "method": "winsorize",
+        "lower_quantile": 0.001,
+        "upper_quantile": 0.999
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Aggressively clipping major amount and identity-distance features is plausible but not part of the curated IEEE target path.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000051",
+        "CA-000066"
+      ],
+      "derivation_reasoning": "Synthetic outlier-clipping branch derived from the amount and ratio-feature families."
+    },
+    {
+      "action_id": "CA-000012",
+      "action_type": "CLIP_OUTLIERS",
+      "canonical_params": {
+        "columns": [
+          "D1",
+          "D10",
+          "D15"
+        ],
+        "method": "iqr",
+        "iqr_k": 1.5
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "IQR clipping on delay features is plausible, but it is still a lossy branch the benchmark does not reward.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "artgor/eda-and-models"
+      ],
+      "derivation_reasoning": "Second outlier-clipping variant added so this canonical family is not singleton."
+    },
+    {
+      "action_id": "CA-000013",
+      "action_type": "CREATE_MISSING_INDICATOR",
+      "canonical_params": {
+        "columns": [
+          "P_emaildomain",
+          "R_emaildomain",
+          "DeviceType",
+          "DeviceInfo"
+        ],
+        "indicator_suffix": "_missing"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Explicit missingness flags on email and device columns are plausible, but the benchmark does not reward expanding IEEE with these indicator columns.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000030",
+        "CA-000035",
+        "CA-000040"
+      ],
+      "derivation_reasoning": "Synthetic missing-indicator branch derived from the email and device feature families."
+    },
+    {
+      "action_id": "CA-000014",
+      "action_type": "CREATE_MISSING_INDICATOR",
+      "canonical_params": {
+        "columns": [
+          "id_02",
+          "D1",
+          "D15",
+          "dist1"
+        ],
+        "indicator_suffix": "_na"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Adding indicators on sparse numeric identity and delay columns is also plausible but outside the intended benchmark target set.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000051"
+      ],
+      "derivation_reasoning": "Second missing-indicator variant added so the family is not singleton."
+    },
+    {
+      "action_id": "CA-000015",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "card1_addr1 = concat(card1, '_', addr1); day = TransactionDT / 86400; uid = concat(card1_addr1, '_', floor(day - D1))",
+        "output_columns": [
+          "card1_addr1",
+          "day",
+          "uid"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "hard",
+      "reasoning": "A narrower but strong alternative IEEE branch builds a more precise UID using card, address, and elapsed-day offsets.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "cdeotte/xgb-fraud-with-magic-0-9600"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Alternative UID branch used by the precise-UID magic-feature family.",
+      "evidence_snippets": [
+        "X_train['day'] = X_train.TransactionDT / (24*60*60)",
+        "X_train['uid'] = X_train.card1_addr1.astype(str)+'_'+np.floor(X_train.day-X_train.D1).astype(str)"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.88,
+      "equivalence_group": "ieee_uid_strategy"
+    },
+    {
+      "action_id": "CA-000016",
+      "action_type": "CYCLICAL_ENCODE",
+      "canonical_params": {
+        "columns": [
+          "DT_hour"
+        ],
+        "period": 24,
+        "method": "sin_cos"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Cyclic hour encoding is a reasonable temporal idea, but it is beyond the curated IEEE time block.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000025"
+      ],
+      "derivation_reasoning": "Synthetic cyclical-encoding branch derived from the rewarded time-part family.",
+      "must_follow_action_ids": [
+        "CA-000025"
+      ]
+    },
+    {
+      "action_id": "CA-000017",
+      "action_type": "CYCLICAL_ENCODE",
+      "canonical_params": {
+        "columns": [
+          "DT_dayofweek"
+        ],
+        "period": 7,
+        "method": "sin_cos"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Cyclic weekday encoding is equally plausible, but it still pushes the benchmark into a heavier time-engineering branch.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000025"
+      ],
+      "derivation_reasoning": "Second cyclical-encoding variant added so the family is not singleton.",
+      "must_follow_action_ids": [
+        "CA-000025"
+      ]
+    },
+    {
+      "action_id": "CA-000018",
+      "action_type": "DATE_PART_FEATURE",
+      "canonical_params": {
+        "date_columns": [
+          "DT"
+        ],
+        "parts": [
+          "hour",
+          "dayofweek"
+        ],
+        "drop_original": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Recovering only hour and weekday is a plausible compact time branch, but it is a narrower near-miss than the curated IEEE time block.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000025"
+      ],
+      "derivation_reasoning": "Synthetic compact time-part variant added as a near miss around the rewarded date-part family.",
+      "must_follow_action_ids": [
+        "CA-000020"
+      ]
+    },
+    {
+      "action_id": "CA-000019",
+      "action_type": "DIFF_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "TransactionAmt"
+        ],
+        "periods": [
+          1
+        ],
+        "order_by_columns": [
+          "TransactionDT"
+        ],
+        "group_by_columns": [
+          "uid"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "UID-ordered first differences are mechanically possible, but they introduce a heavier sequential branch than the benchmark intends to score.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000010",
+        "CA-000071"
+      ],
+      "derivation_reasoning": "Synthetic differencing branch derived from the UID and aggregation families.",
+      "must_follow_action_ids": [
+        "CA-000010"
+      ]
+    },
+    {
+      "action_id": "CA-000020",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "DT = START_DATE + timedelta(seconds=TransactionDT)",
+        "output_columns": [
+          "DT"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "IEEE notebooks first convert relative transaction seconds into an anchor-based datetime column before deriving reusable time parts.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "tolgahancepel/lightgbm-single-model-and-feature-engineering",
+        "artgor/eda-and-models"
+      ],
+      "source_profile": "explanatory_style",
+      "context_notes": "Shared prerequisite for canonicalized date-part feature rows.",
+      "evidence_snippets": [
+        "df['DT'] = df['TransactionDT'].apply(lambda x: (START_DATE + datetime.timedelta(seconds=x)))"
+      ],
+      "rareness": "common",
+      "confidence": 0.92
+    },
+    {
+      "action_id": "CA-000021",
+      "action_type": "DIFF_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "D15"
+        ],
+        "periods": [
+          1
+        ],
+        "order_by_columns": [
+          "TransactionDT"
+        ],
+        "group_by_columns": [
+          "card1"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Card-level differencing on delay features is also plausible, but still outside the intended IEEE benchmark path.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "artgor/eda-and-models"
+      ],
+      "derivation_reasoning": "Second differencing variant added so this family is not singleton."
+    },
+    {
+      "action_id": "CA-000022",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "TransactionDT"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Dropping TransactionDT kills the entire anchored-time and precise-UID family before it can be built.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000015",
+        "CA-000020",
+        "CA-000025"
+      ],
+      "derivation_reasoning": "Synthetic destructive-drop fault derived from the rewarded time and precise-UID families.",
+      "conflicts_with_action_ids": [
+        "CA-000015",
+        "CA-000020",
+        "CA-000025"
+      ]
+    },
+    {
+      "action_id": "CA-000023",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "card1"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Dropping card1 breaks both UID construction branches and much of the broad encoding or aggregation logic.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000010",
+        "CA-000015",
+        "CA-000046",
+        "CA-000051",
+        "CA-000071",
+        "CA-000076"
+      ],
+      "derivation_reasoning": "Synthetic destructive-drop fault derived from the core IEEE identity and aggregation families.",
+      "conflicts_with_action_ids": [
+        "CA-000010",
+        "CA-000015",
+        "CA-000046",
+        "CA-000051",
+        "CA-000071",
+        "CA-000076"
+      ]
+    },
+    {
+      "action_id": "CA-000024",
+      "action_type": "DROP_CONSTANT_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "card4",
+          "card6",
+          "DeviceType"
+        ],
+        "min_unique_values": 10,
+        "include_nan_as_value": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Over-aggressive low-cardinality pruning can wrongly drop card brand, payment type, and device type fields that carry real fraud signal in IEEE.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000005",
+        "CA-000040",
+        "CA-000046"
+      ],
+      "derivation_reasoning": "Synthetic harmful pruning branch derived from the core card, device, and encoding families by treating informative low-cardinality columns as disposable."
+    },
+    {
+      "action_id": "CA-000025",
+      "action_type": "DATE_PART_FEATURE",
+      "canonical_params": {
+        "date_columns": [
+          "DT"
+        ],
+        "parts": [
+          "month",
+          "week",
+          "day",
+          "dayofweek",
+          "hour"
+        ],
+        "drop_original": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "The common IEEE time block expands the anchored datetime into reusable month, week, day, weekday, and hour signals.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "tolgahancepel/lightgbm-single-model-and-feature-engineering"
+      ],
+      "source_profile": "explanatory_style",
+      "context_notes": "Canonicalized time-part row replacing the legacy monolithic DT_M/DT_W/DT_D expression block.",
+      "evidence_snippets": [
+        "df['DT_M'] = (df['DT'].dt.year-2017)*12 + df['DT'].dt.month",
+        "df['DT_hour'] = df['DT'].dt.hour",
+        "df['DT_day_week'] = df['DT'].dt.dayofweek"
+      ],
+      "rareness": "common",
+      "confidence": 0.9,
+      "must_follow_action_ids": [
+        "CA-000020"
+      ]
+    },
+    {
+      "action_id": "CA-000026",
+      "action_type": "DROP_CONSTANT_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "P_emaildomain",
+          "R_emaildomain",
+          "DeviceInfo"
+        ],
+        "min_unique_values": 50,
+        "include_nan_as_value": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Treating sparse email and device strings as low-cardinality junk can drop exactly the provider and device cues that many IEEE notebooks exploit.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000030",
+        "CA-000035",
+        "CA-000040"
+      ],
+      "derivation_reasoning": "Second harmful low-cardinality pruning variant added around the email and device families so this action type is not represented by weak cleanup rows."
+    },
+    {
+      "action_id": "CA-000027",
+      "action_type": "DROP_HIGH_NULL_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "V138",
+          "V139",
+          "V140",
+          "V141",
+          "V142",
+          "V143",
+          "V144"
+        ],
+        "null_ratio_threshold": 0.95
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Aggressively dropping sparse V columns is a classic tabular heuristic, but stronger IEEE workflows often preserve wide V blocks.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000046"
+      ],
+      "derivation_reasoning": "Synthetic high-null pruning branch derived from the wide-feature handling family."
+    },
+    {
+      "action_id": "CA-000028",
+      "action_type": "DROP_HIGH_NULL_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "id_24",
+          "id_25",
+          "id_26",
+          "id_32",
+          "id_33"
+        ],
+        "null_ratio_threshold": 0.9
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Dropping high-null identity columns is also plausible, but it removes fields the benchmark expects an agent to at least consider preserving.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000005",
+        "CA-000040"
+      ],
+      "derivation_reasoning": "Second high-null pruning variant added around the identity-table family."
+    },
+    {
+      "action_id": "CA-000029",
+      "action_type": "DROP_DUPLICATES",
+      "canonical_params": {
+        "subset_columns": [
+          "uid"
+        ],
+        "keep": "first"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Deduplicating on an engineered UID discards repeated transactions that the benchmark expects to keep and model.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000010"
+      ],
+      "derivation_reasoning": "Synthetic duplicate-pruning branch derived from the rewarded standard UID strategy.",
+      "must_follow_action_ids": [
+        "CA-000010"
+      ]
+    },
+    {
+      "action_id": "CA-000030",
+      "action_type": "MAP_CATEGORIES",
+      "canonical_params": {
+        "columns": [
+          "P_emaildomain",
+          "R_emaildomain"
+        ],
+        "mapping": {
+          "gmail.com": "google",
+          "gmail": "google",
+          "yahoo.com": "yahoo",
+          "hotmail.com": "microsoft",
+          "outlook.com": "microsoft"
+        },
+        "default_value": "other"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "A repeated IEEE pattern groups raw purchaser and recipient email domains into provider bins before later encodings.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "davidcairuz/feature-engineering-lightgbm"
+      ],
+      "source_profile": "explanatory_style",
+      "context_notes": "Canonicalized provider-bin action for the repeated email-domain family.",
+      "evidence_snippets": [
+        "train[c + '_bin'] = train[c].map(emails)"
+      ],
+      "rareness": "common",
+      "confidence": 0.88
+    },
+    {
+      "action_id": "CA-000031",
+      "action_type": "DROP_DUPLICATES",
+      "canonical_params": {
+        "subset_columns": [
+          "card1",
+          "TransactionAmt",
+          "P_emaildomain"
+        ],
+        "keep": "last"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Deduplicating by a card-amount-email signature is another tempting cleanup move that can still discard supervised examples.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "roydatascience/light-gbm-with-complete-eda"
+      ],
+      "derivation_reasoning": "Second duplicate-pruning variant added so the family is not singleton."
+    },
+    {
+      "action_id": "CA-000032",
+      "action_type": "DROP_ROWS_WITH_MISSING",
+      "canonical_params": {
+        "subset_columns": [
+          "P_emaildomain",
+          "R_emaildomain",
+          "DeviceInfo"
+        ],
+        "how": "any"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Dropping rows missing email or device strings removes a large valid subset instead of handling sparse identity coverage in-feature.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000030",
+        "CA-000035",
+        "CA-000040"
+      ],
+      "derivation_reasoning": "Synthetic row-drop-on-missing branch derived from the email and device families."
+    },
+    {
+      "action_id": "CA-000033",
+      "action_type": "DROP_ROWS_WITH_MISSING",
+      "canonical_params": {
+        "subset_columns": [
+          "id_02",
+          "D15",
+          "dist1"
+        ],
+        "how": "any"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Dropping rows when sparse numeric identity or delay values are missing throws away supervision instead of engineering around the sparsity.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000051"
+      ],
+      "derivation_reasoning": "Second row-drop-on-missing variant added around the numeric identity family."
+    },
+    {
+      "action_id": "CA-000034",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "onehot",
+        "columns": [
+          "P_emaildomain_bin",
+          "R_emaildomain_bin",
+          "DeviceType"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "One-hot encoding on a compact email and device block is plausible, but the benchmark does not reward this branch over the curated frequency route.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000030",
+        "CA-000046"
+      ],
+      "derivation_reasoning": "Synthetic alternative encoding branch added so the IEEE encoding family has a nearby negative."
+    },
+    {
+      "action_id": "CA-000035",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "fill missing email domains with sentinel, flag P/R domain match, extract prefixes and suffixes",
+        "output_columns": [
+          "email_check",
+          "P_emaildomain_prefix",
+          "R_emaildomain_prefix",
+          "P_emaildomain_suffix",
+          "R_emaildomain_suffix"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Top IEEE notebooks derive direct sender/recipient agreement and prefix or suffix features on top of provider bins.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "tolgahancepel/lightgbm-single-model-and-feature-engineering",
+        "davidcairuz/feature-engineering-lightgbm"
+      ],
+      "source_profile": "explanatory_style",
+      "context_notes": "Complementary email-domain FE family that preserves match and prefix information beyond provider bins.",
+      "evidence_snippets": [
+        "df['email_check'] = np.where((df[p]==df[r])&(df[p]!=uknown),1,0)",
+        "df[p+'_prefix'] = df[p].apply(lambda x: x.split('.')[0])"
+      ],
+      "rareness": "common",
+      "confidence": 0.86
+    },
+    {
+      "action_id": "CA-000036",
+      "action_type": "EXPANDING_WINDOW_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "TransactionAmt"
+        ],
+        "agg_functions": [
+          "mean"
+        ],
+        "order_by_columns": [
+          "TransactionDT"
+        ],
+        "group_by_columns": [
+          "uid"
+        ],
+        "min_periods": 2
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "UID-level expanding means are mechanically possible, but they create a sequential branch outside the curated IEEE preprocessing target.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000010",
+        "CA-000071"
+      ],
+      "derivation_reasoning": "Synthetic expanding-window branch derived from the rewarded UID and aggregation families.",
+      "must_follow_action_ids": [
+        "CA-000010"
+      ]
+    },
+    {
+      "action_id": "CA-000037",
+      "action_type": "EXPANDING_WINDOW_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "D15"
+        ],
+        "agg_functions": [
+          "std"
+        ],
+        "order_by_columns": [
+          "TransactionDT"
+        ],
+        "group_by_columns": [
+          "card1"
+        ],
+        "min_periods": 3
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Card-level expanding volatility features are also plausible, but still outside the benchmark-preferred path.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "artgor/eda-and-models"
+      ],
+      "derivation_reasoning": "Second expanding-window variant added so this temporal family is not singleton."
+    },
+    {
+      "action_id": "CA-000038",
+      "action_type": "FEATURE_SELECTION",
+      "canonical_params": {
+        "method": "variance",
+        "feature_columns": [
+          "V1",
+          "V2",
+          "V3",
+          "V4",
+          "V5",
+          "V6",
+          "V7",
+          "V8"
+        ],
+        "threshold": 0.0
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Explicit variance-threshold pruning is common, but this benchmark does not reward a separate feature-selection stage for IEEE.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "roydatascience/light-gbm-with-complete-eda"
+      ],
+      "derivation_reasoning": "Synthetic feature-selection branch added for broader canonical coverage."
+    },
+    {
+      "action_id": "CA-000039",
+      "action_type": "FEATURE_SELECTION",
+      "canonical_params": {
+        "method": "model_importance",
+        "feature_columns": [
+          "uid",
+          "DT_hour",
+          "P_emaildomain_bin",
+          "device_name",
+          "TransactionAmt_to_mean_card1"
+        ],
+        "top_k": 4
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Model-importance pruning over engineered features is plausible, but still outside the intended IEEE preprocessing target.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000010",
+        "CA-000025",
+        "CA-000030",
+        "CA-000040",
+        "CA-000051"
+      ],
+      "derivation_reasoning": "Second feature-selection variant added so this family is not singleton."
+    },
+    {
+      "action_id": "CA-000040",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "split DeviceInfo, id_30, id_31, id_33, id_34, and id_23 into normalized device, browser, os, and screen subfields",
+        "output_columns": [
+          "device_name",
+          "device_version",
+          "OS_id_30",
+          "version_id_30",
+          "browser_id_31",
+          "version_id_31",
+          "screen_width",
+          "screen_height"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Multiple IEEE notebooks parse the sparse identity text fields into reusable device, browser, OS, and screen features.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "davidcairuz/feature-engineering-lightgbm",
+        "nicapotato/gpyopt-hyperparameter-optimisation-gpu-lgbm"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Stable shared subset of the repeated identity-text parsing family.",
+      "evidence_snippets": [
+        "dataframe['device_name'] = dataframe['DeviceInfo'].str.split('/', expand=True)[0]",
+        "dataframe['browser_id_31'] = dataframe['id_31'].str.split(' ', expand=True)[0]",
+        "dataframe['screen_width'] = dataframe['id_33'].str.split('x', expand=True)[0]"
+      ],
+      "rareness": "common",
+      "confidence": 0.87,
+      "must_follow_action_ids": [
+        "CA-000005"
+      ]
+    },
+    {
+      "action_id": "CA-000041",
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "P_emaildomain notnull"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Filtering to rows with purchaser email domains throws away a large valid subset and biases the dataset toward email-present behavior.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000030",
+        "CA-000035"
+      ],
+      "derivation_reasoning": "Synthetic harmful row filter derived from the rewarded email-domain family."
+    },
+    {
+      "action_id": "CA-000042",
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "DeviceInfo notnull and id_31 notnull"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Filtering to identity-rich rows looks like cleanup, but it collapses the task onto the sparse identity-covered subset.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000005",
+        "CA-000040"
+      ],
+      "derivation_reasoning": "Second harmful row filter added around the identity-table family."
+    },
+    {
+      "action_id": "CA-000043",
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "TransactionDT"
+        ],
+        "target_columns": [
+          "TransactionAmt"
+        ],
+        "agg_functions": [
+          "mean"
+        ],
+        "join_back": true
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Aggregating by the raw second-level time key yields brittle near-identity statistics that do not express stable transaction identity.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000020",
+        "CA-000071"
+      ],
+      "derivation_reasoning": "Synthetic bad aggregation key derived from the rewarded time and UID-aggregation families."
+    },
+    {
+      "action_id": "CA-000044",
+      "action_type": "HASH_CROSS",
+      "canonical_params": {
+        "columns": [
+          "card1",
+          "P_emaildomain"
+        ],
+        "n_buckets": 256,
+        "seed": 42
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Hashed crosses over card and email domains are plausible, but they push the bank toward a different feature-learning regime than it is meant to reward.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000030",
+        "CA-000046"
+      ],
+      "derivation_reasoning": "Synthetic hash-cross branch derived from the email and card encoding families."
+    },
+    {
+      "action_id": "CA-000045",
+      "action_type": "HASH_CROSS",
+      "canonical_params": {
+        "columns": [
+          "DeviceInfo",
+          "addr1"
+        ],
+        "n_buckets": 512,
+        "seed": 7
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Hashing a device-address cross is another plausible model-specific branch that the benchmark does not target.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000040"
+      ],
+      "derivation_reasoning": "Second hash-cross variant added so this family is not singleton."
+    },
+    {
+      "action_id": "CA-000046",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "freq",
+        "columns": [
+          "card1",
+          "card2",
+          "card3",
+          "card5",
+          "C1",
+          "C14",
+          "D1",
+          "D10",
+          "addr1",
+          "addr2",
+          "P_emaildomain",
+          "R_emaildomain"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "The Kyakovlev-style baseline frequency-encodes a broad card, count, delay, address, and email block.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "kyakovlev/ieee-ground-baseline"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Broad, winner-style categorical frequency encoding family for IEEE.",
+      "evidence_snippets": [
+        "train_df[col+'_fq_enc'] = train_df[col].map(fq_encode)"
+      ],
+      "rareness": "common",
+      "confidence": 0.9
+    },
+    {
+      "action_id": "CA-000047",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "constant",
+        "columns": [
+          "P_emaildomain",
+          "R_emaildomain",
+          "DeviceType",
+          "DeviceInfo",
+          "id_30",
+          "id_31"
+        ],
+        "fill_value": 0
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "A blanket numeric sentinel on mixed string-like identity and email columns invents a meaningless cross-type category.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000030",
+        "CA-000035",
+        "CA-000040"
+      ],
+      "derivation_reasoning": "Synthetic harmful imputation branch derived from the email and device feature families."
+    },
+    {
+      "action_id": "CA-000048",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "most_frequent",
+        "columns": [
+          "P_emaildomain",
+          "R_emaildomain",
+          "DeviceType",
+          "DeviceInfo",
+          "id_31"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Filling sparse email, device, and browser fields with their dominant category pollutes missing identity rows with a fake majority profile.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000030",
+        "CA-000035",
+        "CA-000040"
+      ],
+      "derivation_reasoning": "Second harmful imputation variant added around the email and device families by replacing real missingness with a copied dominant category."
+    },
+    {
+      "action_id": "CA-000049",
+      "action_type": "INTERACTION_FEATURE",
+      "canonical_params": {
+        "feature_columns": [
+          "TransactionAmt",
+          "D15"
+        ],
+        "operator": "multiply",
+        "degree": 2,
+        "include_bias": false
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Direct numeric interactions between amount and delay are plausible, but they are not part of the curated IEEE target branch.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000051"
+      ],
+      "derivation_reasoning": "Synthetic interaction-feature branch derived from the numeric ratio family."
+    },
+    {
+      "action_id": "CA-000050",
+      "action_type": "INTERACTION_FEATURE",
+      "canonical_params": {
+        "feature_columns": [
+          "id_02",
+          "D15"
+        ],
+        "operator": "divide",
+        "include_bias": false
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "A numeric divide interaction between identity score and delay is also plausible but still outside the intended benchmark path.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000051"
+      ],
+      "derivation_reasoning": "Second interaction-feature variant added so this family is not singleton."
+    },
+    {
+      "action_id": "CA-000051",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "create ratio-to-group-stat features for TransactionAmt, id_02, and D15 over card1 and card4 group means and stds",
+        "output_columns": [
+          "TransactionAmt_to_mean_card1",
+          "TransactionAmt_to_std_card1",
+          "id_02_to_mean_card1",
+          "id_02_to_std_card1",
+          "D15_to_mean_card4",
+          "D15_to_std_card4"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "A repeated IEEE feature family normalizes amount and delay signals against card-level group statistics.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "davidcairuz/feature-engineering-lightgbm",
+        "artgor/eda-and-models"
+      ],
+      "source_profile": "explanatory_style",
+      "context_notes": "Core ratio block carried over from the legacy IEEE gold set.",
+      "evidence_snippets": [
+        "TransactionAmt_to_mean_card1",
+        "id_02_to_std_card1",
+        "D15_to_mean_card4"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.84
+    },
+    {
+      "action_id": "CA-000052",
+      "action_type": "LAG_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "TransactionAmt"
+        ],
+        "lag_periods": [
+          1
+        ],
+        "order_by_columns": [
+          "TransactionDT"
+        ],
+        "group_by_columns": [
+          "uid"
+        ],
+        "fill_value": 0
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "UID-level lagged amounts are mechanically possible, but they create a sequential modeling branch outside the benchmark target.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000010"
+      ],
+      "derivation_reasoning": "Synthetic lag-feature branch derived from the rewarded UID family.",
+      "must_follow_action_ids": [
+        "CA-000010"
+      ]
+    },
+    {
+      "action_id": "CA-000053",
+      "action_type": "LAG_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "D15"
+        ],
+        "lag_periods": [
+          1
+        ],
+        "order_by_columns": [
+          "TransactionDT"
+        ],
+        "group_by_columns": [
+          "card1"
+        ],
+        "fill_value": 0
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Card-level lagged delay features are also plausible, but still beyond the intended IEEE preprocessing scope.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "artgor/eda-and-models"
+      ],
+      "derivation_reasoning": "Second lag-feature variant added so this family is not singleton."
+    },
+    {
+      "action_id": "CA-000054",
+      "action_type": "LOG_TRANSFORM",
+      "canonical_params": {
+        "columns": [
+          "id_02",
+          "dist1"
+        ],
+        "offset": 1
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Log-transforming sparse identity distance features is plausible, but it is a different branch than the curated amount transform.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000066"
+      ],
+      "derivation_reasoning": "Synthetic log-transform distractor derived from the rewarded amount transform."
+    },
+    {
+      "action_id": "CA-000055",
+      "action_type": "MAP_CATEGORIES",
+      "canonical_params": {
+        "columns": [
+          "DeviceType"
+        ],
+        "mapping": {
+          "desktop": "desktop",
+          "mobile": "mobile"
+        },
+        "default_value": "other"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Coarse remapping of device types is plausible, but it is a much weaker family than the benchmark-preferred email-provider mapping.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000040"
+      ],
+      "derivation_reasoning": "Synthetic category-mapping branch derived from the device family."
+    },
+    {
+      "action_id": "CA-000056",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "extract the fractional part of TransactionAmt as a scaled integer decimal feature",
+        "output_columns": [
+          "TransactionAmt_decimal"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "A common IEEE trick isolates the fractional cents pattern hidden in transaction amounts.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "davidcairuz/feature-engineering-lightgbm"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Alternative amount-fraction branch for the same preprocessing need.",
+      "evidence_snippets": [
+        "train['TransactionAmt_decimal'] = ((train['TransactionAmt'] - train['TransactionAmt'].astype(int)) * 1000).astype(int)"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.8,
+      "equivalence_group": "ieee_transaction_amount_fraction_strategy"
+    },
+    {
+      "action_id": "CA-000057",
+      "action_type": "NORMALIZE_STRING",
+      "canonical_params": {
+        "columns": [
+          "DeviceInfo",
+          "id_30",
+          "id_31"
+        ],
+        "case": "lower",
+        "strip": true,
+        "unicode_normalize": "NFKC",
+        "empty_to_null": true,
+        "remove_digits": true,
+        "remove_punctuation": true
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Aggressively normalizing device, OS, and browser strings by stripping digits and punctuation destroys version-bearing tokens that IEEE notebooks often parse explicitly.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000040"
+      ],
+      "derivation_reasoning": "Synthetic harmful normalization branch derived from the device parsing family by collapsing informative version and token boundaries."
+    },
+    {
+      "action_id": "CA-000058",
+      "action_type": "NORMALIZE_STRING",
+      "canonical_params": {
+        "columns": [
+          "P_emaildomain",
+          "R_emaildomain"
+        ],
+        "case": "lower",
+        "strip": true,
+        "unicode_normalize": "NFKC",
+        "empty_to_null": false,
+        "remove_punctuation": true
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Removing punctuation from email domains collapses the provider and suffix structure that the IEEE email-feature family is trying to preserve.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000030",
+        "CA-000035"
+      ],
+      "derivation_reasoning": "Second harmful normalization variant added around the email-domain family so string normalization is not represented only by benign cleanup."
+    },
+    {
+      "action_id": "CA-000059",
+      "action_type": "ORDINAL_ENCODE",
+      "canonical_params": {
+        "columns": [
+          "DeviceType"
+        ],
+        "order": [
+          "mobile",
+          "desktop"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Forcing an ordinal ordering on device type is plausible, but the implied order is arbitrary and not part of the target IEEE path.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000040"
+      ],
+      "derivation_reasoning": "Synthetic ordinal-encoding branch derived from the device categorical family."
+    },
+    {
+      "action_id": "CA-000060",
+      "action_type": "ORDINAL_ENCODE",
+      "canonical_params": {
+        "columns": [
+          "P_emaildomain_suffix"
+        ],
+        "order": [
+          "com",
+          "net",
+          "edu",
+          "us"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Applying a human-imposed ordering to email suffixes is also plausible but still a poor fit for the benchmark target.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000035"
+      ],
+      "derivation_reasoning": "Second ordinal-encoding variant added so this family is not singleton."
+    },
+    {
+      "action_id": "CA-000061",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "extract the fractional cents part of TransactionAmt as a float feature",
+        "output_columns": [
+          "cents"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "The Cdeotte-style branch keeps only the fractional amount component as a compact cents feature.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "cdeotte/xgb-fraud-with-magic-0-9600"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Alternative amount-fraction branch for the same preprocessing need.",
+      "evidence_snippets": [
+        "X_train['cents'] = (X_train['TransactionAmt'] - np.floor(X_train['TransactionAmt']))"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.82,
+      "equivalence_group": "ieee_transaction_amount_fraction_strategy"
+    },
+    {
+      "action_id": "CA-000062",
+      "action_type": "PCA_REDUCTION",
+      "canonical_params": {
+        "feature_columns": [
+          "V1",
+          "V2",
+          "V3",
+          "V4",
+          "V5",
+          "V6",
+          "V7",
+          "V8",
+          "V9",
+          "V10"
+        ],
+        "n_components": 5,
+        "method": "pca",
+        "whiten": false
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Reducing V features with PCA is plausible, but dimensionality reduction is not part of the curated IEEE preprocessing benchmark.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "roydatascience/light-gbm-with-complete-eda"
+      ],
+      "derivation_reasoning": "Synthetic PCA branch added to widen canonical action coverage."
+    },
+    {
+      "action_id": "CA-000063",
+      "action_type": "PCA_REDUCTION",
+      "canonical_params": {
+        "feature_columns": [
+          "P_emaildomain_bin",
+          "R_emaildomain_bin",
+          "device_name",
+          "browser_id_31"
+        ],
+        "n_components": 3,
+        "method": "svd",
+        "whiten": false
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Compressing encoded email and device features is another plausible branch that the benchmark does not reward.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000030",
+        "CA-000040"
+      ],
+      "derivation_reasoning": "Second dimensionality-reduction variant added so the family is not singleton."
+    },
+    {
+      "action_id": "CA-000064",
+      "action_type": "POLYNOMIAL_FEATURE",
+      "canonical_params": {
+        "feature_columns": [
+          "TransactionAmt",
+          "id_02"
+        ],
+        "degree": 2,
+        "interaction_only": false,
+        "include_bias": false
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Polynomial expansion on amount and identity-score columns is plausible, but it is a model-specific branch outside the benchmark target.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000051",
+        "CA-000066"
+      ],
+      "derivation_reasoning": "Synthetic polynomial-feature branch derived from the amount and ratio families."
+    },
+    {
+      "action_id": "CA-000065",
+      "action_type": "POLYNOMIAL_FEATURE",
+      "canonical_params": {
+        "feature_columns": [
+          "D15",
+          "dist1"
+        ],
+        "degree": 3,
+        "interaction_only": true,
+        "include_bias": false
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Interaction-only polynomial terms on delay and distance features are also plausible but still outside the curated path.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000051"
+      ],
+      "derivation_reasoning": "Second polynomial-feature variant added so this family is not singleton."
+    },
+    {
+      "action_id": "CA-000066",
+      "action_type": "LOG_TRANSFORM",
+      "canonical_params": {
+        "columns": [
+          "TransactionAmt"
+        ],
+        "offset": 1
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Several IEEE notebooks log-transform the heavily skewed amount column before modeling.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "kyakovlev/ieee-gb-2-make-amount-useful-again"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Useful but not primary across the benchmark; kept model-specific.",
+      "evidence_snippets": [
+        "train_df['TransactionAmt'] = np.log1p(train_df['TransactionAmt'])"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.78
+    },
+    {
+      "action_id": "CA-000067",
+      "action_type": "POWER_TRANSFORM",
+      "canonical_params": {
+        "columns": [
+          "TransactionAmt",
+          "id_02",
+          "dist1"
+        ],
+        "method": "yeojohnson",
+        "standardize": true
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Power-transforming skewed amount and distance columns is plausible, but it is not the IEEE branch this benchmark is meant to score.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000066"
+      ],
+      "derivation_reasoning": "Synthetic power-transform branch derived from the amount handling family."
+    },
+    {
+      "action_id": "CA-000068",
+      "action_type": "POWER_TRANSFORM",
+      "canonical_params": {
+        "columns": [
+          "D1",
+          "D15"
+        ],
+        "method": "boxcox",
+        "standardize": false
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "A Box-Cox transform on delay columns is also plausible but still outside the intended IEEE preprocessing target.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "artgor/eda-and-models"
+      ],
+      "derivation_reasoning": "Second power-transform variant added so this family is not singleton."
+    },
+    {
+      "action_id": "CA-000069",
+      "action_type": "RARE_CATEGORY_BUCKETIZE",
+      "canonical_params": {
+        "columns": [
+          "P_emaildomain",
+          "R_emaildomain"
+        ],
+        "min_count": 50,
+        "other_label": "__RARE__"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Bucketing rare email domains is a reasonable idea, but it is not part of the benchmark-preferred IEEE email family.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000030",
+        "CA-000035"
+      ],
+      "derivation_reasoning": "Synthetic rare-category branch derived from the rewarded email-domain family."
+    },
+    {
+      "action_id": "CA-000070",
+      "action_type": "RARE_CATEGORY_BUCKETIZE",
+      "canonical_params": {
+        "columns": [
+          "DeviceInfo"
+        ],
+        "min_freq": 0.01,
+        "other_label": "__OTHER__"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Bucketing rare device strings is also plausible, but it loses signal the benchmark expects an agent to consider preserving or parsing.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000040"
+      ],
+      "derivation_reasoning": "Second rare-category bucketization variant added so this family is not singleton."
+    },
+    {
+      "action_id": "CA-000071",
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "uid"
+        ],
+        "target_columns": [
+          "TransactionAmt"
+        ],
+        "agg_functions": [
+          "mean",
+          "std"
+        ],
+        "join_back": true
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "The standard IEEE aggregation branch joins back per-UID amount statistics.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "tolgahancepel/lightgbm-single-model-and-feature-engineering",
+        "kyakovlev/ieee-gb-2-make-amount-useful-again"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Primary aggregation branch for the standard UID family.",
+      "evidence_snippets": [
+        "group_df = temp.groupby(['uid'])['TransactionAmt'].agg(['mean','std'])",
+        "df = df.merge(group_df, on='uid', how='left')"
+      ],
+      "rareness": "common",
+      "confidence": 0.9,
+      "equivalence_group": "ieee_uid_aggregation_strategy",
+      "must_follow_action_ids": [
+        "CA-000010"
+      ]
+    },
+    {
+      "action_id": "CA-000072",
+      "action_type": "REPLACE_INF",
+      "canonical_params": {
+        "columns": [
+          "TransactionAmt_to_mean_card1",
+          "id_02_to_std_card1"
+        ],
+        "strategy": "nan"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Infinity sanitization is a plausible follow-up after fragile ratio features, but it indicates a different feature branch than the benchmark is rewarding.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000051"
+      ],
+      "derivation_reasoning": "Synthetic replace-inf cleanup branch derived from the ratio-to-group-stat family."
+    },
+    {
+      "action_id": "CA-000073",
+      "action_type": "REPLACE_INF",
+      "canonical_params": {
+        "columns": [
+          "D15_to_mean_card4"
+        ],
+        "strategy": "constant",
+        "fill_value": 0
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Replacing ratio infinities with zero is another plausible cleanup step, but it still belongs to a branch outside the curated target set.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000051"
+      ],
+      "derivation_reasoning": "Second replace-inf variant added so the family is not singleton."
+    },
+    {
+      "action_id": "CA-000074",
+      "action_type": "RATIO_FEATURE",
+      "canonical_params": {
+        "left_columns": [
+          "TransactionAmt"
+        ],
+        "right_columns": [
+          "D15"
+        ],
+        "handle_divide_by_zero": "nan",
+        "output_columns": [
+          "TransactionAmt_per_D15"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "A direct amount-to-delay ratio is plausible, but it is not the card-aware normalization branch this benchmark prefers.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000051"
+      ],
+      "derivation_reasoning": "Synthetic ratio-feature branch derived from the rewarded ratio-to-group-stat family."
+    },
+    {
+      "action_id": "CA-000075",
+      "action_type": "RATIO_FEATURE",
+      "canonical_params": {
+        "left_columns": [
+          "D15"
+        ],
+        "right_columns": [
+          "dist1"
+        ],
+        "handle_divide_by_zero": "nan",
+        "output_columns": [
+          "D15_per_dist1"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "A second hand-built numeric ratio is also plausible, but still outside the curated IEEE path.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000051"
+      ],
+      "derivation_reasoning": "Second ratio-feature variant added so this family is not singleton."
+    },
+    {
+      "action_id": "CA-000076",
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "uid"
+        ],
+        "target_columns": [
+          "TransactionAmt",
+          "D15"
+        ],
+        "agg_functions": [
+          "mean",
+          "std"
+        ],
+        "join_back": true
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "hard",
+      "reasoning": "The precise-UID branch extends the aggregation family to a wider amount and delay block.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "cdeotte/xgb-fraud-with-magic-0-9600"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Alternative aggregation branch paired with the precise UID strategy.",
+      "evidence_snippets": [
+        "X_train = X_train.merge(uid_stats, on='uid', how='left')"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.84,
+      "equivalence_group": "ieee_uid_aggregation_strategy",
+      "must_follow_action_ids": [
+        "CA-000015"
+      ]
+    },
+    {
+      "action_id": "CA-000077",
+      "action_type": "ROLLING_WINDOW_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "TransactionAmt"
+        ],
+        "window_sizes": [
+          3,
+          5
+        ],
+        "agg_functions": [
+          "mean"
+        ],
+        "order_by_columns": [
+          "TransactionDT"
+        ],
+        "group_by_columns": [
+          "uid"
+        ],
+        "min_periods": 2
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Rolling UID-level statistics are mechanically possible, but they build a heavier temporal branch than the benchmark wants to score.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000010",
+        "CA-000071"
+      ],
+      "derivation_reasoning": "Synthetic rolling-window branch derived from the UID and aggregation families.",
+      "must_follow_action_ids": [
+        "CA-000010"
+      ]
+    },
+    {
+      "action_id": "CA-000078",
+      "action_type": "ROLLING_WINDOW_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "D15"
+        ],
+        "window_sizes": [
+          3
+        ],
+        "agg_functions": [
+          "max"
+        ],
+        "order_by_columns": [
+          "TransactionDT"
+        ],
+        "group_by_columns": [
+          "card1"
+        ],
+        "min_periods": 2
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Rolling card-level max delay features are also plausible but still outside the intended IEEE preprocessing scope.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "artgor/eda-and-models"
+      ],
+      "derivation_reasoning": "Second rolling-window variant added so this family is not singleton."
+    },
+    {
+      "action_id": "CA-000079",
+      "action_type": "SAMPLE_ROWS",
+      "canonical_params": {
+        "method": "random",
+        "frac": 0.2,
+        "random_state": 42
+      },
+      "eval_stage": "validation_protocol",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Random row subsampling is a common quick experiment, but it only shrinks supervision and is not part of the IEEE benchmark target.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "tolgahancepel/lightgbm-single-model-and-feature-engineering"
+      ],
+      "derivation_reasoning": "Synthetic row-sampling branch added to keep low-quality but plausible action families visible in the bank."
+    },
+    {
+      "action_id": "CA-000080",
+      "action_type": "SAMPLE_ROWS",
+      "canonical_params": {
+        "method": "stratified",
+        "n": 200000,
+        "stratify_by": "isFraud",
+        "random_state": 7
+      },
+      "eval_stage": "validation_protocol",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "A fixed-size stratified sample is also plausible for iteration speed, but it still falls outside the benchmark-preferred path.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "tolgahancepel/lightgbm-single-model-and-feature-engineering"
+      ],
+      "derivation_reasoning": "Second row-sampling variant added so this family is not singleton."
+    },
+    {
+      "action_id": "CA-000081",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "construct pairwise interaction keys by concatenating feature pairs with '_'",
+        "output_columns": [
+          "id_02__id_20",
+          "DeviceInfo__P_emaildomain",
+          "card2__dist1",
+          "card1__card5",
+          "addr1__card1"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "hard",
+      "reasoning": "A narrower IEEE branch constructs pairwise categorical interaction keys before encoding them.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "nroman/ieee-fraud-detection-baseline"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Model-specific interaction-key branch that should not enlarge primary scope.",
+      "evidence_snippets": [
+        "train_df['card1__card5'] = train_df['card1'].astype(str)+'_'+train_df['card5'].astype(str)"
+      ],
+      "rareness": "rare",
+      "confidence": 0.74
+    },
+    {
+      "action_id": "CA-000082",
+      "action_type": "SCALE_NUMERIC",
+      "canonical_params": {
+        "method": "standard",
+        "columns": [
+          "card1",
+          "card2",
+          "card3",
+          "card5",
+          "addr1",
+          "addr2"
+        ],
+        "fit_scope": "train_only"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Standardizing ID-like card and address codes destroys the discrete identity structure the benchmark's feature engineering relies on.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000010",
+        "CA-000046"
+      ],
+      "derivation_reasoning": "Synthetic harmful scaling branch derived from the IEEE identity family."
+    },
+    {
+      "action_id": "CA-000083",
+      "action_type": "SCALE_NUMERIC",
+      "canonical_params": {
+        "method": "minmax",
+        "columns": [
+          "card1",
+          "addr1",
+          "TransactionDT"
+        ],
+        "fit_scope": "train_only"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Min-max scaling identity codes together with the raw time offset turns discrete keys into pseudo-continuous coordinates and distorts later UID and time engineering.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000010",
+        "CA-000015",
+        "CA-000020"
+      ],
+      "derivation_reasoning": "Second harmful scaling variant added around the identity and time families so the scale-numeric family is not represented only by one obvious row."
+    },
+    {
+      "action_id": "CA-000084",
+      "action_type": "TARGET_ENCODE_OOF",
+      "canonical_params": {
+        "columns": [
+          "P_emaildomain",
+          "R_emaildomain"
+        ],
+        "target_column": "isFraud",
+        "cv_strategy": "kfold",
+        "n_splits": 5,
+        "shuffle": true,
+        "random_state": 42,
+        "smoothing": 20
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Leakage-safe target encoding is plausible on IEEE categoricals, but it shifts the task toward a different feature-learning regime than this benchmark is meant to score.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000030",
+        "CA-000046"
+      ],
+      "derivation_reasoning": "Synthetic target-encoding branch derived from the rewarded email and broad categorical families."
+    },
+    {
+      "action_id": "CA-000085",
+      "action_type": "TARGET_ENCODE_OOF",
+      "canonical_params": {
+        "columns": [
+          "card1",
+          "addr1"
+        ],
+        "target_column": "isFraud",
+        "cv_strategy": "kfold",
+        "n_splits": 5,
+        "shuffle": true,
+        "random_state": 7,
+        "smoothing": 10
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Out-of-fold target encoding on card and address identifiers is also plausible, but still outside the benchmark-preferred branch.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000010",
+        "CA-000046"
+      ],
+      "derivation_reasoning": "Second target-encoding variant added so this family is not singleton."
+    },
+    {
+      "action_id": "CA-000086",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "label",
+        "columns": [
+          "id_02__id_20",
+          "DeviceInfo__P_emaildomain",
+          "card2__dist1",
+          "card1__card5",
+          "addr1__card1"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "hard",
+      "reasoning": "The interaction-key branch is usually completed by label-encoding the synthetic pair identifiers.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "nroman/ieee-fraud-detection-baseline"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Follow-on encoding step for the interaction-key family.",
+      "evidence_snippets": [
+        "lbl.fit(list(train_df[col].values) + list(test_df[col].values))"
+      ],
+      "rareness": "rare",
+      "confidence": 0.73,
+      "must_follow_action_ids": [
+        "CA-000081"
+      ]
+    },
+    {
+      "action_id": "CA-000087",
+      "action_type": "TEXT_VECTORIZATION",
+      "canonical_params": {
+        "method": "tfidf",
+        "text_columns": [
+          "DeviceInfo",
+          "id_31"
+        ],
+        "ngram_range": [
+          1,
+          2
+        ],
+        "max_features": 500
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Vectorizing sparse device and browser strings is mechanically possible, but it is much heavier than the benchmark intends to reward on IEEE.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000040"
+      ],
+      "derivation_reasoning": "Synthetic text-feature branch derived from the identity text family."
+    },
+    {
+      "action_id": "CA-000088",
+      "action_type": "TEXT_VECTORIZATION",
+      "canonical_params": {
+        "method": "hashing",
+        "text_columns": [
+          "P_emaildomain",
+          "R_emaildomain"
+        ],
+        "max_features": 256
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "A hashed text branch over email domains is also plausible, but still far outside the curated IEEE target path.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000030",
+        "CA-000035"
+      ],
+      "derivation_reasoning": "Second text-vectorization variant added so this family is not singleton."
+    },
+    {
+      "action_id": "CA-000089",
+      "action_type": "TIME_SINCE_REFERENCE",
+      "canonical_params": {
+        "columns": [
+          "TransactionDT"
+        ],
+        "reference": "START_DATE",
+        "unit": "days"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Elapsed-time-since-reference features are plausible, but the benchmark currently rewards the anchored datetime plus date-part path instead.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000020",
+        "CA-000025"
+      ],
+      "derivation_reasoning": "Synthetic elapsed-time branch derived from the rewarded time family."
+    },
+    {
+      "action_id": "CA-000090",
+      "action_type": "TIME_SINCE_REFERENCE",
+      "canonical_params": {
+        "columns": [
+          "TransactionDT"
+        ],
+        "reference": "2017-11-30",
+        "unit": "hours"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "A second elapsed-time reference feature is equally plausible temporal engineering, but still outside the benchmark's curated target set.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000020",
+        "CA-000025"
+      ],
+      "derivation_reasoning": "Second elapsed-time variant added so this family is not singleton."
+    }
+  ]
+}

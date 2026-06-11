@@ -1,0 +1,80 @@
+{
+  "competition_slug": "ashrae-energy-prediction",
+  "testcase_id": "tc1_from_scratch",
+  "artifact_type": "eval_human_baseline_action_trace",
+  "related_output": "../tc1_human.json",
+  "traces": [
+    {
+      "predicted_action_id": "CA-000002",
+      "artifact": "../work.ipynb",
+      "section": "Join Building Metadata",
+      "mapping_rationale": "Direct bank match for the left join from train/test rows to building_metadata on building_id."
+    },
+    {
+      "predicted_action_id": "CA-000010",
+      "artifact": "../work.ipynb",
+      "section": "Join Split Weather Lookups",
+      "mapping_rationale": "Direct bank match for the official split-matched weather lookup join by site_id and timestamp."
+    },
+    {
+      "predicted_action_id": "CA-000006",
+      "artifact": "../work.ipynb",
+      "section": "Parse Timestamp",
+      "mapping_rationale": "Direct bank match for converting the raw timestamp string column into datetime values."
+    },
+    {
+      "predicted_action_id": "CA-000014",
+      "artifact": "../work.ipynb",
+      "section": "Extract Timestamp Parts",
+      "mapping_rationale": "Matches the notebook's extraction of stable hour/dayofweek/month features from timestamp."
+    },
+    {
+      "predicted_action_id": "CA-000012",
+      "artifact": "../work.ipynb",
+      "section": "Label Encode Primary Use",
+      "mapping_rationale": "Chosen as the closest bank action to the notebook's factorized primary_use encoding."
+    },
+    {
+      "predicted_action_id": "CA-000020",
+      "artifact": "../work.ipynb",
+      "section": "Median Imputation",
+      "mapping_rationale": "Matches the notebook's train-derived median fill for sparse building and weather columns."
+    },
+    {
+      "predicted_action_id": "CA-000016",
+      "artifact": "../work.ipynb",
+      "section": "One-Hot Encode Meter",
+      "mapping_rationale": "Direct bank match for expanding the low-cardinality meter column with pd.get_dummies."
+    },
+    {
+      "predicted_action_id": "CA-000022",
+      "artifact": "../work.ipynb",
+      "section": "Log1p Square Feet",
+      "mapping_rationale": "Direct bank match for the log1p transform applied to square_feet after the building join."
+    },
+    {
+      "predicted_action_id": "CA-000004",
+      "artifact": "../work.ipynb",
+      "section": "Log1p Target",
+      "mapping_rationale": "Chosen as the bank's model-specific target-transform row for the notebook's log1p meter_reading target."
+    },
+    {
+      "predicted_action_id": "CA-000018",
+      "artifact": "../work.ipynb",
+      "section": "Drop Raw Timestamp",
+      "mapping_rationale": "Direct bank match for removing the original timestamp column after deriving date parts."
+    },
+    {
+      "predicted_action_id": "CA-000008",
+      "artifact": "../work.ipynb",
+      "section": "Drop Test Row Id",
+      "mapping_rationale": "Direct bank match for removing row_id from the test-side feature matrix before inference."
+    }
+  ],
+  "omitted_notebook_steps": [
+    {
+      "section": "Scope Boundary",
+      "note": "The notebook intentionally omits leak-style row filters, holiday features, grouped interpolation, and public-kernel side inputs because they are outside the benchmark's official-only contract."
+    }
+  ]
+}

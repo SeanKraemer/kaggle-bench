@@ -1,0 +1,152 @@
+{
+  "competition_slug": "home-credit-default-risk",
+  "testcase_id": "tc1_from_scratch",
+  "artifact_type": "eval_human_baseline_action_trace",
+  "related_output": "../tc1_human.json",
+  "traces": [
+    {
+      "predicted_action_id": "CA-000002",
+      "artifact": "../../tc1_human_bank_review_workbench.md",
+      "section": "Time And Sequence Feature Review",
+      "mapping_rationale": "Retained during the final manual full-bank review under the time-and-sequence feature category."
+    },
+    {
+      "predicted_action_id": "CA-000004",
+      "artifact": "../../tc1_human_bank_review_workbench.md",
+      "section": "Relational Aggregate Review",
+      "mapping_rationale": "Retained during the final manual full-bank review under the relational aggregate category."
+    },
+    {
+      "predicted_action_id": "CA-000009",
+      "artifact": "../../tc1_human_bank_review_workbench.md",
+      "section": "Relational Aggregate Review",
+      "mapping_rationale": "Retained during the final manual full-bank review under the relational aggregate category."
+    },
+    {
+      "predicted_action_id": "CA-000010",
+      "artifact": "../../tc1_human_bank_review_workbench.md",
+      "section": "Categorical Handling Review",
+      "mapping_rationale": "Retained during the final manual full-bank review under the categorical-handling category."
+    },
+    {
+      "predicted_action_id": "CA-000014",
+      "artifact": "../../tc1_human_bank_review_workbench.md",
+      "section": "Formula Feature Review",
+      "mapping_rationale": "Retained during the final manual full-bank review under the formula-feature category."
+    },
+    {
+      "predicted_action_id": "CA-000017",
+      "artifact": "../../tc1_human_bank_review_workbench.md",
+      "section": "Row And Sample Review",
+      "mapping_rationale": "Retained during the final manual full-bank review under the row-and-sample category."
+    },
+    {
+      "predicted_action_id": "CA-000019",
+      "artifact": "../../tc1_human_bank_review_workbench.md",
+      "section": "Numeric Cleanup Review",
+      "mapping_rationale": "Retained during the final manual full-bank review under the numeric-cleanup category."
+    },
+    {
+      "predicted_action_id": "CA-000020",
+      "artifact": "../../tc1_human_bank_review_workbench.md",
+      "section": "Time And Sequence Feature Review",
+      "mapping_rationale": "Retained during the final manual full-bank review under the time-and-sequence feature category."
+    },
+    {
+      "predicted_action_id": "CA-000024",
+      "artifact": "../../tc1_human_bank_review_workbench.md",
+      "section": "Relational Aggregate Review",
+      "mapping_rationale": "Retained during the final manual full-bank review under the relational aggregate category."
+    },
+    {
+      "predicted_action_id": "CA-000034",
+      "artifact": "../../tc1_human_bank_review_workbench.md",
+      "section": "Relational Aggregate Review",
+      "mapping_rationale": "Retained during the final manual full-bank review under the relational aggregate category."
+    },
+    {
+      "predicted_action_id": "CA-000038",
+      "artifact": "../../tc1_human_bank_review_workbench.md",
+      "section": "Row And Sample Review",
+      "mapping_rationale": "Retained during the final manual full-bank review under the row-and-sample category."
+    },
+    {
+      "predicted_action_id": "CA-000043",
+      "artifact": "../../tc1_human_bank_review_workbench.md",
+      "section": "Relational Join Review",
+      "mapping_rationale": "Retained during the final manual full-bank review under the relational-join category."
+    },
+    {
+      "predicted_action_id": "CA-000049",
+      "artifact": "../../tc1_human_bank_review_workbench.md",
+      "section": "Relational Join Review",
+      "mapping_rationale": "Retained during the final manual full-bank review under the relational-join category."
+    },
+    {
+      "predicted_action_id": "CA-000056",
+      "artifact": "../../tc1_human_bank_review_workbench.md",
+      "section": "Relational Aggregate Review",
+      "mapping_rationale": "Retained during the final manual full-bank review under the relational aggregate category."
+    },
+    {
+      "predicted_action_id": "CA-000061",
+      "artifact": "../../tc1_human_bank_review_workbench.md",
+      "section": "Relational Aggregate Review",
+      "mapping_rationale": "Retained during the final manual full-bank review under the relational aggregate category."
+    },
+    {
+      "predicted_action_id": "CA-000069",
+      "artifact": "../../tc1_human_bank_review_workbench.md",
+      "section": "Relational Join Review",
+      "mapping_rationale": "Retained during the final manual full-bank review under the relational-join category."
+    },
+    {
+      "predicted_action_id": "CA-000076",
+      "artifact": "../../tc1_human_bank_review_workbench.md",
+      "section": "Categorical Handling Review",
+      "mapping_rationale": "Retained during the final manual full-bank review under the categorical-handling category."
+    },
+    {
+      "predicted_action_id": "CA-000078",
+      "artifact": "../../tc1_human_bank_review_workbench.md",
+      "section": "Numeric Cleanup Review",
+      "mapping_rationale": "Retained during the final manual full-bank review under the numeric-cleanup category."
+    },
+    {
+      "predicted_action_id": "CA-000079",
+      "artifact": "../../tc1_human_bank_review_workbench.md",
+      "section": "Relational Aggregate Review",
+      "mapping_rationale": "Retained during the final manual full-bank review under the relational aggregate category."
+    },
+    {
+      "predicted_action_id": "CA-000087",
+      "artifact": "../../tc1_human_bank_review_workbench.md",
+      "section": "Row And Sample Review",
+      "mapping_rationale": "Retained during the final manual full-bank review under the row-and-sample category."
+    },
+    {
+      "predicted_action_id": "CA-000092",
+      "artifact": "../../tc1_human_bank_review_workbench.md",
+      "section": "Numeric Cleanup Review",
+      "mapping_rationale": "Retained during the final manual full-bank review under the numeric-cleanup category."
+    },
+    {
+      "predicted_action_id": "CA-000121",
+      "artifact": "../../tc1_human_bank_review_workbench.md",
+      "section": "Relational Join Review",
+      "mapping_rationale": "Retained during the final manual full-bank review under the relational-join category."
+    },
+    {
+      "predicted_action_id": "CA-000128",
+      "artifact": "../../tc1_human_bank_review_workbench.md",
+      "section": "Relational Join Review",
+      "mapping_rationale": "Retained during the final manual full-bank review under the relational-join category."
+    }
+  ],
+  "omitted_notebook_steps": [
+    {
+      "section": "Prior Notebook-Faithful Mapping Pass",
+      "note": "The earlier omitted-step accounting from the notebook-faithful re-authoring pass was intentionally superseded once the final TC1 human baseline was re-selected through a full manual review of the entire action bank."
+    }
+  ]
+}

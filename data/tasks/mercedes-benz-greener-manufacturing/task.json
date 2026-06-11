@@ -1,0 +1,70 @@
+{
+  "competition_slug": "mercedes-benz-greener-manufacturing",
+  "dataset": {
+    "provider": "kaggle",
+    "competition": "mercedes-benz-greener-manufacturing",
+    "train_files": [
+      "train.csv"
+    ],
+    "test_files": [
+      "test.csv"
+    ],
+    "lookup_files": [],
+    "sample_submission_files": [
+      "sample_submission.csv"
+    ],
+    "target_column": "y",
+    "primary_key": "ID"
+  },
+  "goal": "Suggest preprocessing and feature-engineering actions for predicting y from anonymized manufacturing test-bench features under the R2 metric using only official competition files.",
+  "task_characteristics": {
+    "ml_domain": "manufacturing_tabular",
+    "problem_type": "regression",
+    "table_structure": "single_table",
+    "dataset_size_bucket": "small",
+    "dataset_size_raw": 4209,
+    "feature_dimensionality_bucket": "high",
+    "feature_dimensionality_raw": 378,
+    "preprocessing_complexity_bucket": "medium",
+    "preprocessing_complexity_raw": 11,
+    "analysis_notes": "Small single-table regression task with 4,209 training rows, 4,209 test rows, and a 378-column benchmark-relevant union across the official CSVs. The released table mixes eight low-cardinality categorical columns (X0, X1, X2, X3, X4, X5, X6, X8), a submission identifier ID, continuous target y, and a very wide sparse binary / integer feature block. The curated bank keeps the primary good spine conservative around ID removal, one categorical-encoding strategy, and deterministic zero-variance pruning. Wider selection, projection, and scaling branches remain rewarded only in model-specific stages. preprocessing_complexity_raw is authored as the retained good-row count before equivalence-group collapse."
+  },
+  "dataset_description": {
+    "summary": "Official scope is limited to train.csv, test.csv, and sample_submission.csv already mirrored under this task root. The benchmark is official-only, single-table, and excludes public-kernel side inputs or any external manufacturing metadata.",
+    "raw_text": "train.csv contains 4,209 labeled rows with identifier ID, regression target y, eight released categorical features (X0, X1, X2, X3, X4, X5, X6, X8), and hundreds of anonymized sparse binary / integer features through X385. test.csv contains the same predictors except for y. sample_submission.csv defines the ID,y submission format. The benchmark-relevant case-insensitive column union across these official files is 378. The official train table contains 12 deterministic constant columns: X11, X93, X107, X233, X235, X268, X289, X290, X293, X297, X330, and X347. Notebook prose often says X0-X8, but the released official tables do not contain X7.",
+    "file_summary": {
+      "total_file_count": 3,
+      "file_types": [
+        {
+          "extension": ".csv",
+          "file_count": 3,
+          "total_size_bytes": 6507189
+        }
+      ]
+    },
+    "column_summary": {
+      "total_column_count": 378,
+      "column_types": [
+        {
+          "column_type": "Id",
+          "column_count": 1
+        },
+        {
+          "column_type": "Decimal",
+          "column_count": 1
+        },
+        {
+          "column_type": "String",
+          "column_count": 8
+        },
+        {
+          "column_type": "Integer",
+          "column_count": 368
+        }
+      ]
+    }
+  },
+  "metric": {
+    "name": "R2"
+  }
+}

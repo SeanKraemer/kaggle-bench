@@ -1,0 +1,978 @@
+{
+  "competition_slug": "home-credit-default-risk",
+  "dataset": {
+    "provider": "kaggle",
+    "competition": "home-credit-default-risk",
+    "train_files": [
+      "application_train.csv"
+    ],
+    "test_files": [
+      "application_test.csv"
+    ],
+    "lookup_files": [
+      "bureau.csv",
+      "bureau_balance.csv",
+      "previous_application.csv",
+      "POS_CASH_balance.csv",
+      "credit_card_balance.csv",
+      "installments_payments.csv"
+    ],
+    "sample_submission_files": [
+      "sample_submission.csv"
+    ],
+    "data_dictionary_files": [
+      "HomeCredit_columns_description.csv"
+    ],
+    "target_column": "TARGET",
+    "primary_key": "SK_ID_CURR"
+  },
+  "goal": "Suggest preprocessing and feature-engineering actions for predicting applicant repayment difficulty on Home Credit loan data under the AUC evaluation metric.",
+  "task_characteristics": {
+    "ml_domain": "finance_tabular",
+    "problem_type": "binary_classification",
+    "table_structure": "multi_table_relational",
+    "dataset_size_bucket": "xlarge",
+    "dataset_size_raw": 27299925,
+    "feature_dimensionality_bucket": "high",
+    "feature_dimensionality_raw": 195,
+    "preprocessing_complexity_bucket": "high",
+    "preprocessing_complexity_raw": 21,
+    "analysis_notes": "Large multi-table credit-risk classification task centered on current loan applications and six linked history tables keyed through SK_ID_CURR, SK_ID_PREV, and SK_ID_BUREAU. The largest benchmark-relevant raw table is bureau_balance.csv with 27,299,925 monthly bureau-history rows, which places the task in the xlarge bucket. The benchmark-relevant case-insensitive raw-column union is 195 columns across the application, bureau, previous-application, POS/cash, credit-card, and installment tables, so the task is materially wider than the medium bucket cutoff. The curated Home Credit golden set currently contains 21 preprocessing actions, making this a high-complexity preprocessing benchmark with heavy relational aggregation, categorical handling, missing-value treatment, and ratio-feature construction."
+  },
+  "overview": {
+    "title": "Home Credit Default Risk",
+    "summary": "Can you predict how capable each applicant is of repaying a loan?",
+    "raw_text": "Home Credit is a consumer-finance provider focused on extending credit to applicants with limited formal credit histories. This competition asks participants to estimate whether a current applicant will have repayment difficulties so the lender can broaden access while controlling default risk. The benchmark-relevant data combines the main application table with six linked history tables covering external bureau records, monthly bureau balances, prior Home Credit applications, POS and cash-loan balances, credit-card balances, and installment-payment history. Submissions predict TARGET for each SK_ID_CURR and are evaluated with area under the ROC curve.",
+    "host": "Kaggle",
+    "category": "Featured",
+    "reward": "$70,000",
+    "team_count": 7176,
+    "enabled_date": "2018-05-17 22:56:29",
+    "new_entrant_deadline": "2018-08-22 23:59:00",
+    "deadline": "2018-08-29 23:59:00",
+    "url": "https://www.kaggle.com/competitions/home-credit-default-risk"
+  },
+  "dataset_description": {
+    "summary": "The raw competition bundle contains 10 CSV files totaling 2,684,261,617 bytes. The main supervised table is application_train.csv with 307,511 labeled loan applications and 122 columns, paired with application_test.csv containing 48,744 unlabeled applications and 121 columns. Six auxiliary relational tables add historical credit context, with bureau_balance.csv alone contributing 27,299,925 monthly rows. Across the benchmark-relevant train, test, and lookup tables, the case-insensitive raw-column union is 195 columns tied together through SK_ID_CURR, SK_ID_PREV, and SK_ID_BUREAU. A separate HomeCredit_columns_description.csv file documents 219 named fields across the competition tables.",
+    "raw_text": "Home Credit Default Risk is organized around one current-application entity keyed by SK_ID_CURR plus multiple one-to-many history tables. application_train.csv provides the supervised target TARGET, while application_test.csv mirrors the same schema without labels for submission-time scoring. bureau.csv and bureau_balance.csv capture prior external-credit records and their month-level status histories. previous_application.csv records earlier Home Credit applications, while POS_CASH_balance.csv, credit_card_balance.csv, and installments_payments.csv provide monthly or payment-level histories for those prior relationships. This layout makes the task benchmark-relevant as a relational aggregation problem rather than a flat single-table classification task: strong preprocessing pipelines must align foreign keys, summarize repeated histories to the customer level, manage substantial missingness, and encode mixed numeric, categorical, boolean, and temporal-offset fields before modeling.",
+    "file_summary": {
+      "total_file_count": 10,
+      "file_types": [
+        {
+          "extension": ".csv",
+          "file_count": 10,
+          "total_size_bytes": 2684261617
+        }
+      ]
+    },
+    "column_summary": {
+      "total_column_count": 195,
+      "column_types": [
+        {
+          "column_type": "Numeric",
+          "column_count": 106
+        },
+        {
+          "column_type": "Boolean",
+          "column_count": 38
+        },
+        {
+          "column_type": "Categorical",
+          "column_count": 30
+        },
+        {
+          "column_type": "TemporalOffset",
+          "column_count": 18
+        },
+        {
+          "column_type": "Id",
+          "column_count": 3
+        }
+      ]
+    },
+    "feature_list": {
+      "source_file": "HomeCredit_columns_description.csv",
+      "features": [
+        {
+          "name": "SK_ID_CURR",
+          "description": "ID of loan in our sample"
+        },
+        {
+          "name": "TARGET",
+          "description": "Target variable (1 - client with payment difficulties: he/she had late payment more than X days on at least one of the first Y installments of the loan in our sample, 0 - all other cases)"
+        },
+        {
+          "name": "NAME_CONTRACT_TYPE",
+          "description": "Identification if loan is cash or revolving"
+        },
+        {
+          "name": "CODE_GENDER",
+          "description": "Gender of the client"
+        },
+        {
+          "name": "FLAG_OWN_CAR",
+          "description": "Flag if the client owns a car"
+        },
+        {
+          "name": "FLAG_OWN_REALTY",
+          "description": "Flag if client owns a house or flat"
+        },
+        {
+          "name": "CNT_CHILDREN",
+          "description": "Number of children the client has"
+        },
+        {
+          "name": "AMT_INCOME_TOTAL",
+          "description": "Income of the client"
+        },
+        {
+          "name": "AMT_CREDIT",
+          "description": "Credit amount of the loan"
+        },
+        {
+          "name": "AMT_ANNUITY",
+          "description": "Loan annuity"
+        },
+        {
+          "name": "AMT_GOODS_PRICE",
+          "description": "For consumer loans it is the price of the goods for which the loan is given"
+        },
+        {
+          "name": "NAME_TYPE_SUITE",
+          "description": "Who was accompanying client when he was applying for the loan"
+        },
+        {
+          "name": "NAME_INCOME_TYPE",
+          "description": "Clients income type (businessman, working, maternity leave,...)"
+        },
+        {
+          "name": "NAME_EDUCATION_TYPE",
+          "description": "Level of highest education the client achieved"
+        },
+        {
+          "name": "NAME_FAMILY_STATUS",
+          "description": "Family status of the client"
+        },
+        {
+          "name": "NAME_HOUSING_TYPE",
+          "description": "What is the housing situation of the client (renting, living with parents, ...)"
+        },
+        {
+          "name": "REGION_POPULATION_RELATIVE",
+          "description": "Normalized population of region where client lives (higher number means the client lives in more populated region) Special: normalized"
+        },
+        {
+          "name": "DAYS_BIRTH",
+          "description": "Client's age in days at the time of application Special: time only relative to the application"
+        },
+        {
+          "name": "DAYS_EMPLOYED",
+          "description": "How many days before the application the person started current employment Special: time only relative to the application"
+        },
+        {
+          "name": "DAYS_REGISTRATION",
+          "description": "How many days before the application did client change his registration Special: time only relative to the application"
+        },
+        {
+          "name": "DAYS_ID_PUBLISH",
+          "description": "How many days before the application did client change the identity document with which he applied for the loan Special: time only relative to the application"
+        },
+        {
+          "name": "OWN_CAR_AGE",
+          "description": "Age of client's car"
+        },
+        {
+          "name": "FLAG_MOBIL",
+          "description": "Did client provide mobile phone (1=YES, 0=NO)"
+        },
+        {
+          "name": "FLAG_EMP_PHONE",
+          "description": "Did client provide work phone (1=YES, 0=NO)"
+        },
+        {
+          "name": "FLAG_WORK_PHONE",
+          "description": "Did client provide home phone (1=YES, 0=NO)"
+        },
+        {
+          "name": "FLAG_CONT_MOBILE",
+          "description": "Was mobile phone reachable (1=YES, 0=NO)"
+        },
+        {
+          "name": "FLAG_PHONE",
+          "description": "Did client provide home phone (1=YES, 0=NO)"
+        },
+        {
+          "name": "FLAG_EMAIL",
+          "description": "Did client provide email (1=YES, 0=NO)"
+        },
+        {
+          "name": "OCCUPATION_TYPE",
+          "description": "What kind of occupation does the client have"
+        },
+        {
+          "name": "CNT_FAM_MEMBERS",
+          "description": "How many family members does client have"
+        },
+        {
+          "name": "REGION_RATING_CLIENT",
+          "description": "Our rating of the region where client lives (1,2,3)"
+        },
+        {
+          "name": "REGION_RATING_CLIENT_W_CITY",
+          "description": "Our rating of the region where client lives with taking city into account (1,2,3)"
+        },
+        {
+          "name": "WEEKDAY_APPR_PROCESS_START",
+          "description": "On which day of the week did the client apply for the loan"
+        },
+        {
+          "name": "HOUR_APPR_PROCESS_START",
+          "description": "Approximately at what hour did the client apply for the loan Special: rounded"
+        },
+        {
+          "name": "REG_REGION_NOT_LIVE_REGION",
+          "description": "Flag if client's permanent address does not match contact address (1=different, 0=same, at region level)"
+        },
+        {
+          "name": "REG_REGION_NOT_WORK_REGION",
+          "description": "Flag if client's permanent address does not match work address (1=different, 0=same, at region level)"
+        },
+        {
+          "name": "LIVE_REGION_NOT_WORK_REGION",
+          "description": "Flag if client's contact address does not match work address (1=different, 0=same, at region level)"
+        },
+        {
+          "name": "REG_CITY_NOT_LIVE_CITY",
+          "description": "Flag if client's permanent address does not match contact address (1=different, 0=same, at city level)"
+        },
+        {
+          "name": "REG_CITY_NOT_WORK_CITY",
+          "description": "Flag if client's permanent address does not match work address (1=different, 0=same, at city level)"
+        },
+        {
+          "name": "LIVE_CITY_NOT_WORK_CITY",
+          "description": "Flag if client's contact address does not match work address (1=different, 0=same, at city level)"
+        },
+        {
+          "name": "ORGANIZATION_TYPE",
+          "description": "Type of organization where client works"
+        },
+        {
+          "name": "EXT_SOURCE_1",
+          "description": "Normalized score from external data source Special: normalized"
+        },
+        {
+          "name": "EXT_SOURCE_2",
+          "description": "Normalized score from external data source Special: normalized"
+        },
+        {
+          "name": "EXT_SOURCE_3",
+          "description": "Normalized score from external data source Special: normalized"
+        },
+        {
+          "name": "APARTMENTS_AVG",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "BASEMENTAREA_AVG",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "YEARS_BEGINEXPLUATATION_AVG",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "YEARS_BUILD_AVG",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "COMMONAREA_AVG",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "ELEVATORS_AVG",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "ENTRANCES_AVG",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "FLOORSMAX_AVG",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "FLOORSMIN_AVG",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "LANDAREA_AVG",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "LIVINGAPARTMENTS_AVG",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "LIVINGAREA_AVG",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "NONLIVINGAPARTMENTS_AVG",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "NONLIVINGAREA_AVG",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "APARTMENTS_MODE",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "BASEMENTAREA_MODE",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "YEARS_BEGINEXPLUATATION_MODE",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "YEARS_BUILD_MODE",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "COMMONAREA_MODE",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "ELEVATORS_MODE",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "ENTRANCES_MODE",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "FLOORSMAX_MODE",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "FLOORSMIN_MODE",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "LANDAREA_MODE",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "LIVINGAPARTMENTS_MODE",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "LIVINGAREA_MODE",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "NONLIVINGAPARTMENTS_MODE",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "NONLIVINGAREA_MODE",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "APARTMENTS_MEDI",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "BASEMENTAREA_MEDI",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "YEARS_BEGINEXPLUATATION_MEDI",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "YEARS_BUILD_MEDI",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "COMMONAREA_MEDI",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "ELEVATORS_MEDI",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "ENTRANCES_MEDI",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "FLOORSMAX_MEDI",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "FLOORSMIN_MEDI",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "LANDAREA_MEDI",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "LIVINGAPARTMENTS_MEDI",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "LIVINGAREA_MEDI",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "NONLIVINGAPARTMENTS_MEDI",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "NONLIVINGAREA_MEDI",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "FONDKAPREMONT_MODE",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "HOUSETYPE_MODE",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "TOTALAREA_MODE",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "WALLSMATERIAL_MODE",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "EMERGENCYSTATE_MODE",
+          "description": "Normalized information about building where the client lives, What is average (_AVG suffix), modus (_MODE suffix), median (_MEDI suffix) apartment size, common area, living area, age of building, number of elevators, number of entrances, state of the building, number of floor Special: normalized"
+        },
+        {
+          "name": "OBS_30_CNT_SOCIAL_CIRCLE",
+          "description": "How many observation of client's social surroundings with observable 30 DPD (days past due) default"
+        },
+        {
+          "name": "DEF_30_CNT_SOCIAL_CIRCLE",
+          "description": "How many observation of client's social surroundings defaulted on 30 DPD (days past due)"
+        },
+        {
+          "name": "OBS_60_CNT_SOCIAL_CIRCLE",
+          "description": "How many observation of client's social surroundings with observable 60 DPD (days past due) default"
+        },
+        {
+          "name": "DEF_60_CNT_SOCIAL_CIRCLE",
+          "description": "How many observation of client's social surroundings defaulted on 60 (days past due) DPD"
+        },
+        {
+          "name": "DAYS_LAST_PHONE_CHANGE",
+          "description": "How many days before application did client change phone"
+        },
+        {
+          "name": "FLAG_DOCUMENT_2",
+          "description": "Did client provide document 2"
+        },
+        {
+          "name": "FLAG_DOCUMENT_3",
+          "description": "Did client provide document 3"
+        },
+        {
+          "name": "FLAG_DOCUMENT_4",
+          "description": "Did client provide document 4"
+        },
+        {
+          "name": "FLAG_DOCUMENT_5",
+          "description": "Did client provide document 5"
+        },
+        {
+          "name": "FLAG_DOCUMENT_6",
+          "description": "Did client provide document 6"
+        },
+        {
+          "name": "FLAG_DOCUMENT_7",
+          "description": "Did client provide document 7"
+        },
+        {
+          "name": "FLAG_DOCUMENT_8",
+          "description": "Did client provide document 8"
+        },
+        {
+          "name": "FLAG_DOCUMENT_9",
+          "description": "Did client provide document 9"
+        },
+        {
+          "name": "FLAG_DOCUMENT_10",
+          "description": "Did client provide document 10"
+        },
+        {
+          "name": "FLAG_DOCUMENT_11",
+          "description": "Did client provide document 11"
+        },
+        {
+          "name": "FLAG_DOCUMENT_12",
+          "description": "Did client provide document 12"
+        },
+        {
+          "name": "FLAG_DOCUMENT_13",
+          "description": "Did client provide document 13"
+        },
+        {
+          "name": "FLAG_DOCUMENT_14",
+          "description": "Did client provide document 14"
+        },
+        {
+          "name": "FLAG_DOCUMENT_15",
+          "description": "Did client provide document 15"
+        },
+        {
+          "name": "FLAG_DOCUMENT_16",
+          "description": "Did client provide document 16"
+        },
+        {
+          "name": "FLAG_DOCUMENT_17",
+          "description": "Did client provide document 17"
+        },
+        {
+          "name": "FLAG_DOCUMENT_18",
+          "description": "Did client provide document 18"
+        },
+        {
+          "name": "FLAG_DOCUMENT_19",
+          "description": "Did client provide document 19"
+        },
+        {
+          "name": "FLAG_DOCUMENT_20",
+          "description": "Did client provide document 20"
+        },
+        {
+          "name": "FLAG_DOCUMENT_21",
+          "description": "Did client provide document 21"
+        },
+        {
+          "name": "AMT_REQ_CREDIT_BUREAU_HOUR",
+          "description": "Number of enquiries to Credit Bureau about the client one hour before application"
+        },
+        {
+          "name": "AMT_REQ_CREDIT_BUREAU_DAY",
+          "description": "Number of enquiries to Credit Bureau about the client one day before application (excluding one hour before application)"
+        },
+        {
+          "name": "AMT_REQ_CREDIT_BUREAU_WEEK",
+          "description": "Number of enquiries to Credit Bureau about the client one week before application (excluding one day before application)"
+        },
+        {
+          "name": "AMT_REQ_CREDIT_BUREAU_MON",
+          "description": "Number of enquiries to Credit Bureau about the client one month before application (excluding one week before application)"
+        },
+        {
+          "name": "AMT_REQ_CREDIT_BUREAU_QRT",
+          "description": "Number of enquiries to Credit Bureau about the client 3 month before application (excluding one month before application)"
+        },
+        {
+          "name": "AMT_REQ_CREDIT_BUREAU_YEAR",
+          "description": "Number of enquiries to Credit Bureau about the client one day year (excluding last 3 months before application)"
+        },
+        {
+          "name": "SK_ID_CURR",
+          "description": "ID of loan in our sample - one loan in our sample can have 0,1,2 or more related previous credits in credit bureau Special: hashed"
+        },
+        {
+          "name": "SK_BUREAU_ID",
+          "description": "Recoded ID of previous Credit Bureau credit related to our loan (unique coding for each loan application) Special: hashed"
+        },
+        {
+          "name": "CREDIT_ACTIVE",
+          "description": "Status of the Credit Bureau (CB) reported credits"
+        },
+        {
+          "name": "CREDIT_CURRENCY",
+          "description": "Recoded currency of the Credit Bureau credit Special: recoded"
+        },
+        {
+          "name": "DAYS_CREDIT",
+          "description": "How many days before current application did client apply for Credit Bureau credit Special: time only relative to the application"
+        },
+        {
+          "name": "CREDIT_DAY_OVERDUE",
+          "description": "Number of days past due on CB credit at the time of application for related loan in our sample"
+        },
+        {
+          "name": "DAYS_CREDIT_ENDDATE",
+          "description": "Remaining duration of CB credit (in days) at the time of application in Home Credit Special: time only relative to the application"
+        },
+        {
+          "name": "DAYS_ENDDATE_FACT",
+          "description": "Days since CB credit ended at the time of application in Home Credit (only for closed credit) Special: time only relative to the application"
+        },
+        {
+          "name": "AMT_CREDIT_MAX_OVERDUE",
+          "description": "Maximal amount overdue on the Credit Bureau credit so far (at application date of loan in our sample)"
+        },
+        {
+          "name": "CNT_CREDIT_PROLONG",
+          "description": "How many times was the Credit Bureau credit prolonged"
+        },
+        {
+          "name": "AMT_CREDIT_SUM",
+          "description": "Current credit amount for the Credit Bureau credit"
+        },
+        {
+          "name": "AMT_CREDIT_SUM_DEBT",
+          "description": "Current debt on Credit Bureau credit"
+        },
+        {
+          "name": "AMT_CREDIT_SUM_LIMIT",
+          "description": "Current credit limit of credit card reported in Credit Bureau"
+        },
+        {
+          "name": "AMT_CREDIT_SUM_OVERDUE",
+          "description": "Current amount overdue on Credit Bureau credit"
+        },
+        {
+          "name": "CREDIT_TYPE",
+          "description": "Type of Credit Bureau credit (Car, cash,...)"
+        },
+        {
+          "name": "DAYS_CREDIT_UPDATE",
+          "description": "How many days before loan application did last information about the Credit Bureau credit come Special: time only relative to the application"
+        },
+        {
+          "name": "AMT_ANNUITY",
+          "description": "Annuity of the Credit Bureau credit"
+        },
+        {
+          "name": "SK_BUREAU_ID",
+          "description": "Recoded ID of Credit Bureau credit (unique coding for each application) - use this to join to CREDIT_BUREAU table Special: hashed"
+        },
+        {
+          "name": "MONTHS_BALANCE",
+          "description": "Month of balance relative to application date (-1 means the freshest balance date) Special: time only relative to the application"
+        },
+        {
+          "name": "STATUS",
+          "description": "Status of Credit Bureau loan during the month (active, closed, DPD0-30,... [C means closed, X means status unknown, 0 means no DPD, 1 means maximal did during month between 1-30, 2 means DPD 31-60,... 5 means DPD 120+ or sold or written off ] )"
+        },
+        {
+          "name": "SK_ID_PREV",
+          "description": "ID of previous credit in Home Credit related to loan in our sample. (One loan in our sample can have 0,1,2 or more previous loans in Home Credit)"
+        },
+        {
+          "name": "SK_ID_CURR",
+          "description": "ID of loan in our sample"
+        },
+        {
+          "name": "MONTHS_BALANCE",
+          "description": "Month of balance relative to application date (-1 means the information to the freshest monthly snapshot, 0 means the information at application - often it will be the same as -1 as many banks are not updating the information to Credit Bureau regularly ) Special: time only relative to the application"
+        },
+        {
+          "name": "CNT_INSTALMENT",
+          "description": "Term of previous credit (can change over time)"
+        },
+        {
+          "name": "CNT_INSTALMENT_FUTURE",
+          "description": "Installments left to pay on the previous credit"
+        },
+        {
+          "name": "NAME_CONTRACT_STATUS",
+          "description": "Contract status during the month"
+        },
+        {
+          "name": "SK_DPD",
+          "description": "DPD (days past due) during the month of previous credit"
+        },
+        {
+          "name": "SK_DPD_DEF",
+          "description": "DPD during the month with tolerance (debts with low loan amounts are ignored) of the previous credit"
+        },
+        {
+          "name": "SK_ID_PREV",
+          "description": "ID of previous credit in Home credit related to loan in our sample. (One loan in our sample can have 0,1,2 or more previous loans in Home Credit) Special: hashed"
+        },
+        {
+          "name": "SK_ID_CURR",
+          "description": "ID of loan in our sample Special: hashed"
+        },
+        {
+          "name": "MONTHS_BALANCE",
+          "description": "Month of balance relative to application date (-1 means the freshest balance date) Special: time only relative to the application"
+        },
+        {
+          "name": "AMT_BALANCE",
+          "description": "Balance during the month of previous credit"
+        },
+        {
+          "name": "AMT_CREDIT_LIMIT_ACTUAL",
+          "description": "Credit card limit during the month of the previous credit"
+        },
+        {
+          "name": "AMT_DRAWINGS_ATM_CURRENT",
+          "description": "Amount drawing at ATM during the month of the previous credit"
+        },
+        {
+          "name": "AMT_DRAWINGS_CURRENT",
+          "description": "Amount drawing during the month of the previous credit"
+        },
+        {
+          "name": "AMT_DRAWINGS_OTHER_CURRENT",
+          "description": "Amount of other drawings during the month of the previous credit"
+        },
+        {
+          "name": "AMT_DRAWINGS_POS_CURRENT",
+          "description": "Amount drawing or buying goods during the month of the previous credit"
+        },
+        {
+          "name": "AMT_INST_MIN_REGULARITY",
+          "description": "Minimal installment for this month of the previous credit"
+        },
+        {
+          "name": "AMT_PAYMENT_CURRENT",
+          "description": "How much did the client pay during the month on the previous credit"
+        },
+        {
+          "name": "AMT_PAYMENT_TOTAL_CURRENT",
+          "description": "How much did the client pay during the month in total on the previous credit"
+        },
+        {
+          "name": "AMT_RECEIVABLE_PRINCIPAL",
+          "description": "Amount receivable for principal on the previous credit"
+        },
+        {
+          "name": "AMT_RECIVABLE",
+          "description": "Amount receivable on the previous credit"
+        },
+        {
+          "name": "AMT_TOTAL_RECEIVABLE",
+          "description": "Total amount receivable on the previous credit"
+        },
+        {
+          "name": "CNT_DRAWINGS_ATM_CURRENT",
+          "description": "Number of drawings at ATM during this month on the previous credit"
+        },
+        {
+          "name": "CNT_DRAWINGS_CURRENT",
+          "description": "Number of drawings during this month on the previous credit"
+        },
+        {
+          "name": "CNT_DRAWINGS_OTHER_CURRENT",
+          "description": "Number of other drawings during this month on the previous credit"
+        },
+        {
+          "name": "CNT_DRAWINGS_POS_CURRENT",
+          "description": "Number of drawings for goods during this month on the previous credit"
+        },
+        {
+          "name": "CNT_INSTALMENT_MATURE_CUM",
+          "description": "Number of paid installments on the previous credit"
+        },
+        {
+          "name": "NAME_CONTRACT_STATUS",
+          "description": "Contract status (active signed,...) on the previous credit"
+        },
+        {
+          "name": "SK_DPD",
+          "description": "DPD (Days past due) during the month on the previous credit"
+        },
+        {
+          "name": "SK_DPD_DEF",
+          "description": "DPD (Days past due) during the month with tolerance (debts with low loan amounts are ignored) of the previous credit"
+        },
+        {
+          "name": "SK_ID_PREV",
+          "description": "ID of previous credit in Home credit related to loan in our sample. (One loan in our sample can have 0,1,2 or more previous loan applications in Home Credit, previous application could, but not necessarily have to lead to credit) Special: hashed"
+        },
+        {
+          "name": "SK_ID_CURR",
+          "description": "ID of loan in our sample Special: hashed"
+        },
+        {
+          "name": "NAME_CONTRACT_TYPE",
+          "description": "Contract product type (Cash loan, consumer loan [POS] ,...) of the previous application"
+        },
+        {
+          "name": "AMT_ANNUITY",
+          "description": "Annuity of previous application"
+        },
+        {
+          "name": "AMT_APPLICATION",
+          "description": "For how much credit did client ask on the previous application"
+        },
+        {
+          "name": "AMT_CREDIT",
+          "description": "Final credit amount on the previous application. This differs from AMT_APPLICATION in a way that the AMT_APPLICATION is the amount for which the client initially applied for, but during our approval process he could have received different amount - AMT_CREDIT"
+        },
+        {
+          "name": "AMT_DOWN_PAYMENT",
+          "description": "Down payment on the previous application"
+        },
+        {
+          "name": "AMT_GOODS_PRICE",
+          "description": "Goods price of good that client asked for (if applicable) on the previous application"
+        },
+        {
+          "name": "WEEKDAY_APPR_PROCESS_START",
+          "description": "On which day of the week did the client apply for previous application"
+        },
+        {
+          "name": "HOUR_APPR_PROCESS_START",
+          "description": "Approximately at what day hour did the client apply for the previous application Special: rounded"
+        },
+        {
+          "name": "FLAG_LAST_APPL_PER_CONTRACT",
+          "description": "Flag if it was last application for the previous contract. Sometimes by mistake of client or our clerk there could be more applications for one single contract"
+        },
+        {
+          "name": "NFLAG_LAST_APPL_IN_DAY",
+          "description": "Flag if the application was the last application per day of the client. Sometimes clients apply for more applications a day. Rarely it could also be error in our system that one application is in the database twice"
+        },
+        {
+          "name": "NFLAG_MICRO_CASH",
+          "description": "Flag Micro finance loan"
+        },
+        {
+          "name": "RATE_DOWN_PAYMENT",
+          "description": "Down payment rate normalized on previous credit Special: normalized"
+        },
+        {
+          "name": "RATE_INTEREST_PRIMARY",
+          "description": "Interest rate normalized on previous credit Special: normalized"
+        },
+        {
+          "name": "RATE_INTEREST_PRIVILEGED",
+          "description": "Interest rate normalized on previous credit Special: normalized"
+        },
+        {
+          "name": "NAME_CASH_LOAN_PURPOSE",
+          "description": "Purpose of the cash loan"
+        },
+        {
+          "name": "NAME_CONTRACT_STATUS",
+          "description": "Contract status (approved, cancelled, ...) of previous application"
+        },
+        {
+          "name": "DAYS_DECISION",
+          "description": "Relative to current application when was the decision about previous application made Special: time only relative to the application"
+        },
+        {
+          "name": "NAME_PAYMENT_TYPE",
+          "description": "Payment method that client chose to pay for the previous application"
+        },
+        {
+          "name": "CODE_REJECT_REASON",
+          "description": "Why was the previous application rejected"
+        },
+        {
+          "name": "NAME_TYPE_SUITE",
+          "description": "Who accompanied client when applying for the previous application"
+        },
+        {
+          "name": "NAME_CLIENT_TYPE",
+          "description": "Was the client old or new client when applying for the previous application"
+        },
+        {
+          "name": "NAME_GOODS_CATEGORY",
+          "description": "What kind of goods did the client apply for in the previous application"
+        },
+        {
+          "name": "NAME_PORTFOLIO",
+          "description": "Was the previous application for CASH, POS, CAR, ..."
+        },
+        {
+          "name": "NAME_PRODUCT_TYPE",
+          "description": "Was the previous application x-sell o walk-in"
+        },
+        {
+          "name": "CHANNEL_TYPE",
+          "description": "Through which channel we acquired the client on the previous application"
+        },
+        {
+          "name": "SELLERPLACE_AREA",
+          "description": "Selling area of seller place of the previous application"
+        },
+        {
+          "name": "NAME_SELLER_INDUSTRY",
+          "description": "The industry of the seller"
+        },
+        {
+          "name": "CNT_PAYMENT",
+          "description": "Term of previous credit at application of the previous application"
+        },
+        {
+          "name": "NAME_YIELD_GROUP",
+          "description": "Grouped interest rate into small medium and high of the previous application Special: grouped"
+        },
+        {
+          "name": "PRODUCT_COMBINATION",
+          "description": "Detailed product combination of the previous application"
+        },
+        {
+          "name": "DAYS_FIRST_DRAWING",
+          "description": "Relative to application date of current application when was the first disbursement of the previous application Special: time only relative to the application"
+        },
+        {
+          "name": "DAYS_FIRST_DUE",
+          "description": "Relative to application date of current application when was the first due supposed to be of the previous application Special: time only relative to the application"
+        },
+        {
+          "name": "DAYS_LAST_DUE_1ST_VERSION",
+          "description": "Relative to application date of current application when was the first due of the previous application Special: time only relative to the application"
+        },
+        {
+          "name": "DAYS_LAST_DUE",
+          "description": "Relative to application date of current application when was the last due date of the previous application Special: time only relative to the application"
+        },
+        {
+          "name": "DAYS_TERMINATION",
+          "description": "Relative to application date of current application when was the expected termination of the previous application Special: time only relative to the application"
+        },
+        {
+          "name": "NFLAG_INSURED_ON_APPROVAL",
+          "description": "Did the client requested insurance during the previous application"
+        },
+        {
+          "name": "SK_ID_PREV",
+          "description": "ID of previous credit in Home credit related to loan in our sample. (One loan in our sample can have 0,1,2 or more previous loans in Home Credit) Special: hashed"
+        },
+        {
+          "name": "SK_ID_CURR",
+          "description": "ID of loan in our sample Special: hashed"
+        },
+        {
+          "name": "NUM_INSTALMENT_VERSION",
+          "description": "Version of installment calendar (0 is for credit card) of previous credit. Change of installment version from month to month signifies that some parameter of payment calendar has changed"
+        },
+        {
+          "name": "NUM_INSTALMENT_NUMBER",
+          "description": "On which installment we observe payment"
+        },
+        {
+          "name": "DAYS_INSTALMENT",
+          "description": "When the installment of previous credit was supposed to be paid (relative to application date of current loan) Special: time only relative to the application"
+        },
+        {
+          "name": "DAYS_ENTRY_PAYMENT",
+          "description": "When was the installments of previous credit paid actually (relative to application date of current loan) Special: time only relative to the application"
+        },
+        {
+          "name": "AMT_INSTALMENT",
+          "description": "What was the prescribed installment amount of previous credit on this installment"
+        },
+        {
+          "name": "AMT_PAYMENT",
+          "description": "What the client actually paid on previous credit on this installment"
+        }
+      ]
+    }
+  },
+  "metric": {
+    "name": "AUC"
+  }
+}

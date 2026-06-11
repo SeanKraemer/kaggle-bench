@@ -1,0 +1,750 @@
+{
+  "competition_slug": "restaurant-revenue-prediction",
+  "generated_at": "2026-04-15T00:00:00Z",
+  "actions": [
+    {
+      "action_id": "CA-000001",
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "revenue <= revenue.quantile(0.99)"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Dropping the top 1% of revenue rows is a tempting outlier heuristic on a tiny 137-row training set, but it discards scarce target signal and is not part of the benchmark-preferred spine.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "ahayek84/restaurant-revenue-predict"
+      ],
+      "derivation_reasoning": "Derived from notebooks that discuss outlier removal on revenue; the harmful variant hard-filters the target tail instead of keeping the official training rows."
+    },
+    {
+      "action_id": "CA-000002",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "Id"
+        ],
+        "reason": "identifier_only"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Id is a record identifier rather than a predictive restaurant feature and is commonly removed before modeling.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "ani310/restaurant-revenue",
+        "ahayek84/restaurant-revenue-predict",
+        "rahulpawade/restaurant-revenue-prediction",
+        "ruiyap/detailed-eda-data-processing-model-building",
+        "yazeedalsahouri03/restaurant-revenue-prediction"
+      ],
+      "source_profile": "community_baseline",
+      "context_notes": "Usually performed immediately after loading train/test tables.",
+      "evidence_snippets": [
+        "trainData = trainData.drop('Id', axis=1)",
+        "testData = testData.drop('Id', axis=1)",
+        "x_train = train.drop(columns=['Id','revenue','Open Date'], axis=1)"
+      ],
+      "rareness": "common",
+      "confidence": 0.94
+    },
+    {
+      "action_id": "CA-000003",
+      "action_type": "PARSE_DATETIME",
+      "canonical_params": {
+        "columns": [
+          "Open Date"
+        ],
+        "format": "%d/%m/%Y",
+        "errors": "coerce"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "The competition uses month/day/year ordering; parsing with day-first format will silently corrupt dates or inject NaT values.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000007"
+      ],
+      "derivation_reasoning": "Constructed as the most direct near-miss opposite of the correct Open Date parsing step."
+    },
+    {
+      "action_id": "CA-000004",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "OpenDays = days_between(to_datetime('2015-01-01'), Open Date)",
+        "output_columns": [
+          "OpenDays"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "A repeated baseline pattern converts Open Date into restaurant age in days relative to a fixed benchmark anchor date.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "ani310/restaurant-revenue",
+        "jatta3399/revenuerrestr",
+        "meridk/ms-dos",
+        "benhamner/random-forest-1"
+      ],
+      "source_profile": "community_baseline",
+      "context_notes": "This row encodes the task-local fixed-anchor OpenDays workflow assumption described in notes.md.",
+      "evidence_snippets": [
+        "trainData['OpenDays'] = dateLastTrain['Date'] - trainData['Open Date']",
+        "testData['OpenDays'] = dateLastTest['Date'] - testData['Open Date']",
+        "trainData['OpenDays'] = trainData['OpenDays'].astype('timedelta64[D]').astype(int)"
+      ],
+      "rareness": "common",
+      "confidence": 0.88,
+      "equivalence_group": "restaurant_date_signal_strategy",
+      "must_follow_action_ids": [
+        "CA-000007"
+      ]
+    },
+    {
+      "action_id": "CA-000005",
+      "action_type": "BIN_NUMERIC",
+      "canonical_params": {
+        "columns": [
+          "OpenDays"
+        ],
+        "method": "quantile",
+        "bins": 5
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Coarsening restaurant age into only a handful of quantile buckets discards one of the task's main continuous signals on an already tiny training set.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000004"
+      ],
+      "derivation_reasoning": "Derived as a harmful discretized variant of the OpenDays feature-engineering branch."
+    },
+    {
+      "action_id": "CA-000006",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "hash",
+        "columns": [
+          "City Group",
+          "Type"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Hashing the already tiny City Group and Type domains throws away interpretability and buys nothing over the simpler label or one-hot strategies seen in the notebook corpus.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "rahulpawade/restaurant-revenue-prediction",
+        "yazeedalsahouri03/restaurant-revenue-prediction"
+      ],
+      "derivation_reasoning": "Derived as a weak encoding alternative for low-cardinality restaurant descriptors where direct label or one-hot treatment is simpler and better supported."
+    },
+    {
+      "action_id": "CA-000007",
+      "action_type": "PARSE_DATETIME",
+      "canonical_params": {
+        "columns": [
+          "Open Date"
+        ],
+        "format": "%m/%d/%Y",
+        "errors": "coerce"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "The raw Open Date string is routinely converted into datetime values before any date-derived feature engineering.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "ahayek84/restaurant-revenue-predict",
+        "ani310/restaurant-revenue",
+        "devkhant24/restaurant-revenue",
+        "sayedsalem/eda-model-selection-lgb-used",
+        "yazeedalsahouri03/restaurant-revenue-prediction"
+      ],
+      "source_profile": "community_baseline",
+      "context_notes": "This row is the canonical prerequisite for all benchmark-rewarded Open Date feature branches.",
+      "evidence_snippets": [
+        "train['Open Date'] = pd.to_datetime(train['Open Date'])",
+        "trainData['Open Date'] = pd.to_datetime(trainData['Open Date'], format='%m/%d/%Y')",
+        "train['pd_date'] = pd.to_datetime(train['Open Date'], format='%m/%d/%Y')"
+      ],
+      "rareness": "common",
+      "confidence": 0.93
+    },
+    {
+      "action_id": "CA-000008",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "Open Date"
+        ],
+        "reason": "premature_date_cleanup"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Dropping Open Date before recovering any stable age or date-part signal destroys the only explicit temporal feature in the official table.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000004",
+        "CA-000011",
+        "CA-000019",
+        "CA-000022"
+      ],
+      "derivation_reasoning": "Derived as the harmful early-drop counterpart of the benchmark's two valid Open Date cleanup rows.",
+      "invalidates_action_ids": [
+        "CA-000004",
+        "CA-000019"
+      ]
+    },
+    {
+      "action_id": "CA-000009",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "City_Is_Istanbul = City == 'İstanbul'",
+        "output_columns": [
+          "City_Is_Istanbul"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "A compact branch in multiple notebooks collapses City into a specific Istanbul-vs-other indicator instead of using a wider categorical encoding strategy.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "rahulpawade/restaurant-revenue-prediction",
+        "ahayek84/restaurant-revenue-predict"
+      ],
+      "source_profile": "compact_baseline",
+      "context_notes": "This is rewarded only in all-stage scoring because city handling varies much more than the primary low-cardinality categorical spine.",
+      "evidence_snippets": [
+        "train['City'] = (train['City']=='İstanbul').astype(np.int)",
+        "test['City'] = (test['City']=='İstanbul').astype(np.int)"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.71
+    },
+    {
+      "action_id": "CA-000010",
+      "action_type": "CLIP_OUTLIERS",
+      "canonical_params": {
+        "columns": [
+          "revenue"
+        ],
+        "method": "winsorize",
+        "lower_quantile": 0.01,
+        "upper_quantile": 0.99
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Winsorizing the target on such a small training table bakes in a heavy-handed target edit that is not part of the benchmark's preferred workflow.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "ahayek84/restaurant-revenue-predict"
+      ],
+      "derivation_reasoning": "Derived from notebooks that experiment with outlier removal on revenue; the benchmark treats direct target clipping as a harmful branch."
+    },
+    {
+      "action_id": "CA-000011",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "Open Date"
+        ],
+        "reason": "drop_after_open_days"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Kernels that derive OpenDays usually remove the raw Open Date string once the age feature has been materialized.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "ani310/restaurant-revenue",
+        "jatta3399/revenuerrestr",
+        "meridk/ms-dos",
+        "benhamner/random-forest-1"
+      ],
+      "source_profile": "community_baseline",
+      "context_notes": "This cleanup row is authored separately from the date-part cleanup row so hidden-order metadata can stay deterministic.",
+      "evidence_snippets": [
+        "trainData = trainData.drop('Open Date', axis=1)",
+        "testData = testData.drop('Open Date', axis=1)"
+      ],
+      "rareness": "common",
+      "confidence": 0.86,
+      "equivalence_group": "restaurant_open_date_cleanup",
+      "must_follow_action_ids": [
+        "CA-000007",
+        "CA-000004"
+      ]
+    },
+    {
+      "action_id": "CA-000012",
+      "action_type": "SCALE_NUMERIC",
+      "canonical_params": {
+        "method": "standard",
+        "columns": [
+          "Id"
+        ],
+        "fit_scope": "train_only"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Standardizing the identifier column treats record order as signal instead of removing the identifier entirely.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000002"
+      ],
+      "derivation_reasoning": "Derived as a harmful alternative to dropping Id."
+    },
+    {
+      "action_id": "CA-000013",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "OpenDays_Approx = month(Open Date) * 30 + day(Open Date)",
+        "output_columns": [
+          "OpenDays_Approx"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Approximating restaurant age from month and day alone drops the year component and badly distorts the strongest time-related signal.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "rahulpawade/restaurant-revenue-prediction",
+        "abeerabuzayed/restaurant-revenue-prediction-v2"
+      ],
+      "derivation_reasoning": "Derived from split-date notebooks as a near-miss that notices month/day extraction but misses the intended fixed-anchor age computation.",
+      "must_follow_action_ids": [
+        "CA-000007"
+      ]
+    },
+    {
+      "action_id": "CA-000014",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "onehot",
+        "columns": [
+          "City Group",
+          "Type"
+        ],
+        "handle_unknown": "ignore"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "One-hot expansion of the two low-cardinality restaurant descriptors is a frequent baseline encoding strategy in the notebook corpus.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "devkhant24/restaurant-revenue",
+        "otsukiryo/notebook53405d9c2f",
+        "ruiyap/detailed-eda-data-processing-model-building",
+        "yazeedalsahouri03/restaurant-revenue-prediction"
+      ],
+      "source_profile": "community_baseline",
+      "context_notes": "This row is intentionally equivalent to compact label encoding over the same low-cardinality columns.",
+      "evidence_snippets": [
+        "dummies = pd.get_dummies(X['Type'])",
+        "df_all = pd.get_dummies(df_all).reset_index(drop=True)",
+        "full_data = pd.get_dummies(full_data)"
+      ],
+      "rareness": "common",
+      "confidence": 0.84,
+      "equivalence_group": "restaurant_low_card_encoding_strategy"
+    },
+    {
+      "action_id": "CA-000015",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "P1",
+          "P2",
+          "P3",
+          "P4",
+          "P5",
+          "P6",
+          "P7",
+          "P8",
+          "P9",
+          "P10",
+          "P11",
+          "P12",
+          "P13",
+          "P14",
+          "P15",
+          "P16",
+          "P17",
+          "P18",
+          "P19",
+          "P20",
+          "P21",
+          "P22",
+          "P23",
+          "P24",
+          "P25",
+          "P26",
+          "P27",
+          "P28",
+          "P29",
+          "P30",
+          "P31",
+          "P32",
+          "P33",
+          "P34",
+          "P35",
+          "P36",
+          "P37"
+        ],
+        "reason": "drop_main_numeric_signal"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Discarding the obfuscated P-features removes most of the official numeric signal available to the model.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "abeerabuzayed/restaurant-revenue-prediction-v2"
+      ],
+      "derivation_reasoning": "Derived as an over-aggressive feature-pruning mistake against the competition's main numeric block.",
+      "invalidates_action_ids": [
+        "CA-000016"
+      ]
+    },
+    {
+      "action_id": "CA-000016",
+      "action_type": "SCALE_NUMERIC",
+      "canonical_params": {
+        "method": "standard",
+        "columns": [
+          "P1",
+          "P2",
+          "P3",
+          "P4",
+          "P5",
+          "P6",
+          "P7",
+          "P8",
+          "P9",
+          "P10",
+          "P11",
+          "P12",
+          "P13",
+          "P14",
+          "P15",
+          "P16",
+          "P17",
+          "P18",
+          "P19",
+          "P20",
+          "P21",
+          "P22",
+          "P23",
+          "P24",
+          "P25",
+          "P26",
+          "P27",
+          "P28",
+          "P29",
+          "P30",
+          "P31",
+          "P32",
+          "P33",
+          "P34",
+          "P35",
+          "P36",
+          "P37"
+        ],
+        "fit_scope": "train_only"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Scaling the numeric predictor block appears repeatedly in notebooks that train distance-based or linear models.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "ahayek84/restaurant-revenue-predict",
+        "at3191/restaurant-revenue-prediction-trial-1",
+        "rahulpawade/restaurant-revenue-prediction",
+        "ruiyap/detailed-eda-data-processing-model-building"
+      ],
+      "source_profile": "community_baseline",
+      "context_notes": "Kept outside the primary denominator because tree-based baselines often skip scaling without violating the core workflow.",
+      "evidence_snippets": [
+        "s = StandardScaler()",
+        "xtrain = s.fit_transform(x_train)",
+        "from sklearn.preprocessing import StandardScaler"
+      ],
+      "rareness": "common",
+      "confidence": 0.8
+    },
+    {
+      "action_id": "CA-000017",
+      "action_type": "DATE_PART_FEATURE",
+      "canonical_params": {
+        "date_columns": [
+          "Open Date"
+        ],
+        "parts": [
+          "hour",
+          "minute"
+        ],
+        "drop_original": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Open Date contains no meaningful time-of-day information, so hour and minute extraction creates constant-value noise features.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000019"
+      ],
+      "derivation_reasoning": "Derived as a mechanically valid but semantically empty date-part branch."
+    },
+    {
+      "action_id": "CA-000018",
+      "action_type": "LOG_TRANSFORM",
+      "canonical_params": {
+        "columns": [
+          "revenue"
+        ],
+        "handle_nonpositive": "shift"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Several stronger notebooks explicitly log-transform revenue to tame the target's heavy right tail before fitting regressors.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "ruiyap/detailed-eda-data-processing-model-building",
+        "otsukiryo/notebook53405d9c2f",
+        "takaomikadokura7069/ds-stdy-restaurant-redge"
+      ],
+      "source_profile": "tuned_community",
+      "context_notes": "Rewarded only in all-stage scoring because the benchmark keeps target transforms outside the primary preprocessing denominator.",
+      "evidence_snippets": [
+        "y = np.log1p(y)",
+        "df['revenue'] = np.log1p(df['revenue'])"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.77
+    },
+    {
+      "action_id": "CA-000019",
+      "action_type": "DATE_PART_FEATURE",
+      "canonical_params": {
+        "date_columns": [
+          "Open Date"
+        ],
+        "parts": [
+          "year",
+          "month",
+          "day"
+        ],
+        "drop_original": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "A large share of notebooks split Open Date into explicit year, month, and day features instead of using a single OpenDays feature.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "abeerabuzayed/restaurant-revenue-prediction-v2",
+        "rahulpawade/restaurant-revenue-prediction",
+        "takaomikadokura7069/ds-stdy-restaurant-redge",
+        "yazeedalsahouri03/restaurant-revenue-prediction"
+      ],
+      "source_profile": "community_baseline",
+      "context_notes": "This row is treated as an alternative date-signal strategy to the OpenDays branch rather than an additional required unit.",
+      "evidence_snippets": [
+        "data['month'] = train_date[0]",
+        "data['days'] = train_date[1]",
+        "data['year'] = train_date[2]"
+      ],
+      "rareness": "common",
+      "confidence": 0.87,
+      "equivalence_group": "restaurant_date_signal_strategy",
+      "must_follow_action_ids": [
+        "CA-000007"
+      ]
+    },
+    {
+      "action_id": "CA-000020",
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "City Group == 'Big Cities'"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Restricting training to big-city restaurants discards a substantial slice of the already small official training set.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "abeerabuzayed/restaurant-revenue-prediction-v2"
+      ],
+      "derivation_reasoning": "Derived from notebooks that heavily inspect City Group; the harmful variant turns a descriptive split into a destructive row filter."
+    },
+    {
+      "action_id": "CA-000021",
+      "action_type": "BIN_NUMERIC",
+      "canonical_params": {
+        "columns": [
+          "P1",
+          "P2",
+          "P3",
+          "P4"
+        ],
+        "method": "uniform",
+        "bins": 10
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Coarse fixed-width binning of already compact numeric predictors throws away resolution without any strong notebook evidence that the branch is useful here.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "abeerabuzayed/restaurant-revenue-prediction-v2"
+      ],
+      "derivation_reasoning": "Added as a plausible but poor discretization branch over the main numeric features."
+    },
+    {
+      "action_id": "CA-000022",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "Open Date"
+        ],
+        "reason": "drop_after_date_parts"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Notebooks that split Open Date into explicit date parts typically remove the original raw date string afterward.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "ani310/restaurant-revenue",
+        "otsukiryo/notebook53405d9c2f",
+        "takaomikadokura7069/ds-stdy-restaurant-redge"
+      ],
+      "source_profile": "community_baseline",
+      "context_notes": "Separate cleanup row for the date-part branch so the bank can encode deterministic precedence without OR-style hidden rules.",
+      "evidence_snippets": [
+        "train = train.drop('Open Date', axis=1)",
+        "trainData = trainData.drop('Open Date', axis=1)"
+      ],
+      "rareness": "common",
+      "confidence": 0.82,
+      "equivalence_group": "restaurant_open_date_cleanup",
+      "must_follow_action_ids": [
+        "CA-000007",
+        "CA-000019"
+      ]
+    },
+    {
+      "action_id": "CA-000023",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "RevenuePerOpenDay = revenue / max(OpenDays, 1)",
+        "output_columns": [
+          "RevenuePerOpenDay"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Injecting revenue into a derived feature leaks the training target directly into the predictor matrix.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000004"
+      ],
+      "derivation_reasoning": "Derived as a target-leakage mutation of the benchmark's valid OpenDays feature branch.",
+      "must_follow_action_ids": [
+        "CA-000004"
+      ]
+    },
+    {
+      "action_id": "CA-000024",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "label",
+        "columns": [
+          "City Group",
+          "Type"
+        ],
+        "handle_unknown": "ignore"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Compact integer encoding of the low-cardinality Type and City Group columns is one of the most common preprocessing branches in the selected notebook pool.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "abeerabuzayed/restaurant-revenue-prediction-v2",
+        "garryarielcussoy/predict-restaurant-revenue-using-regression",
+        "rahulpawade/restaurant-revenue-prediction",
+        "sayedsalem/eda-model-selection-lgb-used"
+      ],
+      "source_profile": "community_baseline",
+      "context_notes": "Authored as an equivalent alternative to one-hot encoding over the same low-cardinality restaurant descriptors.",
+      "evidence_snippets": [
+        "train['City Group'] = l.fit_transform(train['City Group'])",
+        "train['Type'] = l.fit_transform(train['Type'])",
+        "from sklearn.preprocessing import LabelEncoder"
+      ],
+      "rareness": "common",
+      "confidence": 0.9,
+      "equivalence_group": "restaurant_low_card_encoding_strategy"
+    },
+    {
+      "action_id": "CA-000025",
+      "action_type": "CLIP_OUTLIERS",
+      "canonical_params": {
+        "columns": [
+          "P1",
+          "P2",
+          "P3",
+          "P4",
+          "P5",
+          "P6"
+        ],
+        "method": "iqr",
+        "iqr_k": 1.5
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "IQR clipping over the main numeric block is an over-assertive cleanup choice with no strong competition-specific support in the selected notebooks.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "otsukiryo/notebook53405d9c2f"
+      ],
+      "derivation_reasoning": "Derived from notebooks that inspect outliers, but converted into a deterministic harmful clipping branch over key predictors."
+    },
+    {
+      "action_id": "CA-000026",
+      "action_type": "LOG_TRANSFORM",
+      "canonical_params": {
+        "columns": [
+          "Id"
+        ],
+        "handle_nonpositive": "shift"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Applying a log transform to the identifier treats record numbering as meaningful numeric signal instead of removing the identifier outright.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000002"
+      ],
+      "derivation_reasoning": "Derived as a model-specific but harmful alternative to dropping Id."
+    }
+  ]
+}

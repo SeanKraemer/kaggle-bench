@@ -1,0 +1,63 @@
+{
+  "competition_slug": "elo-merchant-category-recommendation",
+  "testcase_id": "tc1_from_scratch",
+  "artifact_type": "eval_human_baseline_action_trace",
+  "related_output": "../tc1_human.json",
+  "traces": [
+    {
+      "predicted_action_id": "CA-000004",
+      "artifact": "../work.ipynb",
+      "section": "Card Age And Base Card Features",
+      "mapping_rationale": "The notebook treats year and month from `first_active_month` as the cleanest first card-age block."
+    },
+    {
+      "predicted_action_id": "CA-000047",
+      "artifact": "../work.ipynb",
+      "section": "Card Age And Base Card Features",
+      "mapping_rationale": "Elapsed card age stays in the final selection because it is one of the most repeated and interpretable Elo base-table features."
+    },
+    {
+      "predicted_action_id": "CA-000035",
+      "artifact": "../manual_selection_worksheet.md",
+      "section": "Final Bank Mapping",
+      "mapping_rationale": "The shortlist kept simple dummy expansion for the three low-cardinality base-card features, and this row is the bank-aligned representative for `feature_1`."
+    },
+    {
+      "predicted_action_id": "CA-000011",
+      "artifact": "../manual_selection_worksheet.md",
+      "section": "Final Bank Mapping",
+      "mapping_rationale": "The same frozen base-card encoding shortlist maps `feature_2` to its current benchmark id here."
+    },
+    {
+      "predicted_action_id": "CA-000062",
+      "artifact": "../manual_selection_worksheet.md",
+      "section": "Final Bank Mapping",
+      "mapping_rationale": "The final selection keeps the full low-cardinality base-card encoding block, including `feature_3`."
+    },
+    {
+      "predicted_action_id": "CA-000051",
+      "artifact": "../work.ipynb",
+      "section": "Transaction Tables, Recency, And Aggregation Direction",
+      "mapping_rationale": "I treated `month_diff` as the clearest recurring recency feature before any card-level aggregation."
+    },
+    {
+      "predicted_action_id": "CA-000060",
+      "artifact": "../work.ipynb",
+      "section": "Transaction Tables, Recency, And Aggregation Direction",
+      "mapping_rationale": "Historical numeric transaction aggregation is one of the two card-level summary blocks I kept in the final selection."
+    },
+    {
+      "predicted_action_id": "CA-000049",
+      "artifact": "../work.ipynb",
+      "section": "Transaction Tables, Recency, And Aggregation Direction",
+      "mapping_rationale": "The new-merchant numeric aggregation block is kept as the matching companion to the historical numeric summary path."
+    }
+  ],
+  "omitted_steps": [
+    {
+      "artifact": "../manual_selection_worksheet.md",
+      "section": "Intentionally Omitted",
+      "note": "The manual pass stops before the transaction-flag cleanup branch, category_2/category_3 dummy expansion, categorical aggregate blocks, and diversity-count aggregates."
+    }
+  ]
+}

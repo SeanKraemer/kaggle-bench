@@ -1,0 +1,15 @@
+{
+  "testcase_id": "tc4_mixed_history",
+  "competition_slug": "porto-seguro-safe-driver-prediction",
+  "task_ref": "../task.json",
+  "input": {
+    "scenario": "mixed",
+    "context_action_ids": [
+      "CA-000019",
+      "CA-000008",
+      "CA-000002",
+      "CA-000042",
+      "CA-000009"
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "testcase_id": "tc1_from_scratch",
+  "competition_slug": "ashrae-energy-prediction",
+  "task_ref": "../task.json",
+  "input": {
+    "scenario": "from_scratch",
+    "context_action_ids": []
+  }
+}

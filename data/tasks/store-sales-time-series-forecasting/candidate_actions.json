@@ -1,0 +1,1564 @@
+{
+  "competition_slug": "store-sales-time-series-forecasting",
+  "generated_at": "2026-04-22",
+  "actions": [
+    {
+      "action_id": "CA-000001",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "holidays_events",
+        "left_on": [
+          "date"
+        ],
+        "right_on": [
+          "date"
+        ],
+        "how": "inner"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Joining holidays_events with how='inner' silently drops all non-holiday rows, reducing the dataset to only ~350 unique holiday dates and discarding the vast majority of normal trading-day sales history.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "CA-000011"
+      ],
+      "derivation_reasoning": "Synthetic fault derived from the correct left-join CA-000011 by changing how='left' to how='inner', causing massive row loss on non-holiday dates.",
+      "challenge_type": "join_mode_fault",
+      "invalidates_action_ids": [
+        "CA-000011"
+      ]
+    },
+    {
+      "action_id": "CA-000002",
+      "action_type": "PARSE_DATETIME",
+      "canonical_params": {
+        "columns": [
+          "date"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "The date column is stored as a string in train, test, oil, and holidays_events; parsing it to datetime is a universal first step before any calendar decomposition, join, or lag feature.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "pelinkeskin/time-series-forecasting-with-tensorflow-lstm-cnn",
+        "yashkc2025/store-sales-time-series-forecasting",
+        "harinuu/store-sales-competition",
+        "sharanharsoor/eda-and-xgboost-regression-for-each-store",
+        "hardikgarg03/store-sales",
+        "adnanshikh/sales-prediction-using-linearregression-catboost",
+        "satoshiss/store-sales-eda-xgb",
+        "beezus666/store-sales-getting-started",
+        "javigallego/time-series-forecasting-tutorial",
+        "koheishima/store-sales-simple-xg-boost-gpu-lb-0-44579"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Applied to train, test, and all supplementary tables (oil, holidays_events, transactions) that have a date column. Prerequisite for DATE_PART_FEATURE, LAG_FEATURE, and date-keyed joins.",
+      "evidence_snippets": [
+        "train_df['date'] = pd.to_datetime(train_df['date'])",
+        "train['date'] = pd.to_datetime(train['date'])",
+        "data_oil['date'] = pd.to_datetime(data_oil['date'])",
+        "oil['date'] = pd.to_datetime(oil.date)",
+        "parse_dates=['date']"
+      ],
+      "rareness": "common",
+      "confidence": 0.99
+    },
+    {
+      "action_id": "CA-000003",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "oil",
+        "left_on": [
+          "date"
+        ],
+        "right_on": [
+          "date"
+        ],
+        "how": "inner"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Joining oil.csv with how='inner' drops all weekend and non-trading-day rows because those dates have no oil price entry, silently shrinking the training data by roughly 30%.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "CA-000007"
+      ],
+      "derivation_reasoning": "Synthetic fault derived from the correct left-join CA-000010 by changing how='left' to how='inner', causing roughly 30% row loss on weekends and holidays.",
+      "challenge_type": "join_mode_fault",
+      "invalidates_action_ids": [
+        "CA-000007"
+      ]
+    },
+    {
+      "action_id": "CA-000004",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "stores",
+        "left_on": [
+          "store_nbr"
+        ],
+        "right_on": [
+          "store_nbr"
+        ],
+        "how": "left"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Joining the stores lookup table adds city, state, store type, and cluster \u2014 categorical store-level features unavailable in train.csv but used by virtually all strong baselines.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "terhuichee/sales-forecasting-arima-model",
+        "kalilurrahman/store-sales-eda-prediction-with-ts",
+        "harinuu/store-sales-competition",
+        "sharanharsoor/eda-and-xgboost-regression-for-each-store",
+        "hardikgarg03/store-sales",
+        "luisblanche/pytorch-forecasting-temporalfusiontransformer",
+        "javigallego/time-series-forecasting-tutorial",
+        "pelinkeskin/time-series-forecasting-with-tensorflow-lstm-cnn",
+        "thanakr/first-project-store-sales",
+        "koheishima/store-sales-simple-xg-boost-gpu-lb-0-44579",
+        "xholisilemantshongo/modeling-sales-3-types-of-regression"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Adds: city, state, type, cluster. Keyed by store_nbr.",
+      "evidence_snippets": [
+        "train_df = pd.merge(train_df, store_df, on='store_nbr', how='left')",
+        "df_data = df_data.merge(stores, how='left', on='store_nbr')",
+        "df_train = pd.merge(df_train, stores, on='store_nbr', how='left')",
+        "train_df = train_df.merge(stores_df, on='store_nbr')"
+      ],
+      "rareness": "common",
+      "confidence": 0.95,
+      "must_follow_action_ids": [
+        "CA-000002"
+      ]
+    },
+    {
+      "action_id": "CA-000005",
+      "action_type": "LAG_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "sales"
+        ],
+        "lag_periods": [
+          1,
+          7
+        ],
+        "order_by_columns": [
+          "date"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Computing sales lags without group_by_columns mixes lag values across different store-family combinations, introducing cross-series leakage that inflates in-sample performance and degrades generalization.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "CA-000038"
+      ],
+      "derivation_reasoning": "Synthetic fault derived from the correct grouped lag CA-000019 by omitting group_by_columns=['store_nbr','family'], causing cross-series leakage.",
+      "challenge_type": "leakage_fault",
+      "invalidates_action_ids": [
+        "CA-000038"
+      ]
+    },
+    {
+      "action_id": "CA-000006",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "date"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Dropping the date column before temporal feature extraction destroys all calendar signals and makes lag and rolling window features impossible to compute downstream.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "CA-000052"
+      ],
+      "derivation_reasoning": "Synthetic fault that drops 'date' instead of 'id', eliminating the date column before any temporal feature work has occurred.",
+      "challenge_type": "premature_drop_fault"
+    },
+    {
+      "action_id": "CA-000007",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "oil",
+        "left_on": [
+          "date"
+        ],
+        "right_on": [
+          "date"
+        ],
+        "how": "left"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Oil price is a macro-economic exogenous feature strongly correlated with consumer spending patterns in Ecuador. Most competitive notebooks join it onto the main training table by date.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "terhuichee/sales-forecasting-arima-model",
+        "hardikgarg03/store-sales",
+        "shiromeow/time-series-forecasting-with-deep-learning-lstm",
+        "luisblanche/pytorch-forecasting-temporalfusiontransformer",
+        "javigallego/time-series-forecasting-tutorial",
+        "satoshiss/store-sales-eda-xgb",
+        "koheishima/store-sales-simple-xg-boost-gpu-lb-0-44579",
+        "pelinkeskin/time-series-forecasting-with-tensorflow-lstm-cnn",
+        "lucasbenazzicestari/store-sales-time-series-prediction",
+        "dmitryfomkin/ts-lr-xgb-time-features-ny-pay-days",
+        "dkomyagin/simple-ts-ridge-rf",
+        "xholisilemantshongo/modeling-sales-3-types-of-regression",
+        "igorprikhodko/store-sales-time-series-forecasting-randomfore"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Adds: dcoilwtico. Left join because oil.csv has trading-day gaps (weekends/holidays have no oil price entry). Imputation of dcoilwtico should follow this join.",
+      "evidence_snippets": [
+        "train_df = train_df.merge(oil_df, on='date', how='left')",
+        "df_data = df_data.merge(oil, how='left', on='date')",
+        "df_holiday_oil = pd.merge(df_holiday, oil, how='left', on='date')",
+        "store_sales = store_sales.merge(oil, on='date')"
+      ],
+      "rareness": "common",
+      "confidence": 0.92,
+      "must_follow_action_ids": [
+        "CA-000002"
+      ]
+    },
+    {
+      "action_id": "CA-000008",
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "transferred == True"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Filtering to keep only transferred==True rows retains the moved or cancelled holiday entries and discards actual holidays. After a holidays_events left join, it also drops ordinary non-holiday rows where transferred is missing, inverting the intent of the correct filter.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "CA-000024"
+      ],
+      "derivation_reasoning": "Synthetic fault derived from CA-000024 by keeping transferred==True rows instead of the null-safe missing-or-False set.",
+      "challenge_type": "inverted_filter_fault",
+      "invalidates_action_ids": [
+        "CA-000024"
+      ]
+    },
+    {
+      "action_id": "CA-000009",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "label",
+        "columns": [
+          "store_nbr"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Label-encoding store_nbr treats arbitrary store IDs as an ordinal numeric sequence, implying a false ordering relationship between stores that has no business meaning.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "CA-000044"
+      ],
+      "derivation_reasoning": "Synthetic near-miss that applies label encoding to the integer store ID rather than the meaningful family categorical, producing a misleading ordinal feature.",
+      "challenge_type": "wrong_target_fault"
+    },
+    {
+      "action_id": "CA-000010",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "dcoilwtico.fillna(0)",
+        "output_columns": [
+          "dcoilwtico"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Zero-filling the sparse oil price series creates spurious zero-oil days on weekends and holidays, which the model will learn as a predictive signal that does not reflect actual market conditions.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "CA-000018"
+      ],
+      "derivation_reasoning": "Synthetic near-miss of the correct interpolation CA-000013 that replaces linear interpolation with zero fill, creating fake zero-price days.",
+      "challenge_type": "near_miss",
+      "invalidates_action_ids": [
+        "CA-000018"
+      ]
+    },
+    {
+      "action_id": "CA-000011",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "holidays_events",
+        "left_on": [
+          "date"
+        ],
+        "right_on": [
+          "date"
+        ],
+        "how": "left"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Ecuador holiday and event data is a first-class exogenous signal in this competition. Holidays cause measurable sales spikes and dips and are referenced in the official competition description.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "terhuichee/sales-forecasting-arima-model",
+        "hardikgarg03/store-sales",
+        "luisblanche/pytorch-forecasting-temporalfusiontransformer",
+        "javigallego/time-series-forecasting-tutorial",
+        "pelinkeskin/time-series-forecasting-with-tensorflow-lstm-cnn",
+        "adnanshikh/sales-prediction-using-linearregression-catboost",
+        "beezus666/store-sales-getting-started",
+        "yashkc2025/store-sales-time-series-forecasting",
+        "kalilurrahman/store-sales-eda-prediction-with-ts",
+        "koheishima/store-sales-simple-xg-boost-gpu-lb-0-44579",
+        "dkomyagin/simple-ts-ridge-rf",
+        "xholisilemantshongo/modeling-sales-3-types-of-regression",
+        "igorprikhodko/store-sales-time-series-forecasting-randomfore"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Adds: type, locale, locale_name, description, transferred. Holiday filtering (removing transferred and Work Day rows) is typically applied to holidays_events before or after this join.",
+      "evidence_snippets": [
+        "train_df = train_df.merge(holiday_event_df, on='date', how='left')",
+        "data = data.merge(holidays, on='date', how='left')",
+        "df_holiday = pd.merge(df, holiday_events, how='left', on='date', validate='many_to_one')",
+        "df_data = df_data.merge(holidays_events, on='date', how='left')"
+      ],
+      "rareness": "common",
+      "confidence": 0.9,
+      "must_follow_action_ids": [
+        "CA-000002"
+      ]
+    },
+    {
+      "action_id": "CA-000012",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "transactions",
+        "left_on": [
+          "date"
+        ],
+        "right_on": [
+          "date"
+        ],
+        "how": "left"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Joining transactions on date only (instead of [date, store_nbr]) causes a many-to-many fan-out that multiplies each row by the number of stores, producing duplicate rows and inflated transaction counts.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "CA-000014"
+      ],
+      "derivation_reasoning": "Synthetic fault derived from the correct composite-key join CA-000012 by removing store_nbr from the join keys.",
+      "challenge_type": "wrong_key_fault",
+      "invalidates_action_ids": [
+        "CA-000014"
+      ]
+    },
+    {
+      "action_id": "CA-000013",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "stores",
+        "left_on": [
+          "store_nbr"
+        ],
+        "right_on": [
+          "store_nbr"
+        ],
+        "how": "inner"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Inner-joining the stores table silently drops rows for any store ID mismatch. Using left join is always safer and is the correct approach.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "CA-000004"
+      ],
+      "derivation_reasoning": "Synthetic fault derived from the correct left-join CA-000009 by changing how='left' to how='inner'.",
+      "challenge_type": "join_mode_fault",
+      "invalidates_action_ids": [
+        "CA-000004"
+      ]
+    },
+    {
+      "action_id": "CA-000014",
+      "action_type": "JOIN_LOOKUP",
+      "canonical_params": {
+        "right_table_id": "transactions",
+        "left_on": [
+          "date",
+          "store_nbr"
+        ],
+        "right_on": [
+          "date",
+          "store_nbr"
+        ],
+        "how": "left"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Daily transaction counts capture store-level foot traffic. Some top notebooks include it as an additional input feature alongside oil prices and holiday indicators.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "hardikgarg03/store-sales",
+        "luisblanche/pytorch-forecasting-temporalfusiontransformer",
+        "javigallego/time-series-forecasting-tutorial",
+        "filterjoe/time-series-bonus-lesson-unofficial"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Adds: transactions. Keyed by composite [date, store_nbr]. Uncommon but used in stronger multi-feature baselines.",
+      "evidence_snippets": [
+        "data = data.merge(transactions, on=['date', 'store_nbr'], how='left')",
+        "df_train = pd.merge(df_train, transactions, on=['store_nbr', 'date'], how='left')",
+        "stores_temp = pd.merge(df_trans, total_daily_sales, on=['date', 'store_nbr'])"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.75,
+      "must_follow_action_ids": [
+        "CA-000002"
+      ]
+    },
+    {
+      "action_id": "CA-000015",
+      "action_type": "LAG_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "sales"
+        ],
+        "lag_periods": [
+          30
+        ],
+        "order_by_columns": [
+          "date"
+        ],
+        "group_by_columns": [
+          "store_nbr",
+          "family"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "A single 30-day lag misses both the daily autocorrelation (lag 1) and the critical weekly seasonality (lag 7). Using only a monthly lag produces a weaker autoregressive signal than the canonical [1, 7] pair.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "CA-000038"
+      ],
+      "derivation_reasoning": "Synthetic near-miss of CA-000019 that uses a coarse monthly lag instead of the informative daily and weekly lags.",
+      "challenge_type": "wrong_period_fault"
+    },
+    {
+      "action_id": "CA-000016",
+      "action_type": "LAG_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "onpromotion"
+        ],
+        "lag_periods": [
+          1,
+          7
+        ],
+        "order_by_columns": [
+          "date"
+        ],
+        "group_by_columns": [
+          "store_nbr",
+          "family"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Lagging the onpromotion flag instead of sales yields a promotion-lag feature rather than a sales autoregressive feature, missing the core temporal signal the model needs to learn from.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "CA-000038"
+      ],
+      "derivation_reasoning": "Synthetic near-miss of CA-000019 that targets onpromotion instead of sales as the lag column.",
+      "challenge_type": "wrong_target_fault"
+    },
+    {
+      "action_id": "CA-000017",
+      "action_type": "ROLLING_WINDOW_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "sales"
+        ],
+        "window_sizes": [
+          7
+        ],
+        "agg_functions": [
+          "mean"
+        ],
+        "order_by_columns": [
+          "date"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Rolling mean of sales computed without group_by_columns mixes sales across all 54 stores and 33 families, producing a meaningless aggregate signal that leaks cross-series information.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "CA-000021"
+      ],
+      "derivation_reasoning": "Synthetic fault adapting the oil rolling window CA-000014 to sales without adding the required (store_nbr, family) grouping.",
+      "challenge_type": "leakage_fault"
+    },
+    {
+      "action_id": "CA-000018",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "dcoilwtico = dcoilwtico.interpolate(method='linear').fillna(method='bfill')",
+        "output_columns": [
+          "dcoilwtico"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Oil prices have systematic gaps on weekends and holidays. Linear interpolation or forward-fill is applied after the date-keyed join to produce a complete daily oil price series for downstream features.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "shiromeow/time-series-forecasting-with-deep-learning-lstm",
+        "satoshiss/store-sales-eda-xgb",
+        "lucasbenazzicestari/store-sales-time-series-prediction",
+        "luisblanche/pytorch-forecasting-temporalfusiontransformer",
+        "dkomyagin/simple-ts-ridge-rf",
+        "xholisilemantshongo/modeling-sales-3-types-of-regression",
+        "igorprikhodko/store-sales-time-series-forecasting-randomfore",
+        "dmitryfomkin/ts-lr-xgb-time-features-ny-pay-days"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Must follow the oil JOIN_LOOKUP. Some notebooks interpolate oil before joining; either order achieves the same result. Uses linear interpolation or forward-fill; both are canonicalized here.",
+      "evidence_snippets": [
+        "oil['dcoilwtico'] = oil['dcoilwtico'].interpolate(limit_direction='both')",
+        "oil = oil.interpolate(method='linear')",
+        "df_train['dcoilwtico'] = df_train['dcoilwtico'].interpolate().fillna(method='bfill')",
+        "calendar['ma_oil'].fillna(method='ffill', inplace=True)"
+      ],
+      "rareness": "common",
+      "confidence": 0.92,
+      "must_follow_action_ids": [
+        "CA-000007"
+      ]
+    },
+    {
+      "action_id": "CA-000019",
+      "action_type": "ROLLING_WINDOW_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "dcoilwtico"
+        ],
+        "window_sizes": [
+          30
+        ],
+        "agg_functions": [
+          "mean"
+        ],
+        "order_by_columns": [
+          "date"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "A 30-day rolling mean of oil prices over-smooths the series, losing the short-term volatility signal. The canonical window is 7 days.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "CA-000021"
+      ],
+      "derivation_reasoning": "Synthetic near-miss of CA-000014 using a 30-day window instead of 7.",
+      "challenge_type": "wrong_period_fault",
+      "invalidates_action_ids": [
+        "CA-000021"
+      ]
+    },
+    {
+      "action_id": "CA-000020",
+      "action_type": "DATE_PART_FEATURE",
+      "canonical_params": {
+        "date_columns": [
+          "date"
+        ],
+        "parts": [
+          "year"
+        ],
+        "drop_original": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Extracting only the year discards all sub-annual seasonality (month, day-of-week, quarter) and produces a near-constant feature over most of the training period.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "CA-000031"
+      ],
+      "derivation_reasoning": "Synthetic impoverished variant of CA-000017 that extracts only the least informative date part.",
+      "challenge_type": "wrong_period_fault"
+    },
+    {
+      "action_id": "CA-000021",
+      "action_type": "ROLLING_WINDOW_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "dcoilwtico"
+        ],
+        "window_sizes": [
+          7
+        ],
+        "agg_functions": [
+          "mean"
+        ],
+        "order_by_columns": [
+          "date"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "A 7-day rolling mean smooths daily oil price volatility and provides a more stable exogenous trend signal for the model.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "dkomyagin/simple-ts-ridge-rf",
+        "xholisilemantshongo/modeling-sales-3-types-of-regression",
+        "igorprikhodko/store-sales-time-series-forecasting-randomfore",
+        "lucasbenazzicestari/store-sales-time-series-prediction",
+        "javigallego/time-series-forecasting-tutorial"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Applied to dcoilwtico after interpolation. Calendar-ordered (by date), not grouped by store. Output column typically named ma_oil or dcoilwtico_ma7.",
+      "evidence_snippets": [
+        "df_oil['ma_oil'] = df_oil['dcoilwtico'].rolling(7).mean()",
+        "oil['dcoilwtico mean'] = oil['dcoilwtico'].rolling(7).mean().interpolate(limit_direction='both')",
+        "moving_average_oil = oil.rolling(window=8, center=True, min_periods=1).mean()"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.82,
+      "must_follow_action_ids": [
+        "CA-000018"
+      ]
+    },
+    {
+      "action_id": "CA-000022",
+      "action_type": "DATE_PART_FEATURE",
+      "canonical_params": {
+        "date_columns": [
+          "date"
+        ],
+        "parts": [
+          "year",
+          "month",
+          "dayofweek",
+          "quarter"
+        ],
+        "drop_original": true
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Dropping the original date column after calendar decomposition prevents downstream lag and rolling window features that require the date column.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "CA-000031"
+      ],
+      "derivation_reasoning": "Synthetic fault derived from CA-000017 by setting drop_original=True.",
+      "challenge_type": "premature_drop_fault"
+    },
+    {
+      "action_id": "CA-000023",
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "type == 'Holiday'"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Filtering to keep only type == 'Holiday' discards Transfer, Additional, Bridge, and Event entries, losing a significant portion of the holiday calendar.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "CA-000024"
+      ],
+      "derivation_reasoning": "Synthetic near-miss filter that keeps only the base Holiday type while discarding other meaningful holiday event types.",
+      "challenge_type": "wrong_predicate_fault"
+    },
+    {
+      "action_id": "CA-000024",
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "transferred.isna() | (transferred == False)"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Transferred holidays are moved to another date; keeping them at their original date introduces phantom holiday signals on non-event days. After the holidays_events left join, normal non-holiday rows have missing transferred values, so the keep predicate must preserve missing rows as well as transferred==False rows. This is equivalent to the common pre-join notebook pattern of removing transferred=True rows from holidays_events before merging.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "adnanshikh/sales-prediction-using-linearregression-catboost",
+        "luisblanche/pytorch-forecasting-temporalfusiontransformer",
+        "beezus666/store-sales-getting-started",
+        "lucasbenazzicestari/store-sales-time-series-prediction",
+        "yashkc2025/store-sales-time-series-forecasting",
+        "anapedralpez/time-series-forecasting-with-xgbregressor",
+        "koheishima/store-sales-simple-xg-boost-gpu-lb-0-44579"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Applied after the holidays_events left join with a null-safe keep predicate, or equivalently to the holidays_events table before a direct join. The missing-value branch preserves ordinary non-holiday training rows.",
+      "evidence_snippets": [
+        "holidays_events = holidays_events.loc[(holidays_events.transferred==False)]",
+        "holidays = holidays.loc[holidays['transferred'] == False]",
+        "valid_holidays = data_holidays[data_holidays['transferred'] == False].copy()"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.9,
+      "must_follow_action_ids": [
+        "CA-000011"
+      ]
+    },
+    {
+      "action_id": "CA-000025",
+      "action_type": "DROP_ROWS_WITH_MISSING",
+      "canonical_params": {
+        "subset_columns": [
+          "dcoilwtico"
+        ],
+        "how": "any"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Dropping rows where dcoilwtico is null removes all weekend and holiday dates, roughly 30% of the training data. The correct approach is interpolation (CA-000013).",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "CA-000018"
+      ],
+      "derivation_reasoning": "Synthetic fault that uses listwise deletion instead of interpolation for oil price gaps.",
+      "challenge_type": "wrong_strategy_fault",
+      "conflicts_with_action_ids": [
+        "CA-000018"
+      ]
+    },
+    {
+      "action_id": "CA-000026",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "mean",
+        "columns": [
+          "dcoilwtico"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Mean imputation of oil prices replaces all weekend/holiday gaps with a single global mean, destroying the temporal trend.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "CA-000018"
+      ],
+      "derivation_reasoning": "Synthetic near-miss of the correct interpolation CA-000013 that uses global mean imputation instead.",
+      "challenge_type": "wrong_strategy_fault",
+      "conflicts_with_action_ids": [
+        "CA-000018"
+      ]
+    },
+    {
+      "action_id": "CA-000027",
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "type != 'Work Day'"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "hard",
+      "reasoning": "Work Day entries in holidays_events mark days that are nominally holidays but where work resumes; including them as genuine holiday signals introduces noise into the model.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "adnanshikh/sales-prediction-using-linearregression-catboost",
+        "lucasbenazzicestari/store-sales-time-series-prediction",
+        "luisblanche/pytorch-forecasting-temporalfusiontransformer"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Applied to holidays_events, typically combined with the transferred==False filter. Several notebooks drop both at once.",
+      "evidence_snippets": [
+        "holidays_events= holidays_events.loc[(holidays_events.transferred==False) & (holidays_events.type != 'Work Day')]",
+        "holidays_events = holidays_events.loc[holidays_events['type'] != 'Work Day']"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.78,
+      "must_follow_action_ids": [
+        "CA-000011"
+      ]
+    },
+    {
+      "action_id": "CA-000028",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "constant",
+        "columns": [
+          "dcoilwtico"
+        ],
+        "fill_value": 0
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Zero-imputing oil prices on gap days produces spurious zero-price days that corrupt the oil signal.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "CA-000018"
+      ],
+      "derivation_reasoning": "Synthetic near-miss of CA-000013 using constant=0 imputation.",
+      "challenge_type": "wrong_strategy_fault",
+      "conflicts_with_action_ids": [
+        "CA-000018"
+      ]
+    },
+    {
+      "action_id": "CA-000029",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "onehot",
+        "columns": [
+          "store_nbr"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "One-hot encoding the 54-store store_nbr column creates 54 binary features with no meaningful ordering. The correct approach is to use the joined store metadata.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "CA-000044"
+      ],
+      "derivation_reasoning": "Synthetic near-miss that applies one-hot encoding to the numeric store identifier rather than the meaningful family categorical.",
+      "challenge_type": "wrong_target_fault"
+    },
+    {
+      "action_id": "CA-000030",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "freq",
+        "columns": [
+          "family"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Frequency-encoding family replaces each product family name with its row count proportion, discarding the categorical identity.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "CA-000044"
+      ],
+      "derivation_reasoning": "Synthetic near-miss of CA-000021 using freq encoding instead of label encoding.",
+      "challenge_type": "wrong_method_fault"
+    },
+    {
+      "action_id": "CA-000031",
+      "action_type": "DATE_PART_FEATURE",
+      "canonical_params": {
+        "date_columns": [
+          "date"
+        ],
+        "parts": [
+          "year",
+          "month",
+          "dayofweek",
+          "quarter"
+        ],
+        "drop_original": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Calendar decomposition into year, month, day-of-week, and quarter captures seasonality and trend at multiple temporal granularities \u2014 the most common FE step in this competition.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "harinuu/store-sales-competition",
+        "sharanharsoor/eda-and-xgboost-regression-for-each-store",
+        "hardikgarg03/store-sales",
+        "satoshiss/store-sales-eda-xgb",
+        "luisblanche/pytorch-forecasting-temporalfusiontransformer",
+        "pelinkeskin/time-series-forecasting-with-tensorflow-lstm-cnn",
+        "javigallego/time-series-forecasting-tutorial",
+        "howoojang/first-kaggle-notebook-following-ts-tutorial",
+        "oenvespa/time-series-eda-xgb-arima-cnn-lstm-cnn-lstm",
+        "terhuichee/sales-forecasting-arima-model",
+        "dmitryfomkin/ts-lr-xgb-time-features-ny-pay-days"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Full calendar expansion variant. Requires PARSE_DATETIME to have run first. dayofweek encodes weekly seasonality; quarter captures within-year patterns.",
+      "evidence_snippets": [
+        "train_df['year'] = pd.to_datetime(train_df['date']).dt.year",
+        "train_df['month'] = pd.to_datetime(train_df['date']).dt.month",
+        "train_df['day_of_week'] = train_df['date'].dt.day_of_week",
+        "train_df['quarter'] = train_df['date'].dt.quarter"
+      ],
+      "rareness": "common",
+      "confidence": 0.95,
+      "must_follow_action_ids": [
+        "CA-000002"
+      ],
+      "equivalence_group": "date_calendar_decomposition"
+    },
+    {
+      "action_id": "CA-000032",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "store_nbr",
+          "family"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Dropping store_nbr and family removes the two primary grouping keys, eliminating the ability to build per-series lag features.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "CA-000052"
+      ],
+      "derivation_reasoning": "Synthetic fault that drops the key grouping columns instead of the id row identifier.",
+      "challenge_type": "wrong_target_fault"
+    },
+    {
+      "action_id": "CA-000033",
+      "action_type": "SCALE_NUMERIC",
+      "canonical_params": {
+        "method": "standard",
+        "columns": [
+          "sales"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Standard-scaling the target sales for a tree-based model is unnecessary as tree splits are scale-invariant and RMSLE already handles scale via log transform.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic distractor representing reflexive target normalization inapplicable in a tree-model/RMSLE context.",
+      "base_refs": [
+        "adnanshikh/sales-prediction-using-linearregression-catboost"
+      ],
+      "challenge_type": "inapplicable_step"
+    },
+    {
+      "action_id": "CA-000034",
+      "action_type": "DATE_PART_FEATURE",
+      "canonical_params": {
+        "date_columns": [
+          "date"
+        ],
+        "parts": [
+          "month",
+          "dayofweek"
+        ],
+        "drop_original": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Compact calendar variant using only month and day-of-week as the minimal temporal signals needed for seasonality modeling without redundant year or quarter features.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "beezus666/store-sales-getting-started",
+        "adnanshikh/sales-prediction-using-linearregression-catboost",
+        "dmitryfomkin/ts-lr-xgb-time-features-ny-pay-days"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Alternative (OR) to the full year/month/dayofweek/quarter expansion. Used by notebooks that prefer parsimony.",
+      "evidence_snippets": [
+        "daily_transactions['day_of_week'] = daily_transactions['date'].dt.day_name()",
+        "X_train_1['day_of_week'] = X_train_1.date.dt.day_of_week.astype('int8')",
+        "df_train['dayofweek'] = df_train['date'].dt.dayofweek.astype('str').astype('category')"
+      ],
+      "rareness": "common",
+      "confidence": 0.78,
+      "must_follow_action_ids": [
+        "CA-000002"
+      ],
+      "equivalence_group": "date_calendar_decomposition"
+    },
+    {
+      "action_id": "CA-000035",
+      "action_type": "LOG_TRANSFORM",
+      "canonical_params": {
+        "columns": [
+          "sales"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Log-transforming the sales target before training causes the model to minimize log(log(sales+1)) since RMSLE already applies a log transform at evaluation time. Double-logging distorts the objective.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic fault representing the common mistake of manually log-transforming the target when the evaluation metric (RMSLE) already applies log internally.",
+      "base_refs": [
+        "hardikgarg03/store-sales"
+      ],
+      "challenge_type": "metric_mismatch_fault"
+    },
+    {
+      "action_id": "CA-000036",
+      "action_type": "CLIP_OUTLIERS",
+      "canonical_params": {
+        "columns": [
+          "sales"
+        ],
+        "method": "winsorize",
+        "lower_quantile": 0.01,
+        "upper_quantile": 0.99
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Winsorizing the sales target clips extreme promotional spikes and holiday surges that are real signals, degrading the model's ability to predict high-sales events.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic distractor representing outlier clipping of the target variable, which suppresses real sales peaks.",
+      "base_refs": [
+        "hardikgarg03/store-sales"
+      ],
+      "challenge_type": "harmful_transformation"
+    },
+    {
+      "action_id": "CA-000037",
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "family"
+        ],
+        "target_columns": [
+          "sales"
+        ],
+        "agg_functions": [
+          "mean"
+        ],
+        "join_back": true
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Aggregating sales mean by family only ignores the store dimension, averaging across all 54 stores and losing store-level variation.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic distractor applying a groupby-agg over only the family dimension, collapsing across stores.",
+      "base_refs": [
+        "hardikgarg03/store-sales"
+      ],
+      "challenge_type": "wrong_grouping_fault"
+    },
+    {
+      "action_id": "CA-000038",
+      "action_type": "LAG_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "sales"
+        ],
+        "lag_periods": [
+          1,
+          7
+        ],
+        "order_by_columns": [
+          "date"
+        ],
+        "group_by_columns": [
+          "store_nbr",
+          "family"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Lag-1 (previous day) and lag-7 (same day last week) sales are the most common autoregressive features in this competition, capturing both daily continuity and weekly seasonality.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "hardikgarg03/store-sales",
+        "beezus666/store-sales-getting-started",
+        "demko1/store-sales-using-a-hybrid-model",
+        "shiromeow/time-series-forecasting-with-deep-learning-lstm",
+        "oenvespa/time-series-eda-xgb-arima-cnn-lstm-cnn-lstm",
+        "filterjoe/time-series-bonus-lesson-unofficial",
+        "abhirupghosh184098/ts-forecasting-a-beginner-s-handbook",
+        "trnduythanhkhttt/term-project"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Must be computed within each (store_nbr, family) group to avoid cross-series leakage. lag_periods [1, 7] is the most common pair; some notebooks extend to 14, 16, or 30 days.",
+      "evidence_snippets": [
+        "lags = [1, 7, 30]; for i in lags: data_[f'sales_lag_{i}'] = grouped_data['sales'].transform(lambda x: x.shift(i))",
+        "return df.merge(df_copy[['store_nbr','family','date',f'sales_{days}_days_ago']], on=['store_nbr','family','date'])",
+        "f'{name}_lag_{i}': ts.shift(i) for i in range(lead_time, lags + lead_time)"
+      ],
+      "rareness": "common",
+      "confidence": 0.88,
+      "must_follow_action_ids": [
+        "CA-000002"
+      ],
+      "equivalence_group": "sales_lag_feature"
+    },
+    {
+      "action_id": "CA-000039",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "dcoilwtico.fillna(method='ffill')",
+        "output_columns": [
+          "dcoilwtico"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Forward-fill only propagates the last known oil price but leaves NaN at the start of the series and does not interpolate between two known prices.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "CA-000018"
+      ],
+      "derivation_reasoning": "Synthetic near-miss of CA-000013 using only forward-fill without the linear interpolation step.",
+      "challenge_type": "wrong_strategy_fault",
+      "conflicts_with_action_ids": [
+        "CA-000018"
+      ]
+    },
+    {
+      "action_id": "CA-000040",
+      "action_type": "BIN_NUMERIC",
+      "canonical_params": {
+        "columns": [
+          "sales"
+        ],
+        "method": "quantile",
+        "bins": 10
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Quantile-binning the sales target converts the regression problem into a coarse ordinal bucket, incompatible with the RMSLE regression objective.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic distractor that discretizes the continuous regression target.",
+      "base_refs": [
+        "hardikgarg03/store-sales"
+      ],
+      "challenge_type": "task_type_mismatch_fault"
+    },
+    {
+      "action_id": "CA-000041",
+      "action_type": "LAG_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "sales"
+        ],
+        "lag_periods": [
+          14,
+          16
+        ],
+        "order_by_columns": [
+          "date"
+        ],
+        "group_by_columns": [
+          "store_nbr",
+          "family"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "hard",
+      "reasoning": "Longer-horizon lags (14 or 16 days) capture bi-weekly pay cycle patterns common in Ecuador, where paydays on the 15th and end-of-month affect consumer spending.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "beezus666/store-sales-getting-started",
+        "hardikgarg03/store-sales",
+        "demko1/store-sales-using-a-hybrid-model"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Alternative (OR) to the lag [1, 7] pair, or combined with it. Some notebooks use lag 16 specifically to align with Ecuador bi-weekly pay periods.",
+      "evidence_snippets": [
+        "print(f'Adding {days} lags.')",
+        "lags = [1, 7, 30]; for i in lags:",
+        "if days == 7: utl.df_info(df, '7 days lags added')"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.72,
+      "must_follow_action_ids": [
+        "CA-000002"
+      ],
+      "equivalence_group": "sales_lag_feature"
+    },
+    {
+      "action_id": "CA-000042",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "dcoilwtico"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Dropping dcoilwtico after joining and interpolating it discards the main exogenous economic feature used by top notebooks.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "CA-000007"
+      ],
+      "derivation_reasoning": "Synthetic fault that drops the oil price column after it has been joined.",
+      "challenge_type": "premature_drop_fault"
+    },
+    {
+      "action_id": "CA-000043",
+      "action_type": "ROLLING_WINDOW_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "sales"
+        ],
+        "window_sizes": [
+          7
+        ],
+        "agg_functions": [
+          "mean"
+        ],
+        "order_by_columns": [
+          "date"
+        ],
+        "group_by_columns": [
+          "store_nbr",
+          "family"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "A 7-day rolling mean of sales without careful lag alignment introduces target leakage: the window includes that date's own sales value, unavailable at inference time.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic fault representing a rolling sales feature that lacks the necessary lag offset to avoid using the current-period target value.",
+      "base_refs": [
+        "beezus666/store-sales-getting-started"
+      ],
+      "challenge_type": "leakage_fault"
+    },
+    {
+      "action_id": "CA-000044",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "label",
+        "columns": [
+          "family"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "The family column (33 product categories) is a high-cardinality categorical that most tree-based and neural baselines encode as an integer label before modeling.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "anapedralpez/time-series-forecasting-with-xgbregressor",
+        "adnanshikh/sales-prediction-using-linearregression-catboost",
+        "oenvespa/time-series-eda-xgb-arima-cnn-lstm-cnn-lstm",
+        "trnduythanhkhttt/term-project",
+        "filterjoe/time-series-bonus-lesson-unofficial",
+        "abhirupghosh184098/ts-forecasting-a-beginner-s-handbook",
+        "koheishima/store-sales-simple-xg-boost-gpu-lb-0-44579",
+        "xholisilemantshongo/modeling-sales-3-types-of-regression"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Alternative (OR) to one-hot encoding of family. Label encoding is more common in gradient-boosted tree notebooks (XGBoost, LightGBM, CatBoost).",
+      "evidence_snippets": [
+        "le = LabelEncoder()",
+        "le.fit_transform(train_df['family'])",
+        "from sklearn.preprocessing import LabelEncoder",
+        "le = LabelEncoder()  # from sklearn.preprocessing"
+      ],
+      "rareness": "common",
+      "confidence": 0.88,
+      "equivalence_group": "family_encoding"
+    },
+    {
+      "action_id": "CA-000045",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "label",
+        "columns": [
+          "city"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Label-encoding city produces an ordinal integer mapping for 22 cities with no geographic ordering meaning.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "CA-000044"
+      ],
+      "derivation_reasoning": "Synthetic near-miss applying label encoding to the city column rather than the family product categorical.",
+      "challenge_type": "wrong_target_fault"
+    },
+    {
+      "action_id": "CA-000046",
+      "action_type": "CREATE_MISSING_INDICATOR",
+      "canonical_params": {
+        "columns": [
+          "sales"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "The sales column has no missing values; creating a missing indicator produces an all-zero feature with no signal.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic distractor representing a reflexive missing-indicator step applied to a column with no nulls.",
+      "base_refs": [
+        "hardikgarg03/store-sales"
+      ],
+      "challenge_type": "inapplicable_step"
+    },
+    {
+      "action_id": "CA-000047",
+      "action_type": "SCALE_NUMERIC",
+      "canonical_params": {
+        "method": "minmax",
+        "columns": [
+          "dcoilwtico"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Min-max scaling oil prices compresses the series to [0, 1] and erases the absolute price level. Tree-based models are scale-invariant.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic distractor representing reflexive feature scaling applied to oil price, inapplicable for tree-based forecasting.",
+      "base_refs": [
+        "hardikgarg03/store-sales"
+      ],
+      "challenge_type": "inapplicable_step"
+    },
+    {
+      "action_id": "CA-000048",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "onehot",
+        "columns": [
+          "family"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Some notebooks one-hot encode the family column rather than label-encoding, producing 33 binary indicator features for each product category.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "demko1/store-sales-using-a-hybrid-model",
+        "prashantpathak244/simple-xgboost-for-beginner"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Alternative (OR) to label encoding. Less common in practice due to the 33-way expansion, but used in linear and hybrid model notebooks.",
+      "evidence_snippets": [
+        "df = pd.concat([df.drop('family', axis=1), dfOh], axis=1)",
+        "train = pd.get_dummies(train)",
+        "pd.get_dummies(df['family'])"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.72,
+      "equivalence_group": "family_encoding"
+    },
+    {
+      "action_id": "CA-000049",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "transactions"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Dropping the transactions column immediately after joining it discards the daily store foot-traffic signal.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "CA-000014"
+      ],
+      "derivation_reasoning": "Synthetic fault that joins transactions then immediately drops the added column.",
+      "challenge_type": "premature_drop_fault"
+    },
+    {
+      "action_id": "CA-000050",
+      "action_type": "LAG_FEATURE",
+      "canonical_params": {
+        "target_columns": [
+          "sales"
+        ],
+        "lag_periods": [
+          1
+        ],
+        "order_by_columns": [
+          "date"
+        ],
+        "group_by_columns": [
+          "store_nbr",
+          "family"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "A lag-1-only feature misses the critical weekly seasonality (lag 7), producing a substantially weaker autoregressive signal.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "CA-000038"
+      ],
+      "derivation_reasoning": "Synthetic impoverished variant of CA-000019 that uses only lag 1, omitting the 7-day weekly cycle lag.",
+      "challenge_type": "wrong_period_fault"
+    },
+    {
+      "action_id": "CA-000051",
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "store_nbr"
+        ],
+        "target_columns": [
+          "sales"
+        ],
+        "agg_functions": [
+          "sum"
+        ],
+        "join_back": true
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Summing sales across all product families per store collapses the family dimension, producing a store-level total that loses all product-category signal.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic fault aggregating sales across the family dimension.",
+      "base_refs": [
+        "hardikgarg03/store-sales"
+      ],
+      "challenge_type": "wrong_grouping_fault"
+    },
+    {
+      "action_id": "CA-000052",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "id"
+        ],
+        "reason": "drop_row_identifier_before_modeling"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "The id column is a submission row identifier with no predictive value and must be removed from the feature matrix before training.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "adnanshikh/sales-prediction-using-linearregression-catboost",
+        "koheishima/store-sales-simple-xg-boost-gpu-lb-0-44579",
+        "trnduythanhkhttt/term-project",
+        "anapedralpez/time-series-forecasting-with-xgbregressor",
+        "prashantpathak244/simple-xgboost-for-beginner"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Very commonly done early in preprocessing. In some notebooks also combined with dropping store_nbr and date after feature extraction.",
+      "evidence_snippets": [
+        "store_sales = train.drop('id', axis=1).set_index(['store_nbr','family','date'])",
+        "df.drop(['id', 'eomd'], axis=1, inplace=True)",
+        "X_2 = train_df.drop(['sales', 'store_nbr', 'item'], axis=1)"
+      ],
+      "rareness": "common",
+      "confidence": 0.9
+    },
+    {
+      "action_id": "CA-000053",
+      "action_type": "PARSE_DATETIME",
+      "canonical_params": {
+        "columns": [
+          "store_nbr"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Attempting to parse store_nbr (an integer store identifier) as a datetime column will raise an exception or produce NaT values.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "CA-000002"
+      ],
+      "derivation_reasoning": "Synthetic fault derived from CA-000008 by applying the parse datetime operation to the wrong column.",
+      "challenge_type": "wrong_target_fault"
+    },
+    {
+      "action_id": "CA-000054",
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "sales > 0"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Filtering to keep only positive sales drops valid zero-sales observations, biasing the training set and degrading RMSLE performance on zero-sales test rows.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic distractor that removes zero-sales rows, biasing the training distribution.",
+      "base_refs": [
+        "hardikgarg03/store-sales"
+      ],
+      "challenge_type": "harmful_filter_fault"
+    },
+    {
+      "action_id": "CA-000055",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "dcoilwtico.fillna(method='bfill')",
+        "output_columns": [
+          "dcoilwtico"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Back-fill only propagates the next known oil price backward and cannot fill trailing NaN values, producing a step-function approximation rather than smooth interpolation.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "CA-000018"
+      ],
+      "derivation_reasoning": "Synthetic near-miss of CA-000013 using only back-fill without the linear interpolation step.",
+      "challenge_type": "wrong_strategy_fault",
+      "conflicts_with_action_ids": [
+        "CA-000018"
+      ]
+    },
+    {
+      "action_id": "CA-000056",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "median",
+        "columns": [
+          "dcoilwtico"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Median imputation replaces oil price gaps with a global median, ignoring the temporal trend and producing the same step-function artifact as mean imputation.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "CA-000018"
+      ],
+      "derivation_reasoning": "Synthetic near-miss of CA-000013 using global median imputation.",
+      "challenge_type": "wrong_strategy_fault",
+      "conflicts_with_action_ids": [
+        "CA-000018"
+      ]
+    }
+  ]
+}

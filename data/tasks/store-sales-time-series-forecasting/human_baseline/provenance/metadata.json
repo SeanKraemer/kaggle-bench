@@ -1,0 +1,20 @@
+{
+  "competition_slug": "store-sales-time-series-forecasting",
+  "testcase_id": "tc1_from_scratch",
+  "artifact_type": "eval_human_baseline_provenance",
+  "author": "annotator_b",
+  "created_at": "2026-04-22",
+  "source_mode": "manual_notebook_baseline_authored_to_bank_ids",
+  "related_output": "../tc1_human.json",
+  "source_notebook_artifacts": [
+    "../work.ipynb"
+  ],
+  "supporting_artifacts": [
+    "../notes.md",
+    "action_trace.json"
+  ],
+  "time_spent_minutes": 60,
+  "consulted_candidate_bank": true,
+  "consulted_legacy_human_output": false,
+  "notes": "Manual bank-id baseline from a first pass over the Store Sales preprocessing path. I intentionally left out transactions, oil rolling, Work Day cleanup, and grouped sales lag features to keep the baseline realistic."
+}

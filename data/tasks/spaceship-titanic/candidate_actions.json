@@ -1,0 +1,1308 @@
+{
+  "competition_slug": "spaceship-titanic",
+  "generated_at": "2026-04-13T00:00:00-05:00",
+  "actions": [
+    {
+      "action_id": "CA-000001",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "constant",
+        "columns": [
+          "CryoSleep",
+          "VIP"
+        ],
+        "fill_value": false
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Forces missing boolean flags to False rather than using the observed mode pattern.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000013"
+      ],
+      "derivation_reasoning": "Derived from the canonical mode-imputation row by hard-coding a default boolean value for the flag columns."
+    },
+    {
+      "action_id": "CA-000002",
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "HomePlanet"
+        ],
+        "target_columns": [
+          "PassengerId"
+        ],
+        "agg_functions": [
+          "count"
+        ],
+        "join_back": true,
+        "how": "left",
+        "output_columns": [
+          "GroupSize"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Uses HomePlanet frequency as a proxy for travel-group size.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000037"
+      ],
+      "derivation_reasoning": "Derived from the canonical group-size aggregation by replacing the passenger-group key with a coarse demographic grouping."
+    },
+    {
+      "action_id": "CA-000003",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "NoSpending = (TotalSpend == 0).astype(int)",
+        "output_columns": [
+          "NoSpending"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Binary no-spending indicator is derived from aggregated expense behavior.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "arunklenin/space-titanic-eda-advanced-feature-engineering",
+        "samuelcortinhas/spaceship-titanic-a-complete-guide"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Alternative (OR): some notebooks encode behavior-derived binary flags from expenditure/cryosleep combinations.",
+      "evidence_snippets": [
+        "train['No_spending']=(train['Expenditure']==0).astype(int)",
+        "train['VIP']=np.where(train['CryoSleep']==0,1,0)"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.75,
+      "must_follow_action_ids": [
+        "CA-000033"
+      ]
+    },
+    {
+      "action_id": "CA-000004",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "HomePlanet",
+          "Destination"
+        ],
+        "reason": "drop_main_nominal_columns_before_repair"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Drops two major nominal predictors instead of imputing and encoding them.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000013",
+        "CA-000043",
+        "CA-000025"
+      ],
+      "derivation_reasoning": "Derived from the nominal-imputation and encoding family by treating the columns as disposable rather than repairable."
+    },
+    {
+      "action_id": "CA-000005",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "NoSpending = (RoomService == 0).astype(int)",
+        "output_columns": [
+          "NoSpending"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Defines NoSpending from a single spend column rather than the full spend profile.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000033",
+        "CA-000003"
+      ],
+      "derivation_reasoning": "Derived from the canonical NoSpending feature by using one partial proxy instead of the full TotalSpend aggregate."
+    },
+    {
+      "action_id": "CA-000006",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "If CryoSleep is true, set RoomService/FoodCourt/ShoppingMall/Spa/VRDeck to 0",
+        "output_columns": [
+          "RoomService",
+          "FoodCourt",
+          "ShoppingMall",
+          "Spa",
+          "VRDeck"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "CryoSleep rule is used to deterministically zero amenity spending columns.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "cv13j0/spaceship-titanic-nn-model-feature-eng",
+        "raulparis/spaceship-titanic-81-easy-to-understand"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Domain-consistent hard constraint used before modeling.",
+      "evidence_snippets": [
+        "df['RoomService'] = np.where(df['CryoSleep'] == True, 0, df['RoomService'])",
+        "df[df['CryoSleep'] == True][['RoomService', 'FoodCourt', 'ShoppingMall', 'Spa', 'VRDeck']] = 0"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.75
+    },
+    {
+      "action_id": "CA-000007",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "constant",
+        "columns": [
+          "RoomService",
+          "FoodCourt",
+          "ShoppingMall",
+          "Spa",
+          "VRDeck"
+        ],
+        "fill_value": 0
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Amenity spending columns are commonly imputed with 0.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "arootda/pycaret-visualization-optimization-0-81",
+        "lazer999/spaceship-titanic-top-6-for-beginners",
+        "opamusora/top-10-notebook",
+        "ravi20076/sptitanic-bootstrapensemble-pipeline"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Constant-zero imputation for spending features is a repeated baseline choice.",
+      "evidence_snippets": [
+        "train['RoomService']=train['RoomService'].fillna(0)",
+        "all_data[['RoomService', 'FoodCourt', 'ShoppingMall', 'Spa', 'VRDeck']].fillna(0)"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.9
+    },
+    {
+      "action_id": "CA-000008",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "Deck",
+          "Side"
+        ],
+        "reason": "drop_structured_cabin_categories_after_split"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Removes the most informative cabin-derived categories immediately after creating them.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000021",
+        "CA-000043",
+        "CA-000025"
+      ],
+      "derivation_reasoning": "Derived from the canonical cabin split by discarding the high-signal categorical outputs instead of using them downstream."
+    },
+    {
+      "action_id": "CA-000009",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "label",
+        "columns": [
+          "Name"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Label-encodes free-form names instead of dropping them.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000043",
+        "CA-000010"
+      ],
+      "derivation_reasoning": "Derived from the canonical label-encoding strategy by targeting a free-form text identifier that the benchmark treats as noise."
+    },
+    {
+      "action_id": "CA-000010",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "PassengerId",
+          "Name",
+          "Cabin"
+        ],
+        "reason": "remove_identifier_high_cardinality_or_post_split_columns"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Identifier/text-heavy raw columns are commonly dropped before modeling.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "arootda/pycaret-visualization-optimization-0-81",
+        "desalegngeb/spaceship-titanic-plotly-viz-fe-models",
+        "fernaandodantas/lgbm-0-8066-score-top-7-solution",
+        "kevineffendy/catboost-spaceship-titanic",
+        "raulparis/spaceship-titanic-81-easy-to-understand",
+        "vicsonsam/sst-eda-17-models-dl-top-7"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Some variants keep PassengerId-derived features while dropping original raw columns.",
+      "evidence_snippets": [
+        "all_data.drop(['PassengerId', 'Name', 'Cabin'], axis=1, inplace=True)",
+        "train_data.drop(['Cabin', 'Name'], axis=1, inplace=True)"
+      ],
+      "rareness": "common",
+      "confidence": 0.9,
+      "invalidates_action_ids": [
+        "CA-000021",
+        "CA-000019",
+        "CA-000037"
+      ]
+    },
+    {
+      "action_id": "CA-000011",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "onehot",
+        "columns": [
+          "PassengerId"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Explodes PassengerId into a high-cardinality sparse design matrix.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000025",
+        "CA-000010"
+      ],
+      "derivation_reasoning": "Derived from the canonical one-hot strategy by applying it to a column that should be removed rather than encoded."
+    },
+    {
+      "action_id": "CA-000012",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "TotalSpend = RoomService + FoodCourt + ShoppingMall",
+        "output_columns": [
+          "TotalSpend"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Builds an incomplete TotalSpend that omits Spa and VRDeck.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000033"
+      ],
+      "derivation_reasoning": "Synthetic near-miss that shortens the canonical total-spend expression to the three most obvious spend columns."
+    },
+    {
+      "action_id": "CA-000013",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "most_frequent",
+        "columns": [
+          "HomePlanet",
+          "Destination",
+          "CryoSleep",
+          "VIP"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Categorical/boolean fields are mode-imputed in multiple end-to-end notebooks.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "odaymourad/detailed-and-full-solution-step-by-step-80-score",
+        "vicsonsam/sst-eda-17-models-dl-top-7"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Alternative (OR): grouped imputations are also used in some notebooks.",
+      "evidence_snippets": [
+        "all_data['HomePlanet'] = all_data['HomePlanet'].fillna(all_data['HomePlanet'].mode()[0])",
+        "train_data[col].fillna(train_data[col].mode()[0], inplace=True)"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.75
+    },
+    {
+      "action_id": "CA-000014",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "PassengerId",
+          "Cabin"
+        ],
+        "reason": "drop_both_identifier_columns_before_feature_extraction"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Drops both structural identifier columns before the benchmarked feature spine can start.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000021",
+        "CA-000019",
+        "CA-000010"
+      ],
+      "derivation_reasoning": "Combines the canonical cleanup impulse with an early destructive ordering that blocks both cabin and passenger-group derivations."
+    },
+    {
+      "action_id": "CA-000015",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "RoomService",
+          "FoodCourt",
+          "ShoppingMall",
+          "Spa",
+          "VRDeck"
+        ],
+        "reason": "drop_spending_columns_before_total_spend"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Drops the five spending columns before TotalSpend and zero-spend cleanup can be applied.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000033",
+        "CA-000006",
+        "CA-000007"
+      ],
+      "derivation_reasoning": "Derived from the spend feature spine by collapsing all amenity columns before the benchmarked total-spend logic runs."
+    },
+    {
+      "action_id": "CA-000016",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "constant",
+        "columns": [
+          "Age"
+        ],
+        "fill_value": -1
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Uses a negative sentinel for Age and injects a nonphysical value.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000039",
+        "CA-000020"
+      ],
+      "derivation_reasoning": "Derived from the canonical age-imputation family by using a sentinel value instead of a realistic repaired age."
+    },
+    {
+      "action_id": "CA-000017",
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "PassengerNum"
+        ],
+        "target_columns": [
+          "PassengerId"
+        ],
+        "agg_functions": [
+          "count"
+        ],
+        "join_back": true,
+        "how": "left",
+        "output_columns": [
+          "GroupSize"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Groups by within-group index instead of by shared travel group.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000019",
+        "CA-000037"
+      ],
+      "derivation_reasoning": "Derived from the PassengerId split by choosing the positional index as the aggregation key instead of the booking group."
+    },
+    {
+      "action_id": "CA-000018",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "constant",
+        "columns": [
+          "HomePlanet",
+          "Destination"
+        ],
+        "fill_value": "Unknown"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Uses a blanket Unknown token instead of the curated mode fill for the main nominal columns.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000013"
+      ],
+      "derivation_reasoning": "Derived from the canonical categorical/boolean mode fill by replacing empirical modes with a synthetic placeholder token."
+    },
+    {
+      "action_id": "CA-000019",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "Split PassengerId by '_' into passenger group and within-group index",
+        "output_columns": [
+          "PassengerGroup",
+          "PassengerNum"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "PassengerId is split to derive group-level and position-level identifiers.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "cv13j0/spaceship-titanic-nn-model-feature-eng",
+        "edwintyh/pycaret-spaceship-fe-catboost",
+        "kevineffendy/catboost-spaceship-titanic",
+        "odaymourad/detailed-and-full-solution-step-by-step-80-score",
+        "opamusora/top-10-notebook",
+        "samuelcortinhas/spaceship-titanic-a-complete-guide"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Used to capture family/group travel structure.",
+      "evidence_snippets": [
+        "train_data[['G_Passenger','N_Passenger']] = train_data['PassengerId'].str.split('_', expand=True).astype('int')",
+        "df['TravelGroup'] = df['PassengerId'].str.split('_', expand=True)[0]"
+      ],
+      "rareness": "common",
+      "confidence": 0.9
+    },
+    {
+      "action_id": "CA-000020",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "median",
+        "columns": [
+          "Age"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Age is frequently median-imputed in baseline preprocessing.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "lazer999/spaceship-titanic-top-6-for-beginners",
+        "ravi20076/sptitanic-bootstrapensemble-pipeline"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Alternative (OR): some notebooks use grouped median Age rather than global median.",
+      "evidence_snippets": [
+        "df_train['Age'] =df_train['Age'].fillna(df_train['Age'].median())",
+        "df['Age'] = df['Age'].fillna(df.Age.median());"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.9,
+      "equivalence_group": "spaceship_age_imputation_strategy"
+    },
+    {
+      "action_id": "CA-000021",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "Split Cabin by '/' into Deck, CabinNum, Side",
+        "output_columns": [
+          "Deck",
+          "CabinNum",
+          "Side"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Cabin is repeatedly decomposed into deck/number/side subfeatures.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "edwintyh/pycaret-spaceship-fe-catboost",
+        "eu1234/spaceship-81-1-leaderboard-top-2-step-by-step",
+        "hseyinkalkan/spaceshiptitanic-xgbclassifier-optuna",
+        "kevineffendy/catboost-spaceship-titanic",
+        "mateuszk013/spaceship-titanic-eda-machine-learning",
+        "taranmarley/feature-engineering-eda-and-lightgbm",
+        "viktortaran/space-titanic"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Common FE block for categorical + ordinal substructure extraction from Cabin.",
+      "evidence_snippets": [
+        "train_test[['Deck', 'Number', 'Side']] = train_test['Cabin'].str.split('/', expand=True)",
+        "df[['Deck', 'Cab_num', 'Deck_side']] = df.Cabin.str.split('/', expand=True)"
+      ],
+      "rareness": "common",
+      "confidence": 0.9
+    },
+    {
+      "action_id": "CA-000022",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "most_frequent",
+        "columns": [
+          "Age"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Uses a mode fill for a continuous demographic variable.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000039",
+        "CA-000020"
+      ],
+      "derivation_reasoning": "Derived from the age-imputation family by switching to a weak categorical-style fill for Age."
+    },
+    {
+      "action_id": "CA-000023",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "NoSpending = CryoSleep.astype(int)",
+        "output_columns": [
+          "NoSpending"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Treats CryoSleep as a direct proxy for NoSpending instead of deriving it from spend totals.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000003",
+        "CA-000006"
+      ],
+      "derivation_reasoning": "Derived from the canonical NoSpending and CryoSleep logic by collapsing two related ideas into the wrong target feature."
+    },
+    {
+      "action_id": "CA-000024",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "mean",
+        "columns": [
+          "Age"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Uses a mean fill that is less robust than the curated median strategies.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000039",
+        "CA-000020"
+      ],
+      "derivation_reasoning": "Derived from the canonical age-imputation family by replacing median-based repair with a more outlier-sensitive average."
+    },
+    {
+      "action_id": "CA-000025",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "onehot",
+        "columns": [
+          "HomePlanet",
+          "Destination",
+          "Deck",
+          "Side",
+          "VIP",
+          "CryoSleep"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "One-hot encoding is widely used for nominal spaceship categories.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "eu1234/spaceship-81-1-leaderboard-top-2-step-by-step",
+        "jacopoferretti/spaceship-titanic-with-different-ml-models",
+        "odaymourad/detailed-and-full-solution-step-by-step-80-score",
+        "samuelcortinhas/spaceship-titanic-a-complete-guide",
+        "tronrover/among-the-elite-top-100-spaceship-titanic"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Alternative (OR) to label/ordinal encoding at the same stage.",
+      "evidence_snippets": [
+        "df = pd.concat([df, pd.get_dummies(df[categorical_features])], axis=1)",
+        "all_data = pd.get_dummies(all_data)"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.75,
+      "equivalence_group": "spaceship_categorical_encoding_strategy",
+      "must_follow_action_ids": [
+        "CA-000021"
+      ]
+    },
+    {
+      "action_id": "CA-000026",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "PassengerId"
+        ],
+        "reason": "drop_raw_passenger_id_before_group_features"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Removes PassengerId before PassengerGroup and GroupSize can be constructed.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000019",
+        "CA-000037",
+        "CA-000010"
+      ],
+      "derivation_reasoning": "Derived from the canonical PassengerId split and drop actions by applying the drop before group-aware features are built."
+    },
+    {
+      "action_id": "CA-000027",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "Cabin"
+        ],
+        "reason": "drop_raw_cabin_before_feature_extraction"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Drops Cabin before the benchmarked deck and side features can be extracted.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000021",
+        "CA-000010"
+      ],
+      "derivation_reasoning": "Derived from the canonical cabin-split and raw-column-drop actions by moving the cleanup step earlier so deck and side never materialize."
+    },
+    {
+      "action_id": "CA-000028",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "Split PassengerId by '_' into PassengerGroup",
+        "output_columns": [
+          "PassengerGroup"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Extracts only the group identifier and discards the within-group index.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000019"
+      ],
+      "derivation_reasoning": "Derived from the canonical PassengerId split by keeping only the coarser group token."
+    },
+    {
+      "action_id": "CA-000029",
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "PassengerGroup"
+        ],
+        "target_columns": [
+          "RoomService"
+        ],
+        "agg_functions": [
+          "mean"
+        ],
+        "join_back": true,
+        "how": "left",
+        "output_columns": [
+          "GroupSize"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Writes a spend statistic into the GroupSize slot instead of a passenger count.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000037"
+      ],
+      "derivation_reasoning": "Derived from the canonical group-size aggregation by mutating both the target column and aggregation function away from passenger counting."
+    },
+    {
+      "action_id": "CA-000030",
+      "action_type": "SCALE_NUMERIC",
+      "canonical_params": {
+        "method": "minmax",
+        "columns": [
+          "Age",
+          "RoomService",
+          "FoodCourt",
+          "ShoppingMall",
+          "Spa",
+          "VRDeck",
+          "TotalSpend"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Min-max scaling appears as an alternative numeric preprocessing route.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "arunklenin/space-titanic-eda-advanced-feature-engineering",
+        "aspillai/spaceship-titanic-classification-simple-lightgbm",
+        "cv13j0/spaceship-titanic-nn-model-feature-eng",
+        "taranmarley/feature-engineering-eda-and-lightgbm"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Alternative (OR) to standard scaling depending on model family.",
+      "evidence_snippets": [
+        "sc=MinMaxScaler()",
+        "X_scaled = MinMaxScaler().fit_transform(X)"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.75,
+      "equivalence_group": "spaceship_numeric_scaling_strategy"
+    },
+    {
+      "action_id": "CA-000031",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "median",
+        "columns": [
+          "RoomService",
+          "FoodCourt",
+          "ShoppingMall",
+          "Spa",
+          "VRDeck"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Uses median spend fills and weakens the benchmarked zero-spend behavior.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000007"
+      ],
+      "derivation_reasoning": "Derived from the canonical spending repair by replacing the zero-fill convention with a generic median imputation."
+    },
+    {
+      "action_id": "CA-000032",
+      "action_type": "SCALE_NUMERIC",
+      "canonical_params": {
+        "method": "standard",
+        "columns": [
+          "Age",
+          "RoomService",
+          "FoodCourt",
+          "ShoppingMall",
+          "Spa",
+          "VRDeck",
+          "TotalSpend"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Standard scaling is repeatedly used for continuous spending/age features.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "abhi011097/eda-feature-engineering-automl-manual-model",
+        "eu1234/spaceship-81-1-leaderboard-top-2-step-by-step",
+        "nazimcherpanov/spaceship-titanic-beginner-friendly-tutorial",
+        "samuelcortinhas/spaceship-titanic-a-complete-guide"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Alternative (OR): MinMaxScaler is also used in several notebooks.",
+      "evidence_snippets": [
+        "std_scaler = StandardScaler()",
+        "numerical_transformer = Pipeline(steps=[('scaler', StandardScaler())])"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.75,
+      "equivalence_group": "spaceship_numeric_scaling_strategy"
+    },
+    {
+      "action_id": "CA-000033",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "TotalSpend = RoomService + FoodCourt + ShoppingMall + Spa + VRDeck",
+        "output_columns": [
+          "TotalSpend"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Expense columns are frequently combined into a total-spending feature.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "arootda/pycaret-visualization-optimization-0-81",
+        "edwintyh/pycaret-spaceship-fe-catboost",
+        "kevineffendy/catboost-spaceship-titanic",
+        "ohseokkim/spaceship-sos-decision-is-always-difficult",
+        "taranmarley/feature-engineering-eda-and-lightgbm",
+        "tronrover/among-the-elite-top-100-spaceship-titanic"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Consistent additive FE pattern across high-ranking solutions.",
+      "evidence_snippets": [
+        "train_data['total_spent']= train_data['RoomService']+ train_data['FoodCourt']+ train_data['ShoppingMall']+ train_data['Spa']+ train_data['VRDeck']",
+        "all_data['TotalSpend'] = all_data['RoomService'] + all_data['FoodCourt'] + all_data['ShoppingMall'] + all_data['Spa'] + all_data['VRDeck']"
+      ],
+      "rareness": "common",
+      "confidence": 0.9
+    },
+    {
+      "action_id": "CA-000034",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "median",
+        "columns": [
+          "Age"
+        ],
+        "group_by_columns": [
+          "HomePlanet"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Uses a weaker grouped Age fill that ignores NoSpending and Deck context.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000039"
+      ],
+      "derivation_reasoning": "Derived from the grouped Age strategy by collapsing the grouping context to a single categorical field."
+    },
+    {
+      "action_id": "CA-000035",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "TotalSpend = RoomService + FoodCourt + ShoppingMall + Spa",
+        "output_columns": [
+          "TotalSpend"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Misses one amenity column when constructing TotalSpend.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000033"
+      ],
+      "derivation_reasoning": "Synthetic near-miss derived from the canonical TotalSpend feature with VRDeck omitted."
+    },
+    {
+      "action_id": "CA-000036",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "Split Cabin by '/' into Deck and Side",
+        "output_columns": [
+          "Deck",
+          "Side"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Partially splits Cabin and drops the cabin-number signal used by some notebooks.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000021"
+      ],
+      "derivation_reasoning": "Derived from the canonical Cabin split by omitting CabinNum and keeping only the easiest categorical fragments."
+    },
+    {
+      "action_id": "CA-000037",
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "PassengerGroup"
+        ],
+        "target_columns": [
+          "PassengerId"
+        ],
+        "agg_functions": [
+          "count"
+        ],
+        "join_back": true,
+        "how": "left",
+        "output_columns": [
+          "GroupSize"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Several notebooks engineer group-size style count aggregates from passenger grouping keys.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "jacopoferretti/spaceship-titanic-with-different-ml-models",
+        "samuelcortinhas/spaceship-titanic-a-complete-guide",
+        "tronrover/among-the-elite-top-100-spaceship-titanic"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Alternative (OR): grouping key varies (PassengerGroup or cabin-based id) but count-join pattern is consistent.",
+      "evidence_snippets": [
+        "df['Group_size'] = df['PassengerId'].apply(lambda x: group[x.split('_')[0]])",
+        "data['GroupSize'] = data.groupby('ID_cabin').ID_cabin.transform('count')"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.75,
+      "must_follow_action_ids": [
+        "CA-000019"
+      ]
+    },
+    {
+      "action_id": "CA-000038",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "most_frequent",
+        "columns": [
+          "RoomService",
+          "FoodCourt",
+          "ShoppingMall",
+          "Spa",
+          "VRDeck"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Uses mode-based fills for continuous spending columns.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000007"
+      ],
+      "derivation_reasoning": "Derived from the canonical spending repair by applying a categorical-style fill to the amenity spend columns."
+    },
+    {
+      "action_id": "CA-000039",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "median",
+        "columns": [
+          "Age"
+        ],
+        "group_by_columns": [
+          "HomePlanet",
+          "NoSpending",
+          "Deck"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "hard",
+      "reasoning": "A grouped-median strategy is used for Age to preserve structure across traveler segments.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "samuelcortinhas/spaceship-titanic-a-complete-guide"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Alternative (OR) to global median Age imputation. The benchmark canonicalizes the notebook's richer grouped strategy into an evaluator-friendly variant that only depends on explicitly represented features.",
+      "evidence_snippets": [
+        "data.loc[data['Age'].isna(),'Age']=data.groupby(['HomePlanet','No_spending','Solo','Cabin_deck'])['Age'].transform(lambda x: x.fillna(x.median()))[na_rows_A]"
+      ],
+      "rareness": "rare",
+      "confidence": 0.75,
+      "equivalence_group": "spaceship_age_imputation_strategy",
+      "must_follow_action_ids": [
+        "CA-000021",
+        "CA-000003"
+      ]
+    },
+    {
+      "action_id": "CA-000040",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "median",
+        "columns": [
+          "Age"
+        ],
+        "group_by_columns": [
+          "Deck"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Uses only Deck as Age context and ignores the broader grouped signal.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000039"
+      ],
+      "derivation_reasoning": "Derived from the grouped Age strategy by keeping only one of the benchmarked grouping fields."
+    },
+    {
+      "action_id": "CA-000041",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "CryoSleep"
+        ],
+        "reason": "drop_cryosleep_before_zero_spend_logic"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Drops CryoSleep before the zero-spend rule can use it.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000006"
+      ],
+      "derivation_reasoning": "Derived from the CryoSleep rule by removing the source column rather than using it to repair spend behavior."
+    },
+    {
+      "action_id": "CA-000042",
+      "action_type": "GROUP_AGG",
+      "canonical_params": {
+        "group_by_columns": [
+          "CabinNum"
+        ],
+        "target_columns": [
+          "PassengerId"
+        ],
+        "agg_functions": [
+          "count"
+        ],
+        "join_back": true,
+        "how": "left",
+        "output_columns": [
+          "GroupSize"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Counts passengers by cabin number rather than by shared booking group.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000021",
+        "CA-000037"
+      ],
+      "derivation_reasoning": "Derived from the cabin split and group-size actions by using the wrong derived key for the aggregation."
+    },
+    {
+      "action_id": "CA-000043",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "label",
+        "columns": [
+          "HomePlanet",
+          "Destination",
+          "Deck",
+          "Side",
+          "VIP",
+          "CryoSleep"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Label/ordinal encoding is another frequent categorical strategy.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "abhi011097/eda-feature-engineering-automl-manual-model",
+        "desalegngeb/spaceship-titanic-plotly-viz-fe-models",
+        "kevineffendy/catboost-spaceship-titanic",
+        "lazer999/spaceship-titanic-top-6-for-beginners",
+        "opamusora/top-10-notebook"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Alternative (OR) to one-hot encoding for tree/boosting-friendly pipelines.",
+      "evidence_snippets": [
+        "le=LabelEncoder()",
+        "df[col] = LabelEncoder().fit_transform(df[col])"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.75,
+      "equivalence_group": "spaceship_categorical_encoding_strategy",
+      "must_follow_action_ids": [
+        "CA-000021"
+      ]
+    },
+    {
+      "action_id": "CA-000044",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "constant",
+        "columns": [
+          "Age"
+        ],
+        "fill_value": 0
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Zero-fills Age with an impossible demographic value.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000039",
+        "CA-000020"
+      ],
+      "derivation_reasoning": "Synthetic hard negative derived from the age-imputation family by replacing defensible fills with an impossible constant."
+    },
+    {
+      "action_id": "CA-000045",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "label",
+        "columns": [
+          "HomePlanet",
+          "Destination"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Encodes only part of the benchmarked nominal set and leaves key Cabin-derived categories untreated.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000021",
+        "CA-000043"
+      ],
+      "derivation_reasoning": "Derived from the canonical label-encoding row by shrinking the column set to a weaker partial coverage variant."
+    },
+    {
+      "action_id": "CA-000046",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "TotalSpend = (RoomService + FoodCourt + ShoppingMall + Spa + VRDeck) / 5",
+        "output_columns": [
+          "TotalSpend"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Normalizes spend into an average and changes the meaning of the benchmarked aggregate feature.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000033"
+      ],
+      "derivation_reasoning": "Derived from the canonical total-spend feature by turning the additive signal into an average-valued feature."
+    },
+    {
+      "action_id": "CA-000047",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "If CryoSleep is true, set RoomService/FoodCourt/ShoppingMall to 0",
+        "output_columns": [
+          "RoomService",
+          "FoodCourt",
+          "ShoppingMall"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Repairs only part of the CryoSleep spending pattern and leaves Spa and VRDeck inconsistent.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000006"
+      ],
+      "derivation_reasoning": "Derived from the canonical CryoSleep zero-spend rule by applying it to only a subset of the amenity columns."
+    },
+    {
+      "action_id": "CA-000048",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "label",
+        "columns": [
+          "PassengerId",
+          "Name"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Label-encodes identifiers and names, turning passenger-specific noise into ordinal features.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000043",
+        "CA-000025",
+        "CA-000010"
+      ],
+      "derivation_reasoning": "Derived from the canonical encoding family by redirecting it toward high-cardinality identifiers that the benchmark later drops."
+    },
+    {
+      "action_id": "CA-000049",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "constant",
+        "columns": [
+          "RoomService",
+          "FoodCourt",
+          "ShoppingMall",
+          "Spa",
+          "VRDeck"
+        ],
+        "fill_value": -1
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Uses a negative sentinel for spending columns and hides the strong zero-spend pattern.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000007"
+      ],
+      "derivation_reasoning": "Derived from the canonical spending zero-fill by flipping the fill value to an impossible negative sentinel."
+    },
+    {
+      "action_id": "CA-000050",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "count",
+        "columns": [
+          "PassengerId"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Creates a count encoding from a near-unique identifier that carries little transferable signal.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000043",
+        "CA-000025",
+        "CA-000010"
+      ],
+      "derivation_reasoning": "Derived from the canonical categorical encoding family by choosing a low-value encoding target that should have been dropped."
+    },
+    {
+      "action_id": "CA-000051",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "Age"
+        ],
+        "reason": "drop_age_instead_of_imputing"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Drops Age instead of repairing missingness and preserving demographic signal.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000039",
+        "CA-000020"
+      ],
+      "derivation_reasoning": "Derived from the age-imputation family by replacing repair with full removal of the feature."
+    }
+  ]
+}

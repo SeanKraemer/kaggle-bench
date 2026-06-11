@@ -1,0 +1,2038 @@
+{
+  "competition_slug": "porto-seguro-safe-driver-prediction",
+  "generated_at": "2026-04-07T14:00:00-05:00",
+  "actions": [
+    {
+      "action_id": "CA-000001",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "ps_ind_02_cat",
+          "ps_ind_04_cat",
+          "ps_ind_05_cat",
+          "ps_car_01_cat",
+          "ps_car_02_cat",
+          "ps_car_07_cat",
+          "ps_car_09_cat"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Drops the entire surviving categorical signal block instead of imputing and encoding it, removing a large share of the Porto feature space that top kernels universally preserve.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000003",
+        "CA-000013"
+      ],
+      "derivation_reasoning": "Synthetic destructive-pruning variant of the observed categorical repair path: instead of imputing or encoding the surviving categorical columns, this action removes them entirely.",
+      "challenge_type": "destructive_pruning"
+    },
+    {
+      "action_id": "CA-000002",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "replace(-1, 0)",
+        "output_columns": [
+          "ps_ind_02_cat",
+          "ps_ind_04_cat",
+          "ps_ind_05_cat",
+          "ps_car_01_cat",
+          "ps_car_02_cat",
+          "ps_car_03_cat",
+          "ps_car_05_cat",
+          "ps_car_07_cat",
+          "ps_car_09_cat",
+          "ps_car_11",
+          "ps_car_12",
+          "ps_car_14"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Replaces the -1 sentinel with 0 instead of NaN. This masks genuine missingness as a real value, preventing downstream imputation strategies from recognizing and handling these entries correctly. For categorical columns, 0 may collide with a valid category code.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000019"
+      ],
+      "derivation_reasoning": "Near-miss variant of the sentinel replacement: uses a concrete fill value instead of NaN, which silently converts missing data into a real-looking value and blocks proper imputation.",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000003",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "most_frequent",
+        "columns": [
+          "ps_ind_02_cat",
+          "ps_ind_04_cat",
+          "ps_ind_05_cat",
+          "ps_car_01_cat",
+          "ps_car_02_cat",
+          "ps_car_07_cat",
+          "ps_car_09_cat"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Remaining categorical features with missing values are typically imputed with the mode (most frequent) value after sentinel replacement.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "aharless/porto-seguro-exploratory-analysis",
+        "bertcarremans/data-preparation-exploration",
+        "gpreda/porto-seguro-exploratory-analysis",
+        "rshally/porto-seguro-safe-driver-prediction-eda"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Standard categorical imputation after sentinel replacement. Applied to the 7 categorical columns that remain after dropping the two extreme-missingness columns.",
+      "evidence_snippets": [
+        "df[c].fillna(df[c].mode()[0], inplace=True)",
+        "for col in cat_cols:\n    train[col].fillna(train[col].mode()[0], inplace=True)"
+      ],
+      "rareness": "common",
+      "confidence": 0.9,
+      "must_follow_action_ids": [
+        "CA-000019"
+      ]
+    },
+    {
+      "action_id": "CA-000004",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "onehot",
+        "columns": [
+          "ps_calc_01",
+          "ps_calc_02",
+          "ps_calc_03"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "These are continuous/ordinal calc features with numeric values, not categorical variables. One-hot encoding them blindly explodes dimensionality without adding signal and treats ordinal magnitudes as unordered labels.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "fault_actions.json#FA-000003"
+      ],
+      "derivation_reasoning": "Migrated legacy fault action FA-000003 into the action-bank benchmark.",
+      "challenge_type": "legacy_fault"
+    },
+    {
+      "action_id": "CA-000005",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "ps_ind_01",
+          "ps_ind_02_cat",
+          "ps_ind_03"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Drops informative indicator features from the ps_ind family. These features carry real predictive signal in top Porto solutions and their removal degrades model performance.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000008"
+      ],
+      "derivation_reasoning": "Synthetic destructive-pruning variant: mimics the calc-feature drop pattern but targets the informative ind feature block instead of the zero-importance calc block.",
+      "challenge_type": "destructive_pruning"
+    },
+    {
+      "action_id": "CA-000006",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "where(x == -1, x.mean(), x)",
+        "output_columns": [
+          "ps_ind_02_cat",
+          "ps_ind_04_cat",
+          "ps_ind_05_cat",
+          "ps_car_01_cat",
+          "ps_car_02_cat",
+          "ps_car_03_cat",
+          "ps_car_05_cat",
+          "ps_car_07_cat",
+          "ps_car_09_cat",
+          "ps_car_11",
+          "ps_car_12",
+          "ps_car_14"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Replaces the -1 sentinel directly with the column mean in one step, bypassing the standard two-phase sentinel\u2192NaN\u2192impute pipeline. For categorical columns, the mean of category codes is nonsensical. This also leaks training statistics into the replacement step without proper train/test separation.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000019"
+      ],
+      "derivation_reasoning": "Near-miss variant that shortcuts sentinel handling and imputation into a single expression, using an inappropriate strategy for categorical columns.",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000007",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "ps_ind_06_bin",
+          "ps_ind_07_bin",
+          "ps_ind_08_bin",
+          "ps_ind_09_bin",
+          "ps_ind_10_bin",
+          "ps_ind_11_bin",
+          "ps_ind_12_bin",
+          "ps_ind_13_bin",
+          "ps_ind_16_bin",
+          "ps_ind_17_bin",
+          "ps_ind_18_bin",
+          "ps_calc_15_bin",
+          "ps_calc_16_bin",
+          "ps_calc_17_bin",
+          "ps_calc_18_bin",
+          "ps_calc_19_bin",
+          "ps_calc_20_bin"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Drops all binary indicator features indiscriminately. While the ps_calc_*_bin features are low signal, the ps_ind_*_bin features carry real predictive power in top Porto solutions. This action conflates informative binary features with noise.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000008"
+      ],
+      "derivation_reasoning": "Synthetic over-pruning variant: extends the legitimate calc-feature drop to all binary features, destroying the informative ind binary block.",
+      "challenge_type": "destructive_pruning"
+    },
+    {
+      "action_id": "CA-000008",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "ps_calc_01",
+          "ps_calc_02",
+          "ps_calc_03",
+          "ps_calc_04",
+          "ps_calc_05",
+          "ps_calc_06",
+          "ps_calc_07",
+          "ps_calc_08",
+          "ps_calc_09",
+          "ps_calc_10",
+          "ps_calc_11",
+          "ps_calc_12",
+          "ps_calc_13",
+          "ps_calc_14",
+          "ps_calc_15_bin",
+          "ps_calc_16_bin",
+          "ps_calc_17_bin",
+          "ps_calc_18_bin",
+          "ps_calc_19_bin",
+          "ps_calc_20_bin"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Extensive EDA and feature importance analysis in multiple top kernels show that all calc features have near-zero importance and represent noise. Removing them reduces dimensionality without losing signal.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "aharless/porto-seguro-exploratory-analysis",
+        "bertcarremans/data-preparation-exploration",
+        "gpreda/porto-seguro-exploratory-analysis",
+        "head0223/steering-wheel-of-fortune-porto-seguro-eda",
+        "kingtong/safety-driver",
+        "rshally/porto-seguro-safe-driver-prediction-eda"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Domain-specific noise feature removal. The calc family is universally dropped in strong Porto kernels.",
+      "evidence_snippets": [
+        "col_to_drop = train.columns[train.columns.str.startswith('ps_calc_')]",
+        "train = train.drop(col_to_drop, axis=1)",
+        "# calc features have 0 importance\ncalc_cols = [c for c in train.columns if 'calc' in c]\ntrain.drop(calc_cols, axis=1, inplace=True)"
+      ],
+      "rareness": "common",
+      "confidence": 0.95
+    },
+    {
+      "action_id": "CA-000009",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "mean",
+        "columns": [
+          "ps_ind_02_cat",
+          "ps_ind_04_cat",
+          "ps_ind_05_cat",
+          "ps_car_01_cat",
+          "ps_car_02_cat",
+          "ps_car_07_cat",
+          "ps_car_09_cat"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Uses mean imputation for categorical features. The mean of category codes (e.g., mean of {0,1,2,3}) is a fractional value with no categorical meaning, producing an impossible category that corrupts downstream encoding steps.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000003"
+      ],
+      "derivation_reasoning": "Near-miss variant of the mode imputation: applies a numeric strategy to categorical columns where it produces nonsensical fractional category codes.",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000010",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "replace(-1, NaN)",
+        "output_columns": [
+          "ps_ind_02_cat",
+          "ps_ind_04_cat",
+          "ps_ind_05_cat",
+          "ps_car_01_cat",
+          "ps_car_02_cat",
+          "ps_car_03_cat",
+          "ps_car_05_cat",
+          "ps_car_07_cat",
+          "ps_car_09_cat"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Only replaces the -1 sentinel in categorical columns, missing the three continuous columns (ps_car_11, ps_car_12, ps_car_14) that also use -1 as a missing sentinel. This leaves numeric missing values undetected and causes downstream imputation to skip them.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000019"
+      ],
+      "derivation_reasoning": "Partial-coverage variant of the sentinel replacement: applies the fix to categorical columns only, leaving numeric sentinel values intact.",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000011",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "replace(-1, -999)",
+        "output_columns": [
+          "ps_ind_02_cat",
+          "ps_ind_04_cat",
+          "ps_ind_05_cat",
+          "ps_car_01_cat",
+          "ps_car_02_cat",
+          "ps_car_03_cat",
+          "ps_car_05_cat",
+          "ps_car_07_cat",
+          "ps_car_09_cat",
+          "ps_car_11",
+          "ps_car_12",
+          "ps_car_14"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Replaces the -1 sentinel with -999, which is just another arbitrary sentinel value. Downstream imputation steps still cannot detect these as missing, and the extreme numeric value distorts scaling and tree splits.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000019"
+      ],
+      "derivation_reasoning": "Variant that technically addresses the documented sentinel but replaces it with another magic number instead of proper NaN.",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000012",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "ps_car_11",
+          "ps_car_12",
+          "ps_car_13",
+          "ps_car_14",
+          "ps_car_15"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Drops the core continuous car features including ps_car_13 and ps_car_12 which are among the most important Porto features by permutation importance in multiple top kernels.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000008"
+      ],
+      "derivation_reasoning": "Synthetic destructive-pruning variant: mimics the legitimate noise-feature drop but targets informative continuous car features instead of the zero-importance calc block.",
+      "challenge_type": "destructive_pruning"
+    },
+    {
+      "action_id": "CA-000013",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "onehot",
+        "columns": [
+          "ps_ind_02_cat",
+          "ps_ind_04_cat",
+          "ps_ind_05_cat",
+          "ps_car_01_cat",
+          "ps_car_02_cat",
+          "ps_car_04_cat",
+          "ps_car_06_cat",
+          "ps_car_07_cat",
+          "ps_car_08_cat",
+          "ps_car_09_cat",
+          "ps_car_10_cat",
+          "ps_car_11_cat"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Columns ending in _cat are explicitly labeled as categorical and need encoding. One-hot encoding is the most common approach in top Porto kernels for the low-to-medium cardinality categorical features.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "aharless/porto-seguro-exploratory-analysis",
+        "bertcarremans/data-preparation-exploration",
+        "gpreda/porto-seguro-exploratory-analysis",
+        "rshally/porto-seguro-safe-driver-prediction-eda",
+        "kingtong/safety-driver"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Essential explicit handling of _cat features. Demoted from core_preprocessing because tree-based models can handle integer-coded categories directly.",
+      "evidence_snippets": [
+        "df = pd.get_dummies(df, columns=cat_cols, drop_first=True)",
+        "train = pd.get_dummies(train, columns=cat_features)"
+      ],
+      "rareness": "common",
+      "confidence": 0.9,
+      "equivalence_group": "porto_categorical_encoding"
+    },
+    {
+      "action_id": "CA-000014",
+      "action_type": "DROP_ROWS_WITH_MISSING",
+      "canonical_params": {
+        "subset_columns": [
+          "ps_car_03_cat",
+          "ps_car_05_cat"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Dropping rows based on columns with 69% and 44% missingness discards the majority of training data. This makes it impossible to build a representative model and impossible to predict on test rows with those missing values.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "fault_actions.json#FA-000001"
+      ],
+      "derivation_reasoning": "Migrated legacy fault action FA-000001 into the action-bank benchmark.",
+      "challenge_type": "legacy_fault"
+    },
+    {
+      "action_id": "CA-000015",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "abs(x)",
+        "output_columns": [
+          "ps_ind_02_cat",
+          "ps_ind_04_cat",
+          "ps_ind_05_cat",
+          "ps_car_01_cat",
+          "ps_car_02_cat",
+          "ps_car_03_cat",
+          "ps_car_05_cat",
+          "ps_car_07_cat",
+          "ps_car_09_cat",
+          "ps_car_11",
+          "ps_car_12",
+          "ps_car_14"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Takes the absolute value of all sentinel columns. This converts the -1 sentinel to 1, which collides with valid category codes and legitimate numeric values, corrupting the feature space without properly marking missingness.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000019"
+      ],
+      "derivation_reasoning": "Near-miss variant that attempts to address the negative sentinel by taking absolute values, but this merges -1 with the valid value 1 and destroys the missing/present distinction.",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000016",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "ps_reg_01",
+          "ps_reg_02",
+          "ps_reg_03",
+          "ps_car_11",
+          "ps_car_12",
+          "ps_car_14"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Drops the core continuous risk-feature block (ps_reg_* and key car features). These carry significant predictive signal in strong Porto baselines and their removal degrades model performance substantially.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000008"
+      ],
+      "derivation_reasoning": "Synthetic destructive-pruning variant: instead of removing the weak ps_calc_* family, this action drops genuinely informative continuous Porto features.",
+      "challenge_type": "destructive_pruning"
+    },
+    {
+      "action_id": "CA-000017",
+      "action_type": "SCALE_NUMERIC",
+      "canonical_params": {
+        "method": "standard",
+        "columns": [
+          "ps_ind_02_cat",
+          "ps_ind_04_cat",
+          "ps_ind_05_cat",
+          "ps_car_01_cat",
+          "ps_car_02_cat",
+          "ps_car_07_cat",
+          "ps_car_09_cat"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Standard-scaling categorical code columns treats arbitrary category labels as continuous magnitudes and imposes meaningless numeric distances on categorical values, corrupting the categorical structure that should be explicitly encoded.",
+      "provenance_type": "synthetic",
+      "base_refs": [
+        "fault_actions.json#FA-000002"
+      ],
+      "derivation_reasoning": "Repurposed the legacy scaling fault: scaling category-code columns remains harmful regardless of sentinel state because it imposes meaningless numeric distances on categorical values.",
+      "challenge_type": "legacy_fault"
+    },
+    {
+      "action_id": "CA-000018",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "constant",
+        "columns": [
+          "ps_ind_02_cat",
+          "ps_ind_04_cat",
+          "ps_ind_05_cat",
+          "ps_car_01_cat",
+          "ps_car_02_cat",
+          "ps_car_07_cat",
+          "ps_car_09_cat"
+        ],
+        "fill_value": -1
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Restores the -1 sentinel as the imputation value, undoing the sentinel replacement step. This re-introduces the exact problem the pipeline is trying to fix and ensures downstream processing treats missing values as an extreme numeric outlier.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000003"
+      ],
+      "derivation_reasoning": "Variant that technically performs imputation but uses the original sentinel value, effectively reverting the missing-value normalization.",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000019",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "replace(-1, NaN)",
+        "output_columns": [
+          "ps_ind_02_cat",
+          "ps_ind_04_cat",
+          "ps_ind_05_cat",
+          "ps_car_01_cat",
+          "ps_car_02_cat",
+          "ps_car_03_cat",
+          "ps_car_05_cat",
+          "ps_car_07_cat",
+          "ps_car_09_cat",
+          "ps_car_11",
+          "ps_car_12",
+          "ps_car_14"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "The dataset documentation explicitly states that -1 is used as a missing value sentinel. Every strong Porto kernel globally replaces this with standard NaN before imputation.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "aharless/porto-seguro-exploratory-analysis",
+        "bertcarremans/data-preparation-exploration",
+        "gpreda/porto-seguro-exploratory-analysis",
+        "head0223/steering-wheel-of-fortune-porto-seguro-eda",
+        "kingtong/safety-driver",
+        "rshally/porto-seguro-safe-driver-prediction-eda",
+        "mjbahmani/a-comprehensive-ml-workflow-with-python"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "First step in every strong Porto pipeline: convert the documented -1 sentinel to proper NaN so downstream imputation works correctly.",
+      "evidence_snippets": [
+        "train = train.replace(-1, np.NaN)",
+        "df = df.replace(-1, np.nan)",
+        "train.replace(-1, np.NaN, inplace=True)"
+      ],
+      "rareness": "common",
+      "confidence": 0.95
+    },
+    {
+      "action_id": "CA-000020",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "target"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Drops the target column during preprocessing, making supervised training impossible. This is a catastrophic error that any pipeline should avoid.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000008"
+      ],
+      "derivation_reasoning": "Synthetic destructive action that applies column-drop logic to the target variable itself.",
+      "challenge_type": "obvious"
+    },
+    {
+      "action_id": "CA-000021",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "ps_reg_01",
+          "ps_reg_02",
+          "ps_reg_03"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Drops the entire ps_reg_* risk-feature family. These continuous registration features are among the top predictors in Porto competition solutions and their removal significantly degrades model performance.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000008"
+      ],
+      "derivation_reasoning": "Synthetic destructive-pruning variant: applies the legitimate noise-feature-drop pattern to the informative registration feature family.",
+      "challenge_type": "destructive_pruning"
+    },
+    {
+      "action_id": "CA-000022",
+      "action_type": "APPLY_EXPRESSION",
+      "canonical_params": {
+        "expression": "fillna(-1)",
+        "output_columns": [
+          "ps_ind_02_cat",
+          "ps_ind_04_cat",
+          "ps_ind_05_cat",
+          "ps_car_01_cat",
+          "ps_car_02_cat",
+          "ps_car_03_cat",
+          "ps_car_05_cat",
+          "ps_car_07_cat",
+          "ps_car_09_cat",
+          "ps_car_11",
+          "ps_car_12",
+          "ps_car_14"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Fills NaN values with -1, which is the original sentinel value. If applied after sentinel replacement, this undoes the fix. If applied independently, it converts genuine NaN into the same sentinel code the competition uses, blocking proper imputation.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000019"
+      ],
+      "derivation_reasoning": "Reverse-direction variant that restores the -1 sentinel for any NaN values, undoing the missing-value normalization.",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000023",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "constant",
+        "columns": [
+          "ps_ind_02_cat",
+          "ps_ind_04_cat",
+          "ps_ind_05_cat",
+          "ps_car_01_cat",
+          "ps_car_02_cat",
+          "ps_car_07_cat",
+          "ps_car_09_cat"
+        ],
+        "fill_value": 0
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Zero-fills categorical columns where 0 is already a valid category code. This makes genuine zero-category rows indistinguishable from formerly-missing rows, corrupting the category distribution and downstream encoding.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000003"
+      ],
+      "derivation_reasoning": "Variant that uses a fill value colliding with valid category codes instead of the proper mode-based imputation.",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000024",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "mean",
+        "columns": [
+          "ps_car_11",
+          "ps_car_12",
+          "ps_car_14"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Continuous features with residual missing values after sentinel replacement are typically imputed with the mean. These three columns have moderate missingness that does not justify dropping.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "aharless/porto-seguro-exploratory-analysis",
+        "bertcarremans/data-preparation-exploration",
+        "gpreda/porto-seguro-exploratory-analysis",
+        "rshally/porto-seguro-safe-driver-prediction-eda"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Standard numerical imputation for the small set of continuous columns with residual missingness.",
+      "evidence_snippets": [
+        "df[c].fillna(df[c].mean(), inplace=True)",
+        "train[num_cols] = train[num_cols].fillna(train[num_cols].mean())"
+      ],
+      "rareness": "common",
+      "confidence": 0.9,
+      "must_follow_action_ids": [
+        "CA-000019"
+      ]
+    },
+    {
+      "action_id": "CA-000025",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "median",
+        "columns": [
+          "ps_ind_02_cat",
+          "ps_ind_04_cat",
+          "ps_ind_05_cat",
+          "ps_car_01_cat",
+          "ps_car_02_cat",
+          "ps_car_07_cat",
+          "ps_car_09_cat"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Median imputation for categorical features produces a fractional or arbitrary integer that does not correspond to a meaningful category. Like mean imputation, this treats category codes as ordinal magnitudes when they are nominal labels.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000003"
+      ],
+      "derivation_reasoning": "Near-miss variant applying a numeric strategy to categorical columns where it produces semantically invalid category codes.",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000026",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "most_frequent",
+        "columns": [
+          "ps_car_11",
+          "ps_car_12",
+          "ps_car_14"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Uses mode imputation for continuous numeric features. The mode of a continuous distribution is often a single repeated value that does not represent the central tendency, creating artificial spikes in the feature distribution.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000024"
+      ],
+      "derivation_reasoning": "Swaps the strategy between the categorical and numeric imputation actions: mode for numerics (wrong) mirrors mean for categoricals (wrong).",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000027",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "onehot",
+        "columns": [
+          "ps_ind_06_bin",
+          "ps_ind_07_bin",
+          "ps_ind_08_bin",
+          "ps_ind_09_bin",
+          "ps_ind_10_bin",
+          "ps_ind_11_bin",
+          "ps_ind_12_bin",
+          "ps_ind_13_bin"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "One-hot encodes binary features that are already in {0,1} form. This doubles the column count for no information gain since each indicator and its complement are perfectly correlated. Wastes dimensionality and can confuse regularized models.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000013"
+      ],
+      "derivation_reasoning": "Variant that extends the legitimate categorical encoding to binary features where it is unnecessary and wasteful.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000028",
+      "action_type": "TARGET_ENCODE_OOF",
+      "canonical_params": {
+        "columns": [
+          "ps_ind_02_cat",
+          "ps_ind_04_cat",
+          "ps_ind_05_cat",
+          "ps_car_01_cat",
+          "ps_car_04_cat",
+          "ps_car_06_cat",
+          "ps_car_07_cat",
+          "ps_car_09_cat",
+          "ps_car_11_cat"
+        ],
+        "target_column": "target",
+        "n_folds": 1,
+        "smoothing": 0
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Target encoding with n_folds=1 and no smoothing means the encoder sees the target for every row it encodes, causing severe target leakage. Without smoothing, rare categories get extreme encoded values that overfit to noise.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000045"
+      ],
+      "derivation_reasoning": "Leakage variant of the legitimate OOF target encoder: disables fold isolation and smoothing, which are the two mechanisms that prevent overfitting.",
+      "challenge_type": "leakage"
+    },
+    {
+      "action_id": "CA-000029",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "ps_car_03_cat",
+          "ps_car_05_cat"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "These two categorical features have 69% and 44% missing values respectively. Most top kernels drop them rather than impute because the extreme sparsity makes them unreliable and costly to rescue.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "aharless/porto-seguro-exploratory-analysis",
+        "bertcarremans/data-preparation-exploration",
+        "gpreda/porto-seguro-exploratory-analysis",
+        "head0223/steering-wheel-of-fortune-porto-seguro-eda",
+        "kingtong/safety-driver"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "High null drop. Applied after sentinel replacement so the true missingness is visible.",
+      "evidence_snippets": [
+        "vars_to_drop = ['ps_car_03_cat', 'ps_car_05_cat']",
+        "train.drop(vars_to_drop, inplace=True, axis=1)",
+        "# Drop columns with too many missing values\ntrain.drop(['ps_car_03_cat', 'ps_car_05_cat'], axis=1, inplace=True)"
+      ],
+      "rareness": "common",
+      "confidence": 0.9,
+      "must_follow_action_ids": [
+        "CA-000019"
+      ]
+    },
+    {
+      "action_id": "CA-000030",
+      "action_type": "SCALE_NUMERIC",
+      "canonical_params": {
+        "method": "minmax",
+        "columns": [
+          "ps_ind_06_bin",
+          "ps_ind_07_bin",
+          "ps_ind_08_bin",
+          "ps_ind_09_bin",
+          "ps_ind_10_bin",
+          "ps_ind_11_bin",
+          "ps_ind_12_bin",
+          "ps_ind_13_bin"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "MinMax scales binary {0,1} features that are already in the [0,1] range. This is a no-op that adds computational overhead and obscures the binary nature of the features in downstream analysis.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000051"
+      ],
+      "derivation_reasoning": "Variant that applies scaling to features already in the target range, demonstrating a mechanical application of scaling without understanding the data.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000031",
+      "action_type": "SCALE_NUMERIC",
+      "canonical_params": {
+        "method": "standard",
+        "columns": [
+          "ps_reg_01",
+          "ps_reg_02",
+          "ps_reg_03",
+          "ps_car_11",
+          "ps_car_12",
+          "ps_car_13",
+          "ps_car_14",
+          "ps_car_15",
+          "ps_ind_01",
+          "ps_ind_03",
+          "ps_ind_14",
+          "ps_ind_15",
+          "target"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Includes the target column in the scaling operation. Standardizing the target variable changes its distribution and can break loss function assumptions for binary classification, producing invalid predicted probabilities.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000051"
+      ],
+      "derivation_reasoning": "Variant that accidentally includes the target column in the feature scaling step.",
+      "challenge_type": "obvious"
+    },
+    {
+      "action_id": "CA-000032",
+      "action_type": "DROP_ROWS_WITH_MISSING",
+      "canonical_params": {
+        "subset_columns": "all"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Drops any row with any missing value across all columns. After sentinel replacement, Porto has ~5% of rows with at least one missing value across the sentinel columns, which is a non-trivial data loss. For test data, this removes rows that must still be predicted.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000014"
+      ],
+      "derivation_reasoning": "Broader variant of the high-null row drop that applies to all columns instead of just the extreme-missingness pair.",
+      "challenge_type": "destructive_pruning"
+    },
+    {
+      "action_id": "CA-000033",
+      "action_type": "FEATURE_SELECTION",
+      "canonical_params": {
+        "method": "correlation",
+        "threshold": 0.01
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Removes features with correlation to target below 0.01. Porto has many weak-signal features that individually have low target correlation but collectively contribute to strong ensemble models. This threshold is too aggressive and removes useful features.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000056"
+      ],
+      "derivation_reasoning": "Over-aggressive feature selection variant that uses a raw correlation threshold too low for Porto's weak-signal feature space.",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000034",
+      "action_type": "FEATURE_SELECTION",
+      "canonical_params": {
+        "method": "variance",
+        "threshold": 0.0
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Zero-variance feature removal after encoding is a reasonable idea, but with threshold=0.0 it only removes perfectly constant columns. Porto has no constant columns after standard preprocessing, making this a no-op that adds unnecessary pipeline complexity.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000056"
+      ],
+      "derivation_reasoning": "Variant that uses the minimum possible threshold, producing a feature selection step that never removes anything.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000035",
+      "action_type": "CREATE_MISSING_INDICATOR",
+      "canonical_params": {
+        "columns": [
+          "ps_ind_02_cat",
+          "ps_ind_04_cat",
+          "ps_ind_05_cat",
+          "ps_car_01_cat",
+          "ps_car_02_cat",
+          "ps_car_03_cat",
+          "ps_car_05_cat",
+          "ps_car_07_cat",
+          "ps_car_09_cat",
+          "ps_car_11",
+          "ps_car_12",
+          "ps_car_14"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Creates binary indicator features flagging which rows had the -1 sentinel. The missingness pattern itself carries predictive signal in insurance datasets because data availability correlates with risk profiles.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "bertcarremans/data-preparation-exploration",
+        "gpreda/porto-seguro-exploratory-analysis",
+        "mjbahmani/a-comprehensive-ml-workflow-with-python"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Must be applied after sentinel replacement so the indicators capture true missingness, not the -1 sentinel.",
+      "evidence_snippets": [
+        "for col in cols_with_missing:\n    df[col + '_missing'] = df[col].isnull().astype(int)",
+        "train['missing_count'] = train.isnull().sum(axis=1)"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.75,
+      "must_follow_action_ids": [
+        "CA-000019"
+      ]
+    },
+    {
+      "action_id": "CA-000036",
+      "action_type": "BIN_NUMERIC",
+      "canonical_params": {
+        "columns": [
+          "ps_reg_01",
+          "ps_reg_02",
+          "ps_reg_03",
+          "ps_car_12",
+          "ps_car_13",
+          "ps_car_14",
+          "ps_car_15",
+          "ps_ind_01",
+          "ps_ind_03",
+          "ps_ind_14",
+          "ps_ind_15"
+        ],
+        "method": "uniform",
+        "n_bins": 2
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Bins all continuous features into just 2 uniform bins. This collapses the entire numeric feature space into binary above/below-median splits, destroying the continuous signal that tree-based models can exploit through fine-grained splits.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000061"
+      ],
+      "derivation_reasoning": "Over-aggressive binning variant that applies too few bins to too many features, destroying useful continuous signal.",
+      "challenge_type": "destructive_pruning"
+    },
+    {
+      "action_id": "CA-000037",
+      "action_type": "BIN_NUMERIC",
+      "canonical_params": {
+        "columns": [
+          "ps_ind_02_cat",
+          "ps_ind_04_cat",
+          "ps_ind_05_cat"
+        ],
+        "method": "quantile",
+        "n_bins": 5
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Applies quantile binning to categorical code columns. Category codes are nominal labels, not continuous values, so binning them conflates unrelated categories into arbitrary groups based on their numeric code rather than any meaningful similarity.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000061"
+      ],
+      "derivation_reasoning": "Variant that applies a continuous-feature technique to categorical columns where it produces semantically invalid groupings.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000038",
+      "action_type": "INTERACTION_FEATURE",
+      "canonical_params": {
+        "columns": [
+          "ps_reg_01",
+          "ps_reg_02",
+          "ps_reg_03",
+          "ps_car_11",
+          "ps_car_12",
+          "ps_car_13",
+          "ps_car_14",
+          "ps_car_15",
+          "ps_ind_01",
+          "ps_ind_03",
+          "ps_ind_14",
+          "ps_ind_15",
+          "ps_ind_02_cat",
+          "ps_ind_04_cat",
+          "ps_ind_05_cat",
+          "ps_car_01_cat",
+          "ps_car_04_cat",
+          "ps_car_06_cat",
+          "ps_car_07_cat",
+          "ps_car_09_cat"
+        ],
+        "method": "multiply"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Creates pairwise interactions across all 20 numeric and categorical features, producing 190 new columns. This massive dimensionality explosion overwhelms any signal from the interactions and dramatically increases overfitting risk on the already high-noise Porto dataset.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000067"
+      ],
+      "derivation_reasoning": "Over-broad variant of the targeted binary-indicator interactions: applies to all features instead of the semantically motivated ind-binary subset.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000039",
+      "action_type": "LOG_TRANSFORM",
+      "canonical_params": {
+        "columns": [
+          "ps_ind_06_bin",
+          "ps_ind_07_bin",
+          "ps_ind_08_bin",
+          "ps_ind_09_bin"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Applies log transform to binary {0,1} features. log(0) produces -inf and log(1) produces 0, collapsing the binary signal into {-inf, 0} which breaks any downstream computation and destroys the indicator information.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic action that applies a continuous-distribution technique to binary features where it is mathematically destructive.",
+      "challenge_type": "obvious",
+      "derived_from_action_ids": [
+        "CA-000067"
+      ]
+    },
+    {
+      "action_id": "CA-000040",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "id"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Porto is a single-table task with no lookup files, joins, or temporal structure. The id column is a row identifier with no predictive value and should be removed before modeling to prevent the model from memorizing row indices.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "aharless/porto-seguro-exploratory-analysis",
+        "bertcarremans/data-preparation-exploration",
+        "gpreda/porto-seguro-exploratory-analysis",
+        "head0223/steering-wheel-of-fortune-porto-seguro-eda",
+        "kingtong/safety-driver"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Standard identifier column removal for single-table classification. Porto has no joins, groups, or temporal keys that require the id.",
+      "evidence_snippets": [
+        "train.drop('id', axis=1, inplace=True)",
+        "X = train.drop(['id', 'target'], axis=1)"
+      ],
+      "rareness": "common",
+      "confidence": 0.9
+    },
+    {
+      "action_id": "CA-000041",
+      "action_type": "LOG_TRANSFORM",
+      "canonical_params": {
+        "columns": [
+          "ps_reg_03",
+          "ps_car_12",
+          "ps_car_13",
+          "ps_car_15"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Applies log transform without checking for zero or negative values. After sentinel replacement, ps_car_12 can contain NaN or zero values from imputation, and ps_reg_03 may be zero. log(0) produces -inf, corrupting downstream computations.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic action that applies log to Porto features without handling the zero/missing edge cases that make it unsafe for this dataset.",
+      "challenge_type": "near_miss",
+      "derived_from_action_ids": [
+        "CA-000061"
+      ]
+    },
+    {
+      "action_id": "CA-000042",
+      "action_type": "DROP_HIGH_NULL_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "ps_ind_02_cat",
+          "ps_ind_04_cat",
+          "ps_ind_05_cat",
+          "ps_car_01_cat",
+          "ps_car_02_cat",
+          "ps_car_07_cat",
+          "ps_car_09_cat",
+          "ps_car_11",
+          "ps_car_12",
+          "ps_car_14"
+        ],
+        "null_ratio_threshold": 0.01
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Uses an extremely low null threshold (1%) that drops any column with even minimal missingness. After sentinel replacement, most of the categorical and several continuous columns exceed this threshold, resulting in dropping 10+ informative features that are easily imputed.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000029"
+      ],
+      "derivation_reasoning": "Over-aggressive variant of the high-null drop: lowers the threshold from the legitimate ~40% level to 1%, which catches almost every column that had any sentinel values.",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000043",
+      "action_type": "DROP_HIGH_NULL_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "ps_car_03_cat",
+          "ps_car_05_cat",
+          "ps_car_11",
+          "ps_car_12",
+          "ps_car_14"
+        ],
+        "null_ratio_threshold": 0.02
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Drops columns at a 2% null threshold, catching ps_car_11/12/14 (which have 1-5% missingness) alongside the legitimately high-null ps_car_03_cat and ps_car_05_cat. The three numeric columns are easily imputed with mean and carry significant predictive signal.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000029"
+      ],
+      "derivation_reasoning": "Near-miss variant: the correct action drops columns at ~40% null, but this variant uses 2% and catches several valuable columns that should be imputed instead.",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000044",
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "target == 1"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Filters to only positive-class rows, throwing away ~96% of the training data. This creates an extreme class imbalance in the opposite direction and makes the model unable to learn the negative class boundary.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic action that applies row filtering based on the target variable, introducing severe selection bias.",
+      "challenge_type": "obvious",
+      "derived_from_action_ids": [
+        "CA-000040"
+      ]
+    },
+    {
+      "action_id": "CA-000045",
+      "action_type": "TARGET_ENCODE_OOF",
+      "canonical_params": {
+        "columns": [
+          "ps_ind_02_cat",
+          "ps_ind_04_cat",
+          "ps_ind_05_cat",
+          "ps_car_01_cat",
+          "ps_car_04_cat",
+          "ps_car_06_cat",
+          "ps_car_07_cat",
+          "ps_car_09_cat",
+          "ps_car_11_cat"
+        ],
+        "target_column": "target",
+        "n_folds": 5,
+        "smoothing": 10
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Target encoding with out-of-fold estimates is a strong alternative to one-hot encoding for Porto categoricals. It preserves the predictive relationship between category and target without dimensionality explosion, and OOF prevents leakage.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "head0223/steering-wheel-of-fortune-porto-seguro-eda",
+        "kingtong/safety-driver",
+        "mjbahmani/a-comprehensive-ml-workflow-with-python"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Alternative to one-hot encoding. Particularly useful for higher-cardinality categoricals like ps_car_11_cat (104 categories). OOF isolation is critical to avoid leakage.",
+      "evidence_snippets": [
+        "from category_encoders import TargetEncoder\nte = TargetEncoder(cols=cat_cols, smoothing=10)\ntrain_encoded = te.fit_transform(X_train, y_train)",
+        "# 5-fold target encoding to avoid overfitting\nfor fold_idx in range(5):\n    ..."
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.75,
+      "equivalence_group": "porto_categorical_encoding"
+    },
+    {
+      "action_id": "CA-000046",
+      "action_type": "FILTER_ROWS",
+      "canonical_params": {
+        "predicate": "ps_reg_03 > 0"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Filters out rows where ps_reg_03 is zero or missing. After sentinel replacement, ps_reg_03 may legitimately be zero or NaN for some policyholders. Dropping these rows introduces selection bias and removes data that must be predicted in the test set.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic action that removes rows based on feature values without domain justification, introducing selection bias.",
+      "challenge_type": "distractor",
+      "derived_from_action_ids": [
+        "CA-000019"
+      ]
+    },
+    {
+      "action_id": "CA-000047",
+      "action_type": "CREATE_MISSING_INDICATOR",
+      "canonical_params": {
+        "columns": [
+          "ps_ind_01",
+          "ps_ind_03",
+          "ps_ind_14",
+          "ps_ind_15",
+          "ps_reg_01",
+          "ps_reg_02"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Creates missing indicators for columns that have 0% missingness (even before sentinel replacement). These indicators will be constant-zero columns that add noise and waste dimensionality without any information content.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000035"
+      ],
+      "derivation_reasoning": "Variant that applies the legitimate missing-indicator pattern to columns that never have missing values, producing constant uninformative features.",
+      "challenge_type": "distractor"
+    },
+    {
+      "action_id": "CA-000048",
+      "action_type": "CREATE_MISSING_INDICATOR",
+      "canonical_params": {
+        "columns": [
+          "ps_ind_02_cat",
+          "ps_ind_04_cat",
+          "ps_ind_05_cat",
+          "ps_car_01_cat",
+          "ps_car_02_cat",
+          "ps_car_07_cat",
+          "ps_car_09_cat",
+          "ps_car_11",
+          "ps_car_12",
+          "ps_car_14"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Creates missing indicators before sentinel replacement. Since -1 is a non-null value, pandas isnull() returns False for all sentinel values, producing constant-zero indicator columns that miss the actual missingness pattern entirely.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000035"
+      ],
+      "derivation_reasoning": "Ordering variant: applies the missing indicator before the sentinel\u2192NaN step, so the indicators capture nothing because -1 is not recognized as missing by standard null-checking functions.",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000049",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "label",
+        "columns": [
+          "ps_ind_02_cat",
+          "ps_ind_04_cat",
+          "ps_ind_05_cat",
+          "ps_car_01_cat",
+          "ps_car_02_cat",
+          "ps_car_04_cat",
+          "ps_car_06_cat",
+          "ps_car_07_cat",
+          "ps_car_08_cat",
+          "ps_car_09_cat",
+          "ps_car_10_cat",
+          "ps_car_11_cat"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Label encoding assigns arbitrary integer codes to categories, imposing a false ordinal relationship. For Porto's nominal categorical features (where categories have no natural order), this introduces spurious magnitude comparisons that can mislead distance-based and linear models.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000013"
+      ],
+      "derivation_reasoning": "Alternative encoding method that imposes ordinal structure on nominal features, which is semantically incorrect for Porto's categorical variables.",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000050",
+      "action_type": "PCA_REDUCTION",
+      "canonical_params": {
+        "feature_columns": [
+          "ps_reg_01",
+          "ps_reg_02",
+          "ps_reg_03",
+          "ps_car_11",
+          "ps_car_12",
+          "ps_car_13",
+          "ps_car_14",
+          "ps_car_15",
+          "ps_ind_01",
+          "ps_ind_03",
+          "ps_ind_14",
+          "ps_ind_15"
+        ],
+        "n_components": 5
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Reduces the entire Porto feature space to just 5 principal components. Porto has 57 original features and the signal is distributed across many weak predictors. Compressing to 5 components discards most of the distributed signal that ensemble models need.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic over-compression action that applies too-aggressive dimensionality reduction to a dataset where signal is broadly distributed.",
+      "challenge_type": "destructive_pruning",
+      "derived_from_action_ids": [
+        "CA-000056"
+      ]
+    },
+    {
+      "action_id": "CA-000051",
+      "action_type": "SCALE_NUMERIC",
+      "canonical_params": {
+        "method": "standard",
+        "columns": [
+          "ps_reg_01",
+          "ps_reg_02",
+          "ps_reg_03",
+          "ps_car_11",
+          "ps_car_12",
+          "ps_car_13",
+          "ps_car_14",
+          "ps_car_15",
+          "ps_ind_01",
+          "ps_ind_03",
+          "ps_ind_14",
+          "ps_ind_15"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "StandardScaler normalization on continuous numeric features helps linear models, neural networks, and distance-based methods. Not needed for tree-based models but standard practice in ensemble pipelines.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "mjbahmani/a-comprehensive-ml-workflow-with-python",
+        "gpreda/porto-seguro-exploratory-analysis"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Model-specific because tree-based models are invariant to scaling. Only applied to truly continuous/ordinal features, never to categorical codes or binary indicators.",
+      "evidence_snippets": [
+        "from sklearn.preprocessing import StandardScaler\nscaler = StandardScaler()\ntrain[num_cols] = scaler.fit_transform(train[num_cols])"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.75
+    },
+    {
+      "action_id": "CA-000052",
+      "action_type": "PCA_REDUCTION",
+      "canonical_params": {
+        "feature_columns": [
+          "ps_reg_01",
+          "ps_reg_02",
+          "ps_reg_03",
+          "ps_car_11",
+          "ps_car_12",
+          "ps_car_13",
+          "ps_car_14",
+          "ps_car_15",
+          "ps_ind_01",
+          "ps_ind_03",
+          "ps_ind_14",
+          "ps_ind_15"
+        ],
+        "n_components": 30
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Applies PCA before proper imputation and encoding. The raw Porto data contains -1 sentinels, categorical codes, and binary indicators, none of which satisfy PCA's assumption of continuous numeric input. PCA on mixed-type unprocessed data produces meaningless components.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic ordering-violation action: applies a technique that requires clean numeric input before the cleaning steps that produce clean numeric input.",
+      "challenge_type": "near_miss",
+      "derived_from_action_ids": [
+        "CA-000056"
+      ]
+    },
+    {
+      "action_id": "CA-000053",
+      "action_type": "SAMPLE_ROWS",
+      "canonical_params": {
+        "method": "random",
+        "frac": 0.1,
+        "random_state": 42
+      },
+      "eval_stage": "validation_protocol",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Downsamples to 10% of training data without stratification. Porto has only ~3.6% positive class, so random 10% sampling may produce folds with very few positive examples, degrading model quality and making validation metrics unreliable.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic action that applies aggressive downsampling to an already imbalanced dataset without preserving class distribution.",
+      "challenge_type": "distractor",
+      "derived_from_action_ids": [
+        "CA-000075"
+      ]
+    },
+    {
+      "action_id": "CA-000054",
+      "action_type": "DROP_CONSTANT_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "ps_ind_01",
+          "ps_ind_03",
+          "ps_ind_14",
+          "ps_ind_15",
+          "ps_reg_01",
+          "ps_reg_02"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Porto has no constant columns in its raw feature set (all features have at least two unique values). Applying this action is a no-op that adds pipeline complexity without removing any column. While not harmful, it signals a failure to understand the data.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic distractor action: applies a legitimate technique to a dataset where it has no effect, testing whether agents can distinguish applicable from inapplicable operations.",
+      "challenge_type": "distractor",
+      "derived_from_action_ids": [
+        "CA-000008"
+      ]
+    },
+    {
+      "action_id": "CA-000055",
+      "action_type": "CLIP_OUTLIERS",
+      "canonical_params": {
+        "columns": [
+          "ps_reg_03"
+        ],
+        "method": "winsorize",
+        "lower_quantile": 0.01,
+        "upper_quantile": 0.99
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Clips ps_reg_03 at the 1st/99th percentiles. While ps_reg_03 is right-skewed, its tail values are legitimate risk signals, not measurement errors. Clipping them reduces the feature's discriminative power for the highest-risk policyholders, which is where prediction accuracy matters most for insurers.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic action that applies outlier clipping to a feature where tail values carry important signal, reducing the benchmark's ability to separate high-risk cases.",
+      "challenge_type": "near_miss",
+      "derived_from_action_ids": [
+        "CA-000061"
+      ]
+    },
+    {
+      "action_id": "CA-000056",
+      "action_type": "FEATURE_SELECTION",
+      "canonical_params": {
+        "method": "importance",
+        "threshold": 0.001,
+        "estimator": "lightgbm"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "Feature importance-based selection removes columns that contribute negligibly to model performance. Multiple top Porto kernels use LightGBM or XGBoost importance to prune the feature space after initial encoding.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "head0223/steering-wheel-of-fortune-porto-seguro-eda",
+        "kingtong/safety-driver"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Applied after encoding and imputation. The calc features are typically already removed by this point, so this catches any remaining low-signal features.",
+      "evidence_snippets": [
+        "importances = model.feature_importances_\nselected = [f for f, imp in zip(features, importances) if imp > 0.001]"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.75
+    },
+    {
+      "action_id": "CA-000057",
+      "action_type": "POWER_TRANSFORM",
+      "canonical_params": {
+        "columns": [
+          "ps_ind_02_cat",
+          "ps_ind_04_cat",
+          "ps_ind_05_cat"
+        ],
+        "method": "yeojohnson"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Applies Yeo-Johnson power transform to categorical code columns. Power transforms assume the input is a continuous variable whose distribution should be normalized. Applying it to category codes distorts the discrete label structure into arbitrary continuous values.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic action that applies a continuous-distribution normalization technique to nominal categorical features.",
+      "challenge_type": "distractor",
+      "derived_from_action_ids": [
+        "CA-000051"
+      ]
+    },
+    {
+      "action_id": "CA-000058",
+      "action_type": "REPLACE_INF",
+      "canonical_params": {
+        "columns": [
+          "ps_reg_03",
+          "ps_car_12",
+          "ps_car_13",
+          "ps_car_14",
+          "ps_car_15"
+        ],
+        "strategy": "nan"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Porto's raw data does not contain any inf values. The only way infs appear is from log(0) or division-by-zero in derived features. Applying this to raw data is a no-op, and if it runs after a buggy transform, it masks the root cause rather than fixing it.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic distractor action: handles a condition that does not exist in Porto's raw data, testing if agents can distinguish applicable from inapplicable cleanup.",
+      "challenge_type": "distractor",
+      "derived_from_action_ids": [
+        "CA-000019"
+      ]
+    },
+    {
+      "action_id": "CA-000059",
+      "action_type": "RARE_CATEGORY_BUCKETIZE",
+      "canonical_params": {
+        "columns": [
+          "ps_car_11_cat"
+        ],
+        "min_freq": 0.5
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Uses a 50% frequency threshold for rare-category bucketing on ps_car_11_cat (104 categories). This collapses nearly all categories into the 'rare' bucket because no single category exceeds 50% frequency, destroying the granular category signal that target encoding can exploit.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Over-aggressive variant of rare-category handling: the threshold is so high that it merges nearly every category into one bucket.",
+      "challenge_type": "near_miss",
+      "derived_from_action_ids": [
+        "CA-000013"
+      ]
+    },
+    {
+      "action_id": "CA-000060",
+      "action_type": "HASH_CROSS",
+      "canonical_params": {
+        "columns": [
+          "ps_ind_02_cat",
+          "ps_car_01_cat",
+          "ps_ind_04_cat",
+          "ps_car_04_cat",
+          "ps_ind_05_cat",
+          "ps_car_06_cat"
+        ],
+        "n_buckets": 8
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Hash-crosses arbitrary categorical pairs with only 8 buckets per cross. Porto's anonymized features have no documented semantic relationship between ind and car families, so these crosses are unmotivated. With only 8 buckets, hash collisions further dilute any accidental signal.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic action that applies feature crossing to semantically unrelated Porto column pairs with insufficient bucket count to preserve information.",
+      "challenge_type": "distractor",
+      "derived_from_action_ids": [
+        "CA-000067"
+      ]
+    },
+    {
+      "action_id": "CA-000061",
+      "action_type": "BIN_NUMERIC",
+      "canonical_params": {
+        "columns": [
+          "ps_reg_03"
+        ],
+        "method": "quantile",
+        "n_bins": 10
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "ps_reg_03 has a highly skewed distribution with a long right tail. Quantile binning captures the nonlinear relationship with the target and reduces sensitivity to outliers, which several top kernels apply to this specific feature.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "head0223/steering-wheel-of-fortune-porto-seguro-eda",
+        "bertcarremans/data-preparation-exploration"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Porto-specific: ps_reg_03 is one of the most important continuous features but has a very skewed distribution that benefits from discretization.",
+      "evidence_snippets": [
+        "train['ps_reg_03_bin'] = pd.qcut(train['ps_reg_03'], 10, labels=False, duplicates='drop')"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.75
+    },
+    {
+      "action_id": "CA-000062",
+      "action_type": "DROP_COLUMNS",
+      "canonical_params": {
+        "columns": [
+          "ps_car_13"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Drops ps_car_13, which is consistently one of the top 3 most important features in Porto competition solutions. Removing the single most predictive feature causes substantial model performance degradation.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000008"
+      ],
+      "derivation_reasoning": "Targeted destructive-pruning variant that removes the single highest-importance continuous feature in Porto.",
+      "challenge_type": "destructive_pruning"
+    },
+    {
+      "action_id": "CA-000063",
+      "action_type": "CAST_DTYPE",
+      "canonical_params": {
+        "columns": [
+          "ps_ind_02_cat",
+          "ps_ind_04_cat",
+          "ps_ind_05_cat",
+          "ps_car_01_cat",
+          "ps_car_02_cat",
+          "ps_car_07_cat",
+          "ps_car_09_cat"
+        ],
+        "dtype": "float"
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Casts categorical code columns to float before sentinel replacement. This preserves the -1 sentinel as -1.0 and may cause downstream category-aware operations (like value_counts, get_dummies) to treat the float categories differently, producing unexpected behavior.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic type-casting action that changes categorical codes to float dtype, potentially breaking downstream categorical operations.",
+      "challenge_type": "distractor",
+      "derived_from_action_ids": [
+        "CA-000013"
+      ]
+    },
+    {
+      "action_id": "CA-000064",
+      "action_type": "NORMALIZE_STRING",
+      "canonical_params": {
+        "columns": [
+          "ps_ind_02_cat",
+          "ps_ind_04_cat",
+          "ps_ind_05_cat"
+        ],
+        "case": "lower",
+        "strip": true
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Porto's categorical features are integer codes (0, 1, 2, ...), not string labels. Applying string normalization to integer columns is a type error that either crashes or converts integers to their string representations, breaking all downstream numeric operations.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic action applying a text-data technique to a numeric-coded dataset where it is fundamentally inapplicable.",
+      "challenge_type": "obvious",
+      "derived_from_action_ids": [
+        "CA-000019"
+      ]
+    },
+    {
+      "action_id": "CA-000065",
+      "action_type": "INTERACTION_FEATURE",
+      "canonical_params": {
+        "columns": [
+          "ps_ind_06_bin",
+          "ps_ind_07_bin",
+          "ps_ind_08_bin",
+          "ps_ind_09_bin",
+          "ps_ind_16_bin",
+          "ps_ind_17_bin",
+          "ps_ind_18_bin",
+          "id"
+        ],
+        "method": "multiply"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "easy",
+      "reasoning": "Includes the id column in interaction feature generation. Interactions with a row identifier produce features that are unique per row and memorize individual observations, causing severe overfitting with zero generalization.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000067"
+      ],
+      "derivation_reasoning": "Variant that accidentally includes the row identifier in the interaction set, producing per-row unique features.",
+      "challenge_type": "leakage"
+    },
+    {
+      "action_id": "CA-000066",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "onehot",
+        "columns": [
+          "ps_car_11_cat"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "One-hot encodes ps_car_11_cat which has 104 categories. This explodes the feature space by 103 sparse columns where most will have very few positive entries. For tree-based models this causes memory issues and slow training; for linear models the sparse one-hot representation is dominated by noise.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000013"
+      ],
+      "derivation_reasoning": "Variant that applies one-hot encoding to the one Porto categorical column where it is clearly inappropriate due to high cardinality.",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000067",
+      "action_type": "INTERACTION_FEATURE",
+      "canonical_params": {
+        "columns": [
+          "ps_ind_06_bin",
+          "ps_ind_07_bin",
+          "ps_ind_08_bin",
+          "ps_ind_09_bin",
+          "ps_ind_16_bin",
+          "ps_ind_17_bin",
+          "ps_ind_18_bin"
+        ],
+        "method": "multiply"
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "good",
+      "difficulty": "medium",
+      "reasoning": "The ps_ind_*_bin features are mutually exclusive indicator groups (06-09 form one group, 16-18 form another). Pairwise interactions capture the conjunction of indicator states that single features cannot represent.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "bertcarremans/data-preparation-exploration",
+        "head0223/steering-wheel-of-fortune-porto-seguro-eda"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Porto-specific: the binary ind features encode mutually exclusive states, so their interactions capture meaningful cross-group combinations.",
+      "evidence_snippets": [
+        "from sklearn.preprocessing import PolynomialFeatures\npoly = PolynomialFeatures(degree=2, interaction_only=True)\nX_inter = poly.fit_transform(train[ind_bin_cols])"
+      ],
+      "rareness": "uncommon",
+      "confidence": 0.75
+    },
+    {
+      "action_id": "CA-000068",
+      "action_type": "MAP_CATEGORIES",
+      "canonical_params": {
+        "columns": [
+          "ps_ind_02_cat",
+          "ps_ind_04_cat",
+          "ps_ind_05_cat"
+        ],
+        "mapping": {
+          "0": 4,
+          "1": 3,
+          "2": 2,
+          "3": 1,
+          "4": 0
+        }
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Reverses the category code order for nominal categorical features. Since Porto's category codes carry no inherent ordering, reversing them is equivalent to arbitrary relabeling that adds no information but may confuse feature importance analysis and makes results harder to interpret.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic action that manipulates category codes under the false assumption that their ordering matters for nominal features.",
+      "challenge_type": "distractor",
+      "derived_from_action_ids": [
+        "CA-000013"
+      ]
+    },
+    {
+      "action_id": "CA-000069",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "constant",
+        "columns": [
+          "ps_car_03_cat",
+          "ps_car_05_cat"
+        ],
+        "fill_value": 0
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Attempts to impute the extreme-missingness categorical columns (69% and 44% missing) with a constant zero instead of dropping them. The imputed values would dominate the column distribution, and for ps_car_03_cat zero collides with a valid category code. Top kernels universally drop rather than impute these columns.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000029"
+      ],
+      "derivation_reasoning": "Alternative to the legitimate high-null drop: imputes instead of dropping, but the extreme missingness rate makes any fill value dominate the distribution.",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000070",
+      "action_type": "POLYNOMIAL_FEATURE",
+      "canonical_params": {
+        "feature_columns": [
+          "ps_reg_01",
+          "ps_reg_02",
+          "ps_reg_03"
+        ],
+        "degree": 3
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Generates degree-3 polynomial features from the reg columns, producing 19 new columns including cubic terms and triple interactions. For tree-based models (the dominant Porto approach), polynomial features add no value since trees already capture nonlinear relationships. For linear models, the cubic terms amplify the skewed ps_reg_03 distribution, producing extreme outlier values.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic action that applies polynomial feature generation where trees already handle nonlinearity, and where the skewed input distribution makes high-degree terms problematic.",
+      "challenge_type": "distractor",
+      "derived_from_action_ids": [
+        "CA-000067"
+      ]
+    },
+    {
+      "action_id": "CA-000071",
+      "action_type": "RATIO_FEATURE",
+      "canonical_params": {
+        "left_columns": [
+          "ps_reg_01"
+        ],
+        "right_columns": [
+          "ps_reg_03"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Creates a ratio of ps_reg_01 / ps_reg_03. After sentinel replacement, ps_reg_03 can be NaN or zero, producing inf or NaN ratio values. Even without those edge cases, the ratio between anonymized features has no documented semantic meaning and adds a noisy derived feature.",
+      "provenance_type": "synthetic",
+      "derivation_reasoning": "Synthetic action that creates a ratio feature between anonymized columns where the denominator can be zero/missing and the ratio has no known meaning.",
+      "challenge_type": "near_miss",
+      "derived_from_action_ids": [
+        "CA-000061"
+      ]
+    },
+    {
+      "action_id": "CA-000072",
+      "action_type": "DROP_DUPLICATES",
+      "canonical_params": {
+        "subset_columns": [
+          "ps_ind_01",
+          "ps_ind_02_cat",
+          "ps_ind_03"
+        ],
+        "keep": "first"
+      },
+      "eval_stage": "validation_protocol",
+      "role": "bad",
+      "difficulty": "medium",
+      "reasoning": "Deduplicates based on only 3 features instead of all columns. With only 3 low-cardinality features, many rows will share the same (ps_ind_01, ps_ind_02_cat, ps_ind_03) combination, so this drops a large fraction of unique training observations that differ in other features.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000075"
+      ],
+      "derivation_reasoning": "Variant that applies deduplication on a too-narrow subset of columns, treating legitimately different rows as duplicates.",
+      "challenge_type": "destructive_pruning"
+    },
+    {
+      "action_id": "CA-000073",
+      "action_type": "ENCODE_CATEGORICAL",
+      "canonical_params": {
+        "method": "onehot",
+        "columns": [
+          "ps_ind_02_cat",
+          "ps_ind_04_cat",
+          "ps_ind_05_cat",
+          "ps_car_01_cat",
+          "ps_car_02_cat",
+          "ps_car_04_cat",
+          "ps_car_06_cat",
+          "ps_car_07_cat",
+          "ps_car_08_cat",
+          "ps_car_09_cat",
+          "ps_car_10_cat",
+          "ps_car_11_cat",
+          "ps_car_03_cat",
+          "ps_car_05_cat"
+        ]
+      },
+      "eval_stage": "model_specific_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "One-hot encodes all categorical columns including ps_car_03_cat (69% missing) and ps_car_05_cat (44% missing), which should have been dropped. Encoding heavily-missing columns amplifies the dominant NaN/sentinel category into a near-constant indicator while producing many near-zero sparse columns for the rare non-missing categories.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000013"
+      ],
+      "derivation_reasoning": "Variant that applies encoding before the high-null drop, producing sparse uninformative columns from the extreme-missingness categorical features.",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000074",
+      "action_type": "IMPUTE_MISSING",
+      "canonical_params": {
+        "strategy": "mean",
+        "columns": [
+          "ps_car_11",
+          "ps_car_12",
+          "ps_car_14",
+          "ps_ind_02_cat",
+          "ps_ind_04_cat",
+          "ps_ind_05_cat",
+          "ps_car_01_cat",
+          "ps_car_02_cat",
+          "ps_car_07_cat",
+          "ps_car_09_cat"
+        ]
+      },
+      "eval_stage": "core_preprocessing",
+      "role": "bad",
+      "difficulty": "hard",
+      "reasoning": "Applies mean imputation uniformly to both continuous and categorical columns. While mean is correct for the 3 numeric columns, applying it to the 7 categorical columns produces fractional category codes that are semantically invalid. This blended approach conflates two different imputation needs.",
+      "provenance_type": "synthetic",
+      "derived_from_action_ids": [
+        "CA-000003",
+        "CA-000024"
+      ],
+      "derivation_reasoning": "Shortcut variant that merges the separate categorical-mode and numeric-mean imputation steps into one unified mean-for-all operation.",
+      "challenge_type": "near_miss"
+    },
+    {
+      "action_id": "CA-000075",
+      "action_type": "DROP_DUPLICATES",
+      "canonical_params": {
+        "subset_columns": "all",
+        "keep": "first"
+      },
+      "eval_stage": "validation_protocol",
+      "role": "good",
+      "difficulty": "easy",
+      "reasoning": "Removing exact duplicate rows prevents data leakage between train and validation splits and ensures the model does not overfit to repeated observations.",
+      "provenance_type": "observed_notebook",
+      "notebook_refs": [
+        "gpreda/porto-seguro-exploratory-analysis",
+        "rshally/porto-seguro-safe-driver-prediction-eda"
+      ],
+      "source_profile": "winner_style",
+      "context_notes": "Standard validation hygiene step. Porto has ~600k rows; any exact duplicates would inflate validation metrics.",
+      "evidence_snippets": [
+        "train.drop_duplicates(inplace=True)"
+      ],
+      "rareness": "common",
+      "confidence": 0.75
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "testcase_id": "tc2_partial_good",
+  "competition_slug": "ashrae-energy-prediction",
+  "task_ref": "../task.json",
+  "input": {
+    "scenario": "partial_good",
+    "context_action_ids": [
+      "CA-000002",
+      "CA-000006",
+      "CA-000012"
+    ]
+  }
+}
