@@ -1,0 +1,13 @@
+{
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports.ruff": "explicit"
+    }
+  },
+  "python.testing.unittestEnabled": true,
+  "python.testing.unittestArgs": ["-s", "agent/tests", "-p", "test_*.py"],
+  "files.insertFinalNewline": true,
+  "files.trimTrailingWhitespace": true
+}
