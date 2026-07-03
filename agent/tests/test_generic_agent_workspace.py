@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import shutil
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -80,8 +81,15 @@ class GenericAgentWorkspaceTests(unittest.TestCase):
                 dataset_root=dataset_root,
             )
             try:
-                self.assertTrue(workspace.dataset_path.is_symlink())
-                self.assertEqual(workspace.dataset_path.resolve(), dataset_root.resolve())
+                if workspace.dataset_path.is_symlink():
+                    self.assertEqual(workspace.dataset_path.resolve(), dataset_root.resolve())
+                else:
+                    # Windows without symlink privileges falls back to copying the dataset.
+                    self.assertEqual(sys.platform, "win32")
+                    self.assertEqual(
+                        sorted(entry.name for entry in workspace.dataset_path.iterdir()),
+                        sorted(entry.name for entry in dataset_root.iterdir()),
+                    )
                 self.assertTrue((workspace.workdir / "TASK.md").exists())
                 self.assertTrue((workspace.workdir / "testcase.json").exists())
                 self.assertTrue((workspace.workdir / "candidate_actions_visible.json").exists())

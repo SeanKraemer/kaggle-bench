@@ -152,9 +152,12 @@ class SingleLLMRequestContextTests(unittest.TestCase):
                 call_count += 1
                 return original_loader(*args, **kwargs)
 
+            # The rewritten file must differ in size, not just content: the profile
+            # cache fingerprints (size, mtime_ns), and a same-size rewrite within one
+            # filesystem timestamp tick would otherwise be a flaky cache hit.
             write_text(
                 data_root / "train_2016_v2.csv",
-                "parcelid,logerror,transactiondate\n1,0.1,2016-10-01\n2,9.9,2016-10-02\n",
+                "parcelid,logerror,transactiondate\n1,0.1,2016-10-01\n2,9.9,2016-10-02\n3,0.3,2016-10-03\n",
             )
             try:
                 shared_context_builder.load_table_rows_for_summary = counting_loader

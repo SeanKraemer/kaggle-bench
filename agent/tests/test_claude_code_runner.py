@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import os
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -125,8 +126,12 @@ class ClaudeCodeRunnerTests(unittest.TestCase):
             try:
                 self.assertEqual(workdir, workdir.resolve())
                 self.assertTrue((workdir / ".claude-home").is_dir())
-                self.assertTrue((workdir / "dataset").is_symlink())
-                self.assertEqual((workdir / "dataset").resolve(), dataset_root.resolve())
+                if (workdir / "dataset").is_symlink():
+                    self.assertEqual((workdir / "dataset").resolve(), dataset_root.resolve())
+                else:
+                    # Windows without symlink privileges falls back to copying the dataset.
+                    self.assertEqual(sys.platform, "win32")
+                    self.assertTrue((workdir / "dataset").is_dir())
                 self.assertEqual((workdir / "TASK.md").read_text(encoding="utf-8"), "Solve the benchmark instance.")
                 self.assertIn("tc1", (workdir / "testcase.json").read_text(encoding="utf-8"))
                 self.assertIn("CA-1", (workdir / "candidate_actions_visible.json").read_text(encoding="utf-8"))
@@ -155,8 +160,9 @@ class ClaudeCodeRunnerTests(unittest.TestCase):
                 captured["env"] = env
                 captured["prompt_exists"] = (workdir / "PROMPT.md").exists()
                 captured["task_exists"] = (workdir / "TASK.md").exists()
-                captured["dataset_symlink_exists"] = (workdir / "dataset").is_symlink()
-                captured["dataset_symlink_target"] = (workdir / "dataset").resolve()
+                captured["dataset_is_symlink"] = (workdir / "dataset").is_symlink()
+                captured["dataset_target"] = (workdir / "dataset").resolve()
+                captured["dataset_file_names"] = sorted(entry.name for entry in (workdir / "dataset").iterdir())
                 captured["candidate_actions_payload"] = json.loads(
                     (workdir / "candidate_actions_visible.json").read_text(encoding="utf-8")
                 )
@@ -189,13 +195,15 @@ class ClaudeCodeRunnerTests(unittest.TestCase):
                     "cost_usd": None,
                 }
 
-            result = runner.run_claude_code(
-                task_dir=task_dir,
-                testcase_id="tc1_from_scratch",
-                run_id="try1",
-                data_root=data_root,
-                executor=fake_executor,
-            )
+            # Pin HOME (absent on Windows) so subscription-mode pass-through is deterministic.
+            with patch.dict(os.environ, {"HOME": str(root / "user-home")}, clear=False):
+                result = runner.run_claude_code(
+                    task_dir=task_dir,
+                    testcase_id="tc1_from_scratch",
+                    run_id="try1",
+                    data_root=data_root,
+                    executor=fake_executor,
+                )
 
             output_payload = json.loads(result["output_path"].read_text(encoding="utf-8"))
             metadata_payload = json.loads(result["metadata_path"].read_text(encoding="utf-8"))
@@ -222,8 +230,12 @@ class ClaudeCodeRunnerTests(unittest.TestCase):
         self.assertNotEqual(captured["env"]["HOME"], str(captured["workdir"] / ".claude-home"))
         self.assertTrue(captured["prompt_exists"])
         self.assertTrue(captured["task_exists"])
-        self.assertTrue(captured["dataset_symlink_exists"])
-        self.assertEqual(captured["dataset_symlink_target"], data_root.resolve())
+        if captured["dataset_is_symlink"]:
+            self.assertEqual(captured["dataset_target"], data_root.resolve())
+        else:
+            # Windows without symlink privileges falls back to copying the dataset.
+            self.assertEqual(sys.platform, "win32")
+            self.assertEqual(captured["dataset_file_names"], ["properties_2016.csv", "train_2016_v2.csv"])
         self.assertTrue(prompt_exists)
         self.assertIn("prediction.json", prompt_text)
         self.assertIn("`dataset`", prompt_text)

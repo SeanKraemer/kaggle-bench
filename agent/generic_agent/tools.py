@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -71,6 +72,45 @@ def _tool_env() -> dict[str, str]:
     return env
 
 
+def _windows_bash_executable() -> Path | None:
+    """Locate a real bash on Windows (Git Bash).
+
+    `shutil.which("bash")` is deliberately not used here: on Windows it can
+    resolve to `C:\\Windows\\System32\\bash.exe`, which launches WSL with a
+    different filesystem view than the prepared workspace.
+    """
+    candidates: list[Path] = []
+    git_path = shutil.which("git")
+    if git_path is not None:
+        git_root = Path(git_path).resolve().parent.parent
+        candidates.append(git_root / "bin" / "bash.exe")
+        candidates.append(git_root / "usr" / "bin" / "bash.exe")
+    for install_base in [os.environ.get("ProgramFiles"), os.environ.get("ProgramFiles(x86)")]:
+        if install_base:
+            candidates.append(Path(install_base) / "Git" / "bin" / "bash.exe")
+    local_app_data = os.environ.get("LOCALAPPDATA")
+    if local_app_data:
+        candidates.append(Path(local_app_data) / "Programs" / "Git" / "bin" / "bash.exe")
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate
+    return None
+
+
+def _bash_invocation(command: str) -> tuple[str | list[str], bool]:
+    """Return the `(command, shell)` pair used to execute a bash tool call.
+
+    POSIX platforms keep the historical `shell=True` behavior. On Windows,
+    `shell=True` means cmd.exe, so the command runs through a real bash (Git
+    Bash) when one is available; otherwise the historical behavior is kept.
+    """
+    if sys.platform == "win32":
+        bash_executable = _windows_bash_executable()
+        if bash_executable is not None:
+            return [str(bash_executable), "-lc", command], False
+    return command, True
+
+
 def _normalize_exec_result(result: dict[str, Any], *, max_output_chars: int) -> dict[str, Any]:
     stdout, stdout_truncated = _truncate(str(result.get("stdout", "")), max_chars=max_output_chars)
     stderr, stderr_truncated = _truncate(str(result.get("stderr", "")), max_chars=max_output_chars)
@@ -101,12 +141,13 @@ def build_generic_tool_specs(
         if not isinstance(command, str) or not command.strip():
             raise ValueError("bash tool requires a non-empty string `command`")
         _guard_generic_code(command, repo_root=resolved_repo_root)
+        bash_command, use_shell = _bash_invocation(command)
         result = bash_executor(
-            command=command,
+            command=bash_command,
             cwd=resolved_workdir,
             env=_tool_env(),
             timeout_seconds=timeout_seconds,
-            shell=True,
+            shell=use_shell,
         )
         return _normalize_exec_result(result, max_output_chars=max_output_chars)
 
